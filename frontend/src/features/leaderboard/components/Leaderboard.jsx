@@ -1,77 +1,50 @@
-import React, { useState } from "react";
-import { Trophy, Medal, Search } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Trophy, Medal, Search, Loader2 } from "lucide-react";
 import { useAuth } from "../../../app/providers/AuthContext";
-
-// Mock data for leaderboard
-const MOCK_LEADERBOARD = [
-  {
-    id: 1,
-    name: "Sarah Connor",
-    quizzes: 45,
-    average: 94,
-    isCurrentUser: false,
-  },
-  { id: 2, name: "John Smith", quizzes: 38, average: 91, isCurrentUser: false },
-  { id: 3, name: "Emily Chen", quizzes: 42, average: 89, isCurrentUser: false },
-  {
-    id: 4,
-    name: "Demo Student",
-    quizzes: 12,
-    average: 85,
-    isCurrentUser: true,
-  }, // will match default user name
-  {
-    id: 5,
-    name: "Michael Chang",
-    quizzes: 31,
-    average: 84,
-    isCurrentUser: false,
-  },
-  {
-    id: 6,
-    name: "Alex Johnson",
-    quizzes: 28,
-    average: 82,
-    isCurrentUser: false,
-  },
-  {
-    id: 7,
-    name: "Jessica Williams",
-    quizzes: 25,
-    average: 79,
-    isCurrentUser: false,
-  },
-  {
-    id: 8,
-    name: "David Brown",
-    quizzes: 22,
-    average: 75,
-    isCurrentUser: false,
-  },
-  { id: 9, name: "Emma Davis", quizzes: 19, average: 73, isCurrentUser: false },
-  {
-    id: 10,
-    name: "James Miller",
-    quizzes: 15,
-    average: 68,
-    isCurrentUser: false,
-  },
-];
+import { api } from "../../../services/api";
 
 const Leaderboard = () => {
   const { user } = useAuth();
   const [filter, setFilter] = useState("weekly");
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Update mock data to highlight actual user
-  const displayData = MOCK_LEADERBOARD.map((entry) => {
-    if (entry.name === "Demo Student" && user?.name) {
-      return { ...entry, name: user.name, isCurrentUser: true };
-    }
-    return { ...entry, isCurrentUser: false };
-  });
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setLoading(true);
+      try {
+        const leaderboardData = await api.getLeaderboard(filter);
+        setData(leaderboardData);
+      } catch (error) {
+        console.error("Failed to fetch leaderboard", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, [filter]);
+
+  // Update real data to highlight actual user
+  const displayData = data.map((entry) => ({
+    id: entry._id,
+    name: entry.name,
+    quizzes: entry.quizzes,
+    average: entry.average,
+    isCurrentUser: user?._id === entry._id || user?.id === entry._id,
+  }));
+
+  // Ensure displayData has at least 3 elements for the podium UI
+  while (displayData.length < 3) {
+    displayData.push({ id: `placeholder-${displayData.length}`, name: "-", quizzes: 0, average: 0, isCurrentUser: false });
+  }
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>

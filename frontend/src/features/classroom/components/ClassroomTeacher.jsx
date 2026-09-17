@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { useClassroomSync } from "../../../features/classroom/hooks/useClassroomSync";
+import { api } from "../../../services/api";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,6 +13,8 @@ import {
   ExternalLink,
   QrCode,
   Users,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { QRCodeSVG as QrCodeComponent } from "qrcode.react";
 
@@ -40,6 +43,8 @@ const ClassroomTeacher = () => {
   const [joinedStudents, setJoinedStudents] = useState([]);
   const [studentAnswers, setStudentAnswers] = useState({}); // { roll: { option, timeRemaining } }
   const [studentScores, setStudentScores] = useState({}); // { roll: totalScore }
+  const [studentCorrectCount, setStudentCorrectCount] = useState({}); // { roll: correctCount }
+  const [resultsReleased, setResultsReleased] = useState(false);
 
   // Listen for student events (joining, answering)
   const handleReceiveEvent = useCallback((event) => {
@@ -61,7 +66,7 @@ const ClassroomTeacher = () => {
     }
   }, []);
 
-  const { broadcastState } = useClassroomSync(
+  const { broadcastState, releaseResults } = useClassroomSync(
     sessionCode,
     "teacher",
     handleReceiveEvent,
@@ -112,6 +117,7 @@ const ClassroomTeacher = () => {
       timeRemaining,
       isTimerPaused,
       quizCompleted,
+      resultsReleased,
       sessionCode,
       showQR,
       quizStarted,
@@ -129,6 +135,7 @@ const ClassroomTeacher = () => {
     timeRemaining,
     isTimerPaused,
     quizCompleted,
+    resultsReleased,
     sessionCode,
     showQR,
     quizStarted,
@@ -220,6 +227,15 @@ const ClassroomTeacher = () => {
           });
           return newScores;
         });
+        setStudentCorrectCount((prevCount) => {
+          const newCount = { ...prevCount };
+          Object.entries(studentAnswers).forEach(([roll, answerData]) => {
+            if (answerData.option === currentQuestion.correctAnswer) {
+              newCount[roll] = (newCount[roll] || 0) + 1;
+            }
+          });
+          return newCount;
+        });
       } else if (key === "N") {
         if (currentQuestionIndex < questions.length - 1) {
           handleNext();
@@ -283,11 +299,46 @@ const ClassroomTeacher = () => {
     });
 
     try {
-      const result = await submitQuiz();
-      navigate(`/quiz/${result.quizId}/result`);
+      // Calculate classroom average accuracy
+      const totalStudents = joinedStudents.length;
+      let averageAccuracy = 0;
+      let totalCorrect = 0;
+
+      if (totalStudents > 0) {
+        Object.values(studentCorrectCount).forEach(count => {
+          totalCorrect += count;
+        });
+        const averageCorrect = totalCorrect / totalStudents;
+        averageAccuracy = (averageCorrect / questions.length) * 100;
+      }
+
+      const resultData = {
+        category: currentQuiz.category,
+        totalQuestions: questions.length,
+        difficulty: currentQuiz.difficulty,
+        score: averageAccuracy > 0 ? averageAccuracy : 0, // In backend, 'score' can just be average accuracy or we can save it as score
+        accuracy: averageAccuracy > 0 ? averageAccuracy : 0,
+        timeTaken: currentQuiz.timeLimit || 60 * questions.length,
+      };
+
+      const result = await api.submitQuizResult(resultData);
+      
+      // Removed redirect to dashboard, stay on admin results page
     } catch {
-      navigate("/dashboard");
+      // Failed to submit history, but we can still show the leaderboard
+      console.error("Failed to submit history");
     }
+  };
+
+  const handleReleaseResults = () => {
+    if (!window.confirm("Are you sure you want to release the results?\n\nOnce released, students will be notified and their rank-wise result popup will appear.")) return;
+    
+    setResultsReleased(true);
+    releaseResults({
+      studentScores,
+      joinedStudents,
+      totalQuestions: questions.length
+    });
   };
 
   const formatTime = (seconds) => {
@@ -325,20 +376,86 @@ const ClassroomTeacher = () => {
             <ExternalLink size={18} /> Open Projector
           </button>
 
-          <button
-            onClick={handleEndQuiz}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-3 py-2 sm:px-4 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
-          >
-            <Square size={18} /> End Quiz
-          </button>
+          {!quizCompleted && (
+            <button
+              onClick={handleEndQuiz}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-3 py-2 sm:px-4 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              <Square size={18} /> End Quiz
+            </button>
+          )}
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 flex-grow">
         {/* Left Column - Main Content */}
         <div className="flex-1 flex flex-col gap-6">
-          {!quizStarted ? (
+          {quizCompleted ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col min-h-[400px]">
+              <div className="flex justify-between items-center mb-8 border-b pb-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-800">Leaderboard Management</h2>
+                  <p className="text-gray-500 mt-1">Submissions: {joinedStudents.length}</p>
+                </div>
+                <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 ${resultsReleased ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {resultsReleased ? (
+                    <><Unlock size={18} /> Results: Released</>
+                  ) : (
+                    <><Lock size={18} /> Results: Hidden</>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+                    <tr>
+                      <th className="p-4 rounded-tl-lg">Student</th>
+                      <th className="p-4">Roll No</th>
+                      <th className="p-4 text-center">Score</th>
+                      <th className="p-4 text-center">Correct</th>
+                      <th className="p-4 rounded-tr-lg"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {joinedStudents.map(student => (
+                      <tr key={student.roll} className="hover:bg-gray-50">
+                        <td className="p-4 font-bold text-gray-800">{student.name}</td>
+                        <td className="p-4 text-gray-600 font-mono">{student.roll}</td>
+                        <td className="p-4 text-center font-bold text-indigo-600">{studentScores[student.roll] || 0}</td>
+                        <td className="p-4 text-center text-gray-600">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
+                        <td className="p-4"></td>
+                      </tr>
+                    ))}
+                    {joinedStudents.length === 0 && (
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center text-gray-500 italic">No students joined this session.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-8 flex justify-center border-t pt-6 gap-4">
+                {!resultsReleased ? (
+                  <button
+                    onClick={handleReleaseResults}
+                    className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-lg shadow-md transition-colors flex items-center gap-2"
+                  >
+                    <Unlock size={20} /> Release Results
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="px-8 py-3 bg-green-100 text-green-700 rounded-lg font-bold text-lg cursor-not-allowed flex items-center gap-2"
+                  >
+                    <CheckCircle2 size={20} /> Results Already Released
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : !quizStarted ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col items-center justify-center min-h-[400px] text-center">
               <Users className="w-20 h-20 text-indigo-200 mb-4" />
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -571,6 +688,15 @@ const ClassroomTeacher = () => {
                         }
                       });
                       return newScores;
+                    });
+                    setStudentCorrectCount((prevCount) => {
+                      const newCount = { ...prevCount };
+                      Object.entries(studentAnswers).forEach(([roll, answerData]) => {
+                        if (answerData.option === currentQuestion.correctAnswer) {
+                          newCount[roll] = (newCount[roll] || 0) + 1;
+                        }
+                      });
+                      return newCount;
                     });
                   }}
                   disabled={isAnswerRevealed}

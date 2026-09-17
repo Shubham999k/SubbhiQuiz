@@ -19,15 +19,16 @@ export const getHistory = async (req, res) => {
 // @access  Private
 export const submitResult = async (req, res) => {
   try {
-    const { categoryId, score, total, difficulty, timeSpent } = req.body;
+    const { category, score, totalQuestions, accuracy, difficulty, timeTaken } = req.body;
 
     const result = await QuizResult.create({
       userId: req.user._id,
-      categoryId,
+      category,
       score,
-      total,
+      totalQuestions,
+      accuracy,
       difficulty,
-      timeSpent,
+      timeTaken,
     });
 
     res.status(201).json(result);

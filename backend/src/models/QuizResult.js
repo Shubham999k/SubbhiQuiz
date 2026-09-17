@@ -7,7 +7,7 @@ const quizResultSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    categoryId: {
+    category: {
       type: String,
       required: true,
     },
@@ -15,14 +15,18 @@ const quizResultSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    total: {
+    totalQuestions: {
       type: Number,
       required: true,
+    },
+    accuracy: {
+      type: Number,
+      default: 0,
     },
     difficulty: {
       type: String,
     },
-    timeSpent: {
+    timeTaken: {
       type: Number, // in seconds
     },
     date: {

@@ -72,9 +72,20 @@ export const useClassroomSync = (
     }
   };
 
+  const releaseResults = (payload) => {
+    if (role === "teacher" && socketRef.current?.connected) {
+      socketRef.current.emit("release_results", {
+        sessionCode,
+        ...payload,
+      });
+    }
+  };
+
   return {
     projectorState,
     broadcastState,
     broadcastEvent,
+    releaseResults,
+    socket: socketRef.current, // Exposing socket for student checking
   };
 };

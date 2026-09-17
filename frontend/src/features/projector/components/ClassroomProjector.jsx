@@ -40,6 +40,7 @@ const ClassroomProjector = () => {
     classResponses,
     timeRemaining = 0,
     quizCompleted,
+    resultsReleased,
     sessionCode = initialSessionCode,
     showQR = true,
     quizStarted = false,
@@ -59,7 +60,18 @@ const ClassroomProjector = () => {
     );
   }
 
-  if (quizCompleted) {
+  if (quizCompleted && !resultsReleased) {
+    return (
+      <div className="min-h-screen bg-indigo-900 text-white flex items-center justify-center flex-col">
+        <h1 className="text-5xl font-bold mb-4">
+          Quiz Completed!
+        </h1>
+        <p className="text-indigo-200 text-2xl animate-pulse">Waiting for teacher to release results...</p>
+      </div>
+    );
+  }
+
+  if (quizCompleted && resultsReleased) {
     const sortedStudents = joinedStudents
       .map((student) => ({
         ...student,
