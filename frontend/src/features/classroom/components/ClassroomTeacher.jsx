@@ -419,15 +419,29 @@ const ClassroomTeacher = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {joinedStudents.map(student => (
-                      <tr key={student.roll} className="hover:bg-gray-50">
-                        <td className="p-4 font-bold text-gray-800">{student.name}</td>
-                        <td className="p-4 text-gray-600 font-mono">{student.roll}</td>
-                        <td className="p-4 text-center font-bold text-indigo-600">{studentScores[student.roll] || 0}</td>
-                        <td className="p-4 text-center text-gray-600">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
-                        <td className="p-4"></td>
-                      </tr>
-                    ))}
+                    {[...joinedStudents]
+                      .sort((a, b) => {
+                        const scoreA = studentScores[a.roll] || 0;
+                        const scoreB = studentScores[b.roll] || 0;
+                        if (scoreB !== scoreA) return scoreB - scoreA;
+                        return (a.timestamp || 0) - (b.timestamp || 0);
+                      })
+                      .map((student, index) => {
+                        // Calculate rank based on sorting
+                        const rank = index + 1;
+                        return (
+                          <tr key={student.roll} className="hover:bg-gray-50">
+                            <td className="p-4 flex items-center gap-3">
+                              <span className="font-bold text-gray-400 w-6">#{rank}</span>
+                              <span className="font-bold text-gray-800">{student.name}</span>
+                            </td>
+                            <td className="p-4 text-gray-600 font-mono">{student.roll}</td>
+                            <td className="p-4 text-center font-bold text-indigo-600">{studentScores[student.roll] || 0}</td>
+                            <td className="p-4 text-center text-gray-600">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
+                            <td className="p-4"></td>
+                          </tr>
+                        );
+                      })}
                     {joinedStudents.length === 0 && (
                       <tr>
                         <td colSpan="5" className="p-8 text-center text-gray-500 italic">No students joined this session.</td>
@@ -443,14 +457,14 @@ const ClassroomTeacher = () => {
                     onClick={handleReleaseResults}
                     className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-lg shadow-md transition-colors flex items-center gap-2"
                   >
-                    <Unlock size={20} /> Release Results
+                    <Unlock size={20} /> Release Ranks
                   </button>
                 ) : (
                   <button
                     disabled
                     className="px-8 py-3 bg-green-100 text-green-700 rounded-lg font-bold text-lg cursor-not-allowed flex items-center gap-2"
                   >
-                    <CheckCircle2 size={20} /> Results Already Released
+                    <CheckCircle2 size={20} /> Ranks Already Released
                   </button>
                 )}
               </div>

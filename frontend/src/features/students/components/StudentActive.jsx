@@ -220,7 +220,7 @@ const StudentActive = () => {
       <div className="min-h-screen bg-indigo-50 flex flex-col">
         <header className="bg-indigo-600 text-white p-4 shadow-md flex items-center justify-center">
           <h1 className="text-xl font-bold tracking-wider">
-            QUIZPRO CLASSROOM
+            QUIZZZ-ZONE CLASSROOM
           </h1>
         </header>
         <main className="flex-1 flex items-center justify-center p-4">

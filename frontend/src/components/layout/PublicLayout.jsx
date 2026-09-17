@@ -13,7 +13,7 @@ const PublicLayout = () => {
                 <BookOpen className="h-7 w-7 text-white" />
               </div>
               <span className="text-xl font-bold text-white tracking-wide">
-                QuizPro
+                Quizzz-Zone
               </span>
             </Link>
             <nav className="flex space-x-4 items-center">
@@ -40,7 +40,7 @@ const PublicLayout = () => {
 
       <footer className="bg-white border-t border-gray-200 mt-auto py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} QuizPro. All rights reserved.
+          &copy; {new Date().getFullYear()} Quizzz-Zone. All rights reserved.
         </div>
       </footer>
     </div>

@@ -119,7 +119,7 @@ const StudentJoin = () => {
         <div className="flex items-center gap-2">
           <BookOpen size={24} />
           <h1 className="text-xl font-bold tracking-wider">
-            QUIZPRO CLASSROOM
+            QUIZZZ-ZONE CLASSROOM
           </h1>
         </div>
       </header>

@@ -57,7 +57,7 @@ const DashboardLayout = () => {
           <div className="h-16 flex items-center px-6 border-b border-border-subtle">
             <Link to="/dashboard" className="flex items-center space-x-2">
               <BookOpen className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-text-base">QuizPro</span>
+              <span className="text-xl font-bold text-text-base">Quizzz-Zone</span>
             </Link>
           </div>
 
