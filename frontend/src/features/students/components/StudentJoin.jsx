@@ -12,7 +12,7 @@ const StudentJoin = () => {
   const [roll, setRoll] = useState("");
   const [batch, setBatch] = useState("");
   const [error, setError] = useState("");
-  const [timeoutReached, setTimeoutReached] = useState(false);
+  const [isWaitingForTeacher, setIsWaitingForTeacher] = useState(false);
 
   // We connect to the channel to see if the session is active
   const { projectorState, broadcastEvent } = useClassroomSync(
@@ -20,12 +20,28 @@ const StudentJoin = () => {
     "student",
   );
 
+  // Automatically join once teacher starts the session if student was waiting
   useEffect(() => {
-    const timer = setTimeout(() => setTimeoutReached(true), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const isChecking = projectorState === null && !timeoutReached;
+    if (isWaitingForTeacher && projectorState) {
+      if (projectorState.quizCompleted) {
+        setError("This classroom quiz has ended.");
+        setIsWaitingForTeacher(false);
+        return;
+      }
+      if (projectorState.quizStarted || projectorState.showQR === false) {
+        setError("The classroom is locked or has already started.");
+        setIsWaitingForTeacher(false);
+        return;
+      }
+      
+      broadcastEvent("STUDENT_JOIN", {
+        name: name.trim(),
+        roll: roll.trim(),
+        batch: batch.trim(),
+      });
+      navigate(`/student/active?session=${sessionCode}`);
+    }
+  }, [projectorState, isWaitingForTeacher, name, roll, batch, sessionCode, navigate, broadcastEvent]);
 
   const handleJoin = (e) => {
     e.preventDefault();
@@ -34,22 +50,10 @@ const StudentJoin = () => {
       return;
     }
 
-    if (!projectorState) {
-      setError("Session not found or inactive. Please check the code.");
-      return;
-    }
-
-    if (projectorState.quizCompleted) {
+    if (projectorState?.quizCompleted) {
       setError("This classroom quiz has ended.");
       return;
     }
-
-    // Broadcast join event to teacher
-    broadcastEvent("STUDENT_JOIN", {
-      name: name.trim(),
-      roll: roll.trim(),
-      batch: batch.trim(),
-    });
 
     // Save session context locally so they can reconnect if they refresh
     localStorage.setItem(
@@ -60,6 +64,18 @@ const StudentJoin = () => {
         batch: batch.trim(),
       }),
     );
+
+    if (!projectorState) {
+      setIsWaitingForTeacher(true);
+      return;
+    }
+
+    // Broadcast join event to teacher
+    broadcastEvent("STUDENT_JOIN", {
+      name: name.trim(),
+      roll: roll.trim(),
+      batch: batch.trim(),
+    });
 
     // Navigate to active quiz view
     navigate(`/student/active?session=${sessionCode}`);
@@ -84,21 +100,7 @@ const StudentJoin = () => {
     );
   }
 
-  if (isChecking) {
-    return (
-      <div className="min-h-screen bg-indigo-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-indigo-800 font-medium">
-            Finding Classroom Session...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const isSessionEnded = projectorState?.quizCompleted;
-  const isSessionInvalid = projectorState === null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -128,23 +130,7 @@ const StudentJoin = () => {
             )}
           </div>
 
-          {isSessionInvalid ? (
-            <div className="text-center bg-red-50 p-6 rounded-xl border border-red-100">
-              <h3 className="text-lg font-bold text-red-700 mb-2">
-                Session Not Found
-              </h3>
-              <p className="text-red-600 mb-6 text-sm">
-                The classroom session <b>{sessionCode}</b> is not active or does
-                not exist.
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="w-full py-3 bg-white text-red-700 font-bold rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          ) : isSessionEnded ? (
+          {isSessionEnded ? (
             <div className="text-center bg-gray-100 p-6 rounded-xl border border-gray-200">
               <h3 className="text-lg font-bold text-gray-700 mb-2">
                 Quiz Ended
@@ -230,14 +216,23 @@ const StudentJoin = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={!name.trim() || !roll.trim() || !batch.trim()}
+                  disabled={!name.trim() || !roll.trim() || !batch.trim() || isWaitingForTeacher}
                   className={`w-full font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-lg ${
-                    !name.trim() || !roll.trim() || !batch.trim()
+                    !name.trim() || !roll.trim() || !batch.trim() || isWaitingForTeacher
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                       : "bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-lg"
                   }`}
                 >
-                  <LogIn size={24} /> JOIN QUIZ
+                  {isWaitingForTeacher ? (
+                    <>
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Waiting for teacher...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn size={24} /> JOIN QUIZ
+                    </>
+                  )}
                 </button>
               </div>
             </form>
