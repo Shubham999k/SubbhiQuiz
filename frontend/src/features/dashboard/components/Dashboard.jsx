@@ -43,17 +43,22 @@ const Dashboard = () => {
 
   // Calculate stats
   const totalQuizzes = history.length;
+  
+  const getAccuracy = (h) => (h.total > 0 ? (h.score / h.total) * 100 : 0);
+
   const bestScore =
-    history.length > 0 ? Math.max(...history.map((h) => h.accuracy)) : 0;
+    history.length > 0 ? Math.max(...history.map(getAccuracy)) : 0;
+  
   const averageScore =
     history.length > 0
       ? Math.round(
-          history.reduce((acc, curr) => acc + curr.accuracy, 0) /
+          history.reduce((acc, curr) => acc + getAccuracy(curr), 0) /
             history.length,
         )
       : 0;
+      
   const totalQuestionsSolved = history.reduce(
-    (acc, curr) => acc + curr.totalQuestions,
+    (acc, curr) => acc + (curr.total || 0),
     0,
   );
 
@@ -245,7 +250,7 @@ const Dashboard = () => {
                       <td className="px-3 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <span className="font-medium text-text-base capitalize">
-                            {attempt.category}
+                            {attempt.categoryId || attempt.category || 'Unknown'}
                           </span>
                           <span
                             className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
@@ -256,15 +261,15 @@ const Dashboard = () => {
                                   : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {attempt.difficulty}
+                            {attempt.difficulty || 'all'}
                           </span>
                         </div>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
                         <span
-                          className={`font-semibold ${attempt.accuracy >= 70 ? "text-green-600" : "text-amber-600"}`}
+                          className={`font-semibold ${getAccuracy(attempt) >= 70 ? "text-green-600" : "text-amber-600"}`}
                         >
-                          {Math.round(attempt.accuracy)}%
+                          {Math.round(getAccuracy(attempt))}%
                         </span>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-text-muted">

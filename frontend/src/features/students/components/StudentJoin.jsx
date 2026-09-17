@@ -159,6 +159,21 @@ const StudentJoin = () => {
                 Return Home
               </button>
             </div>
+          ) : projectorState?.quizStarted || projectorState?.showQR === false ? (
+            <div className="text-center bg-amber-50 p-6 rounded-xl border border-amber-200">
+              <h3 className="text-lg font-bold text-amber-800 mb-2">
+                Classroom Locked
+              </h3>
+              <p className="text-amber-700 mb-6 text-sm">
+                This session has already started or the teacher has locked the classroom. Please try again later.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full py-3 bg-white text-amber-800 font-bold rounded-lg border border-amber-300 hover:bg-amber-50 transition-colors"
+              >
+                Check Again
+              </button>
+            </div>
           ) : (
             <form onSubmit={handleJoin} className="space-y-5">
               {error && (

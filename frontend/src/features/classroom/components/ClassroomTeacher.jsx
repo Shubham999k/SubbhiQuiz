@@ -38,7 +38,8 @@ const ClassroomTeacher = () => {
   const [quizStarted, setQuizStarted] = useState(false);
   const [showQR, setShowQR] = useState(true);
   const [joinedStudents, setJoinedStudents] = useState([]);
-  const [studentAnswers, setStudentAnswers] = useState({}); // { roll: option }
+  const [studentAnswers, setStudentAnswers] = useState({}); // { roll: { option, timeRemaining } }
+  const [studentScores, setStudentScores] = useState({}); // { roll: totalScore }
 
   // Listen for student events (joining, answering)
   const handleReceiveEvent = useCallback((event) => {
@@ -55,8 +56,8 @@ const ClassroomTeacher = () => {
         return prev;
       });
     } else if (event.type === "STUDENT_ANSWER") {
-      const { roll, option } = event.payload;
-      setStudentAnswers((prev) => ({ ...prev, [roll]: option }));
+      const { roll, option, timeRemaining } = event.payload;
+      setStudentAnswers((prev) => ({ ...prev, [roll]: { option, timeRemaining } }));
     }
   }, []);
 
@@ -72,7 +73,7 @@ const ClassroomTeacher = () => {
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return responses;
 
-    Object.values(studentAnswers).forEach((option) => {
+    Object.values(studentAnswers).forEach(({ option }) => {
       const optIdx = currentQuestion.options.indexOf(option);
       if (optIdx !== -1) {
         const label = String.fromCharCode(65 + optIdx);
@@ -115,6 +116,8 @@ const ClassroomTeacher = () => {
       showQR,
       quizStarted,
       joinedCount: joinedStudents.length,
+      studentScores,
+      joinedStudents,
     });
   }, [
     questions,
@@ -130,6 +133,8 @@ const ClassroomTeacher = () => {
     showQR,
     quizStarted,
     joinedStudents.length,
+    studentScores,
+    joinedStudents,
     broadcastState,
   ]);
 
@@ -202,8 +207,19 @@ const ClassroomTeacher = () => {
           setSelectedOption(option);
           setAnswer(currentQuestion.id, option);
         }
-      } else if (key === "R") {
+      } else if (key === "R" && !isAnswerRevealed) {
         setIsAnswerRevealed(true);
+        // Calculate scores
+        setStudentScores((prevScores) => {
+          const newScores = { ...prevScores };
+          Object.entries(studentAnswers).forEach(([roll, answerData]) => {
+            if (answerData.option === currentQuestion.correctAnswer) {
+              const bonus = answerData.timeRemaining || 0;
+              newScores[roll] = (newScores[roll] || 0) + 100 + bonus;
+            }
+          });
+          return newScores;
+        });
       } else if (key === "N") {
         if (currentQuestionIndex < questions.length - 1) {
           handleNext();
@@ -262,6 +278,8 @@ const ClassroomTeacher = () => {
       quizCompleted: true,
       quizStarted: false,
       sessionCode,
+      studentScores,
+      joinedStudents,
     });
 
     try {
@@ -539,7 +557,21 @@ const ClassroomTeacher = () => {
               {/* Action Card */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col gap-3">
                 <button
-                  onClick={() => setIsAnswerRevealed(true)}
+                  onClick={() => {
+                    setIsAnswerRevealed(true);
+                    // Calculate scores
+                    const currentQuestion = questions[currentQuestionIndex];
+                    setStudentScores((prevScores) => {
+                      const newScores = { ...prevScores };
+                      Object.entries(studentAnswers).forEach(([roll, answerData]) => {
+                        if (answerData.option === currentQuestion.correctAnswer) {
+                          const bonus = answerData.timeRemaining || 0;
+                          newScores[roll] = (newScores[roll] || 0) + 100 + bonus;
+                        }
+                      });
+                      return newScores;
+                    });
+                  }}
                   disabled={isAnswerRevealed}
                   className="w-full py-4 bg-indigo-600 text-white rounded-lg font-bold text-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >

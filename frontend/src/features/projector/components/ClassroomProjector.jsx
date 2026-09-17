@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useClassroomSync } from "../../../features/classroom/hooks/useClassroomSync";
-import { Clock, CheckCircle2, Maximize, Users } from "lucide-react";
+import { Clock, CheckCircle2, Maximize, Users, Trophy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 const ClassroomProjector = () => {
@@ -44,6 +44,8 @@ const ClassroomProjector = () => {
     showQR = true,
     quizStarted = false,
     joinedCount = 0,
+    studentScores = {},
+    joinedStudents = [],
   } = projectorState || {};
 
   if (!questions || questions.length === 0 || !currentQuiz) {
@@ -58,10 +60,94 @@ const ClassroomProjector = () => {
   }
 
   if (quizCompleted) {
+    const sortedStudents = joinedStudents
+      .map((student) => ({
+        ...student,
+        score: studentScores[student.roll] || 0,
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const topThree = sortedStudents.slice(0, 3);
+    const others = sortedStudents.slice(3, 10); // Show top 10 others
+
     return (
-      <div className="min-h-screen bg-indigo-900 text-white flex items-center justify-center flex-col p-8 text-center">
-        <h1 className="text-6xl font-bold mb-6">Quiz Completed!</h1>
-        <p className="text-2xl text-indigo-200">Thank you for participating.</p>
+      <div className="min-h-screen bg-indigo-900 text-white flex flex-col items-center py-12 px-4 overflow-y-auto">
+        <div className="w-full max-w-5xl bg-white text-gray-900 rounded-3xl shadow-2xl p-10 flex flex-col items-center">
+          <h1 className="text-5xl font-bold mb-4 text-indigo-900 flex items-center gap-4 uppercase tracking-widest">
+            <Trophy className="w-14 h-14 text-yellow-500" /> Leaderboard
+          </h1>
+          <p className="text-xl text-gray-500 mb-12 font-medium capitalize">
+            {currentQuiz.category} Fundamentals
+          </p>
+
+          {/* Podium */}
+          <div className="flex items-end justify-center gap-4 sm:gap-8 h-80 mb-16 w-full max-w-3xl">
+            {/* 2nd Place */}
+            {topThree[1] && (
+              <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                <div className="text-center mb-4">
+                  <div className="text-2xl font-bold text-gray-700 truncate w-32">{topThree[1].name}</div>
+                  <div className="text-lg font-mono text-indigo-600 font-bold">{topThree[1].score} pts</div>
+                </div>
+                <div className="w-full bg-gray-300 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '140px' }}>
+                  <span className="text-4xl font-bold text-gray-500">2</span>
+                </div>
+              </div>
+            )}
+            
+            {/* 1st Place */}
+            {topThree[0] && (
+              <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <div className="text-center mb-4">
+                  <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-2 drop-shadow-md" />
+                  <div className="text-3xl font-bold text-gray-800 truncate w-40">{topThree[0].name}</div>
+                  <div className="text-xl font-mono text-indigo-600 font-bold">{topThree[0].score} pts</div>
+                </div>
+                <div className="w-full bg-yellow-400 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '180px' }}>
+                  <span className="text-5xl font-bold text-yellow-700">1</span>
+                </div>
+              </div>
+            )}
+
+            {/* 3rd Place */}
+            {topThree[2] && (
+              <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                <div className="text-center mb-4">
+                  <div className="text-2xl font-bold text-gray-600 truncate w-32">{topThree[2].name}</div>
+                  <div className="text-lg font-mono text-indigo-600 font-bold">{topThree[2].score} pts</div>
+                </div>
+                <div className="w-full bg-orange-300 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '110px' }}>
+                  <span className="text-4xl font-bold text-orange-700">3</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Rest of Leaderboard */}
+          {others.length > 0 && (
+            <div className="w-full max-w-2xl bg-gray-50 rounded-2xl p-6 border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-700 mb-4 uppercase tracking-wider text-center border-b pb-4">Runner Ups</h3>
+              <div className="space-y-3">
+                {others.map((student, idx) => (
+                  <div key={student.roll} className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                    <div className="flex items-center gap-4">
+                      <span className="w-8 text-center font-bold text-gray-400 text-lg">#{idx + 4}</span>
+                      <span className="font-bold text-lg text-gray-800">{student.name}</span>
+                    </div>
+                    <span className="font-mono font-bold text-indigo-600">{student.score} pts</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <button
+            onClick={() => window.close()}
+            className="mt-12 px-8 py-4 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 rounded-full font-bold text-lg transition-colors"
+          >
+            Close Projector
+          </button>
+        </div>
       </div>
     );
   }

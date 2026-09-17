@@ -51,6 +51,7 @@ const StudentActive = () => {
     broadcastEvent("STUDENT_ANSWER", {
       roll: studentInfo.roll,
       option: option,
+      timeRemaining: projectorState.timeRemaining || 0,
     });
   };
 
