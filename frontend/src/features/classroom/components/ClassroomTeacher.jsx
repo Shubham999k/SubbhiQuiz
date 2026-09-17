@@ -42,6 +42,7 @@ const ClassroomTeacher = () => {
   const [showQR, setShowQR] = useState(true);
   const [joinedStudents, setJoinedStudents] = useState([]);
   const [studentAnswers, setStudentAnswers] = useState({}); // { roll: { option, timeRemaining } }
+  const [cumulativeStudentAnswers, setCumulativeStudentAnswers] = useState({}); // { roll: { questionId: option } }
   const [studentScores, setStudentScores] = useState({}); // { roll: totalScore }
   const [studentCorrectCount, setStudentCorrectCount] = useState({}); // { roll: correctCount }
   const [resultsReleased, setResultsReleased] = useState(false);
@@ -63,8 +64,23 @@ const ClassroomTeacher = () => {
     } else if (event.type === "STUDENT_ANSWER") {
       const { roll, option, timeRemaining } = event.payload;
       setStudentAnswers((prev) => ({ ...prev, [roll]: { option, timeRemaining } }));
+      
+      // Store in cumulative for history review
+      if (questions && questions[currentQuestionIndex]) {
+        const questionId = questions[currentQuestionIndex].id;
+        setCumulativeStudentAnswers((prev) => {
+          const studentHistory = prev[roll] || {};
+          return {
+            ...prev,
+            [roll]: {
+              ...studentHistory,
+              [questionId]: option
+            }
+          };
+        });
+      }
     }
-  }, []);
+  }, [questions, currentQuestionIndex]);
 
   const { broadcastState, releaseResults } = useClassroomSync(
     sessionCode,
@@ -311,6 +327,31 @@ const ClassroomTeacher = () => {
         const averageCorrect = totalCorrect / totalStudents;
         averageAccuracy = (averageCorrect / questions.length) * 100;
       }
+      
+      // Calculate ranks for history
+      const sortedStudents = [...joinedStudents].sort((a, b) => {
+        const scoreA = studentScores[a.roll] || 0;
+        const scoreB = studentScores[b.roll] || 0;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return (a.timestamp || 0) - (b.timestamp || 0);
+      });
+
+      const participantsData = sortedStudents.map((student, index) => ({
+        name: student.name,
+        roll: student.roll,
+        score: studentScores[student.roll] || 0,
+        rank: index + 1,
+        correctCount: studentCorrectCount[student.roll] || 0,
+        answers: cumulativeStudentAnswers[student.roll] || {}
+      }));
+
+      const questionsData = questions.map(q => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation
+      }));
 
       const resultData = {
         category: currentQuiz.category,
@@ -319,6 +360,8 @@ const ClassroomTeacher = () => {
         score: averageAccuracy > 0 ? averageAccuracy : 0, // In backend, 'score' can just be average accuracy or we can save it as score
         accuracy: averageAccuracy > 0 ? averageAccuracy : 0,
         timeTaken: currentQuiz.timeLimit || 60 * questions.length,
+        questions: questionsData,
+        participants: participantsData
       };
 
       const result = await api.submitQuizResult(resultData);

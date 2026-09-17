@@ -133,6 +133,22 @@ export const api = {
     return await response.json();
   },
 
+  getQuizHistoryById: async (id) => {
+    const response = await fetch(`${API_URL}/history/${id}`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem("quiz_current_user");
+        localStorage.removeItem("quiz_token");
+      }
+      throw new Error("Failed to fetch history details");
+    }
+
+    return await response.json();
+  },
+
   getLeaderboard: async (filter = "weekly") => {
     const response = await fetch(`${API_URL}/leaderboard?filter=${filter}`, {
       headers: getHeaders(),

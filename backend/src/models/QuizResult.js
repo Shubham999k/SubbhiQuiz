@@ -33,6 +33,28 @@ const quizResultSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    questions: [
+      {
+        id: String,
+        question: String,
+        options: [String],
+        correctAnswer: String,
+        explanation: String,
+      }
+    ],
+    participants: [
+      {
+        name: String,
+        roll: String,
+        score: Number,
+        rank: Number,
+        correctCount: Number,
+        answers: {
+          type: Map,
+          of: String
+        }
+      }
+    ]
   },
   { timestamps: true },
 );
