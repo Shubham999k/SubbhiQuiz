@@ -373,6 +373,7 @@ const ClassroomTeacher = () => {
                   onClick={() => {
                     setQuizStarted(true);
                     setShowQR(false);
+                    setIsTimerPaused(false);
                   }}
                   className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-lg transition-colors shadow-md"
                 >

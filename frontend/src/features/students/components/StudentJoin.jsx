@@ -28,18 +28,16 @@ const StudentJoin = () => {
         setIsWaitingForTeacher(false);
         return;
       }
-      if (projectorState.quizStarted || projectorState.showQR === false) {
-        setError("The classroom is locked or has already started.");
-        setIsWaitingForTeacher(false);
-        return;
-      }
       
       broadcastEvent("STUDENT_JOIN", {
         name: name.trim(),
         roll: roll.trim(),
         batch: batch.trim(),
       });
-      navigate(`/student/active?session=${sessionCode}`);
+
+      if (projectorState.quizStarted) {
+        navigate(`/student/active?session=${sessionCode}`);
+      }
     }
   }, [projectorState, isWaitingForTeacher, name, roll, batch, sessionCode, navigate, broadcastEvent]);
 
@@ -65,20 +63,16 @@ const StudentJoin = () => {
       }),
     );
 
-    if (!projectorState) {
-      setIsWaitingForTeacher(true);
-      return;
+    setIsWaitingForTeacher(true);
+
+    if (projectorState) {
+      // Broadcast join event to teacher
+      broadcastEvent("STUDENT_JOIN", {
+        name: name.trim(),
+        roll: roll.trim(),
+        batch: batch.trim(),
+      });
     }
-
-    // Broadcast join event to teacher
-    broadcastEvent("STUDENT_JOIN", {
-      name: name.trim(),
-      roll: roll.trim(),
-      batch: batch.trim(),
-    });
-
-    // Navigate to active quiz view
-    navigate(`/student/active?session=${sessionCode}`);
   };
 
   if (!sessionCode) {
@@ -103,7 +97,24 @@ const StudentJoin = () => {
   const isSessionEnded = projectorState?.quizCompleted;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col relative">
+      {/* Waiting Popup Modal */}
+      {isWaitingForTeacher && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center transform transition-all">
+            <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Successfully Joined!
+            </h3>
+            <p className="text-gray-500 text-lg">
+              Waiting for teacher to start the quiz...
+            </p>
+          </div>
+        </div>
+      )}
+
       <header className="bg-indigo-600 text-white p-4 shadow-md flex items-center justify-center">
         <div className="flex items-center gap-2">
           <BookOpen size={24} />
