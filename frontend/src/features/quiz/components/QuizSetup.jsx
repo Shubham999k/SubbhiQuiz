@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
 import { Loader2, Plus, Trash2, Save } from "lucide-react";
+import AlertModal from "../../../components/common/AlertModal";
 
 const dummyCategories = [
   {
@@ -100,6 +101,23 @@ const QuizSetup = () => {
     ];
   });
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Alert Modal State
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+    onConfirm: null
+  });
+
+  const showAlert = (title, message, type = "info", onConfirm = null) => {
+    setAlertConfig({ isOpen: true, title, message, type, onConfirm });
+  };
+  
+  const closeAlert = () => {
+    setAlertConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -143,7 +161,7 @@ const QuizSetup = () => {
             q.options.some((opt) => !opt.trim()) ||
             !q.correctAnswer
           ) {
-            alert(`Please complete all fields for Question ${i + 1}`);
+            showAlert("Incomplete Question", `Please complete all fields for Question ${i + 1}`, "error");
             setIsStarting(false);
             setIsStartingClassroom(false);
             return;
@@ -173,7 +191,7 @@ const QuizSetup = () => {
 
   const handleSaveCustomQuiz = async () => {
     if (!customQuizTitle.trim()) {
-      alert("Please provide a Quiz Title before saving.");
+      showAlert("Missing Title", "Please provide a Quiz Title before saving.", "error");
       return;
     }
 
@@ -185,7 +203,7 @@ const QuizSetup = () => {
         q.options.some((opt) => !opt.trim()) ||
         !q.correctAnswer
       ) {
-        alert(`Please complete all fields for Question ${i + 1}`);
+        showAlert("Incomplete Question", `Please complete all fields for Question ${i + 1}`, "error");
         return;
       }
     }
@@ -196,10 +214,10 @@ const QuizSetup = () => {
         title: customQuizTitle,
         questions: customQuestions
       });
-      alert("Custom Quiz Saved Successfully!");
+      showAlert("Success", "Custom Quiz Saved Successfully!", "info");
     } catch (error) {
       console.error("Failed to save custom quiz:", error);
-      alert(`Failed to save custom quiz: ${error.message}`);
+      showAlert("Save Failed", `Failed to save custom quiz: ${error.message}`, "error");
     } finally {
       setIsSaving(false);
     }
@@ -538,6 +556,15 @@ const QuizSetup = () => {
           )}
         </div>
       </form>
+
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        onClose={closeAlert}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onConfirm={alertConfig.onConfirm}
+      />
     </div>
   );
 };
