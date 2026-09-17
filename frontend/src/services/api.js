@@ -100,6 +100,33 @@ export const api = {
     }
   },
 
+  saveCustomQuiz: async (data) => {
+    const response = await fetch(`${API_URL}/quiz/custom`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to save custom quiz");
+    }
+
+    return await response.json();
+  },
+
+  getSavedCustomQuizzes: async () => {
+    const response = await fetch(`${API_URL}/quiz/custom`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch saved custom quizzes");
+    }
+
+    return await response.json();
+  },
+
   // Quiz Results & History
   submitQuizResult: async (resultData) => {
     const response = await fetch(`${API_URL}/history`, {

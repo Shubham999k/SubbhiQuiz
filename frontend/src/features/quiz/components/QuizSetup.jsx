@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Save } from "lucide-react";
 
 const dummyCategories = [
   {
@@ -79,16 +79,27 @@ const QuizSetup = () => {
   const { setupQuiz, setupCustomQuiz } = useQuiz();
   const navigate = useNavigate();
 
-  const [quizMode, setQuizMode] = useState("builtin"); // 'builtin' or 'custom'
-  const [customQuestions, setCustomQuestions] = useState(() => [
-    {
-      id: `custom_${Date.now()}_0`,
-      question: "",
-      options: ["", "", "", ""],
-      correctAnswer: "",
-      explanation: "",
-    },
-  ]);
+  const location = useLocation();
+  const preloadedQuiz = location.state?.customQuiz;
+
+  const initialMode = preloadedQuiz ? "custom" : (searchParams.get("mode") === "custom" ? "custom" : "builtin");
+  const [quizMode, setQuizMode] = useState(initialMode); // 'builtin' or 'custom'
+  const [customQuizTitle, setCustomQuizTitle] = useState(preloadedQuiz ? preloadedQuiz.title : "");
+  const [customQuestions, setCustomQuestions] = useState(() => {
+    if (preloadedQuiz && preloadedQuiz.questions) {
+      return preloadedQuiz.questions;
+    }
+    return [
+      {
+        id: `custom_${Date.now()}_0`,
+        question: "",
+        options: ["", "", "", ""],
+        correctAnswer: "",
+        explanation: "",
+      },
+    ];
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -138,7 +149,7 @@ const QuizSetup = () => {
             return;
           }
         }
-        await setupCustomQuiz(customQuestions, 60); // 60 seconds total or per question (Classroom logic handles per-question)
+        await setupCustomQuiz(customQuestions, customQuestions.length * 60); // 60 seconds per question
       } else {
         await setupQuiz(selectedCategory, difficulty, questionCount);
       }
@@ -157,6 +168,40 @@ const QuizSetup = () => {
       console.error("Failed to start quiz:", error);
       setIsStarting(false);
       setIsStartingClassroom(false);
+    }
+  };
+
+  const handleSaveCustomQuiz = async () => {
+    if (!customQuizTitle.trim()) {
+      alert("Please provide a Quiz Title before saving.");
+      return;
+    }
+
+    // Validate custom questions
+    for (let i = 0; i < customQuestions.length; i++) {
+      const q = customQuestions[i];
+      if (
+        !q.question.trim() ||
+        q.options.some((opt) => !opt.trim()) ||
+        !q.correctAnswer
+      ) {
+        alert(`Please complete all fields for Question ${i + 1}`);
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    try {
+      await api.saveCustomQuiz({
+        title: customQuizTitle,
+        questions: customQuestions
+      });
+      alert("Custom Quiz Saved Successfully!");
+    } catch (error) {
+      console.error("Failed to save custom quiz:", error);
+      alert(`Failed to save custom quiz: ${error.message}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -302,6 +347,20 @@ const QuizSetup = () => {
           </div>
         ) : (
           <div className="space-y-8">
+            <div className="bg-bg-surface p-6 rounded-xl border border-border-subtle shadow-sm mb-6">
+              <label className="block text-sm font-semibold text-text-base mb-2">
+                Quiz Title
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-md border-border-subtle bg-bg-base text-text-base py-3 px-4 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 border transition-colors"
+                value={customQuizTitle}
+                onChange={(e) => setCustomQuizTitle(e.target.value)}
+                placeholder="e.g. Weekly Assessment: React Hooks"
+                required
+              />
+            </div>
+
             {customQuestions.map((q, qIndex) => (
               <div
                 key={q.id}
@@ -457,6 +516,26 @@ const QuizSetup = () => {
               "Start Classroom Mode"
             )}
           </button>
+          {quizMode === "custom" && (
+            <button
+              type="button"
+              onClick={handleSaveCustomQuiz}
+              disabled={isSaving || isStarting || isStartingClassroom}
+              className="w-full flex justify-center py-3 px-4 border border-border-subtle rounded-md shadow-sm text-lg font-medium text-text-base bg-bg-surface hover:bg-bg-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-75 transition-colors"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 w-6 h-6" />
+                  Save Quiz
+                </>
+              )}
+            </button>
+          )}
         </div>
       </form>
     </div>
