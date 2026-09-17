@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: var(--p-50);
+  --color-primary-100: var(--p-100);
+  --color-primary-200: var(--p-200);
+  --color-primary-300: var(--p-300);
+  --color-primary-400: var(--p-400);
+  --color-primary-500: var(--p-500);
+  --color-primary-600: var(--p-600);
+  --color-primary-700: var(--p-700);
+  --color-primary-800: var(--p-800);
+  --color-primary-900: var(--p-900);
+
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-text-base: var(--text-base);
+  --color-text-muted: var(--text-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-bg-hover: var(--bg-hover);
+}
+
+:root {
+  /* Default Light Theme (Indigo based) */
+  --p-50: #eef2ff;
+  --p-100: #e0e7ff;
+  --p-200: #c7d2fe;
+  --p-300: #a5b4fc;
+  --p-400: #818cf8;
+  --p-500: #6366f1;
+  --p-600: #4f46e5;
+  --p-700: #4338ca;
+  --p-800: #3730a3;
+  --p-900: #312e81;
+
+  --bg-base: #f9fafb;
+  --bg-surface: #ffffff;
+  --text-base: #111827;
+  --text-muted: #6b7280;
+  --border-subtle: #e5e7eb;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+  --p-50: #eef2ff;
+  --p-100: #e0e7ff;
+  --p-200: #c7d2fe;
+  --p-300: #a5b4fc;
+  --p-400: #818cf8;
+  --p-500: #6366f1;
+  --p-600: #4f46e5;
+  --p-700: #4338ca;
+  --p-800: #3730a3;
+  --p-900: #312e81;
+
+  --bg-base: #111827;
+  --bg-surface: #1f2937;
+  --text-base: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-subtle: #374151;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="ocean"] {
+  --p-50: #ecfeff;
+  --p-100: #cffafe;
+  --p-200: #a5f3fc;
+  --p-300: #67e8f9;
+  --p-400: #22d3ee;
+  --p-500: #06b6d4;
+  --p-600: #0891b2;
+  --p-700: #0e7490;
+  --p-800: #155e75;
+  --p-900: #164e63;
+
+  --bg-base: #0f172a;
+  --bg-surface: #1e293b;
+  --text-base: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-subtle: #334155;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="forest"] {
+  --p-50: #ecfdf5;
+  --p-100: #d1fae5;
+  --p-200: #a7f3d0;
+  --p-300: #6ee7b7;
+  --p-400: #34d399;
+  --p-500: #10b981;
+  --p-600: #059669;
+  --p-700: #047857;
+  --p-800: #065f46;
+  --p-900: #064e3b;
+
+  --bg-base: #022c22;
+  --bg-surface: #064e3b;
+  --text-base: #ecfdf5;
+  --text-muted: #a7f3d0;
+  --border-subtle: #065f46;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="rose"] {
+  --p-50: #fff1f2;
+  --p-100: #ffe4e6;
+  --p-200: #fecdd3;
+  --p-300: #fda4af;
+  --p-400: #fb7185;
+  --p-500: #f43f5e;
+  --p-600: #e11d48;
+  --p-700: #be123c;
+  --p-800: #9f1239;
+  --p-900: #881337;
+
+  --bg-base: #fff1f2;
+  --bg-surface: #ffffff;
+  --text-base: #4c0519;
+  --text-muted: #9f1239;
+  --border-subtle: #fecdd3;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="sunset"] {
+  --p-50: #fff7ed;
+  --p-100: #ffedd5;
+  --p-200: #fed7aa;
+  --p-300: #fdba74;
+  --p-400: #fb923c;
+  --p-500: #f97316;
+  --p-600: #ea580c;
+  --p-700: #c2410c;
+  --p-800: #9a3412;
+  --p-900: #7c2d12;
+
+  --bg-base: #1e1b4b;
+  --bg-surface: #312e81;
+  --text-base: #ffedd5;
+  --text-muted: #fdba74;
+  --border-subtle: #4338ca;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="cyberpunk"] {
+  --p-50: #fefce8;
+  --p-100: #fef9c3;
+  --p-200: #fef08a;
+  --p-300: #fde047;
+  --p-400: #facc15;
+  --p-500: #eab308;
+  --p-600: #ca8a04;
+  --p-700: #a16207;
+  --p-800: #854d0e;
+  --p-900: #713f12;
+
+  --bg-base: #000000;
+  --bg-surface: #18181b;
+  --text-base: #fef08a;
+  --text-muted: #ca8a04;
+  --border-subtle: #3f3f46;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-base);
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      "Noto Sans",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

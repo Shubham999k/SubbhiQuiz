@@ -1,0 +1,118 @@
+# ==========================================
+
+# SubbhiQuiz - Root Git Ignore
+
+# Frontend + Backend
+
+# ==========================================
+
+# Dependencies
+
+node_modules/
+**/node_modules/
+
+# Environment variables & secrets
+
+.env
+.env.*
+!.env.example
+
+# Build / production output
+
+dist/
+build/
+out/
+
+# Test / coverage output
+
+coverage/
+.nyc_output/
+
+# Vite
+
+.vite/
+
+# Logs
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cache
+
+.cache/
+.parcel-cache/
+.eslintcache/
+.oxlint/
+
+# Temporary files
+
+tmp/
+temp/
+*.tmp
+
+# OS files
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / Editors
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+.idea/
+*.iml
+
+# OS/editor backup files
+
+*.swp
+*.swo
+*~
+
+# React / Vite generated files
+
+.vercel/
+.netlify/
+.cache/
+
+# TypeScript build info (if used later)
+
+*.tsbuildinfo
+
+# Test artifacts
+
+playwright-report/
+test-results/
+
+# Local databases
+
+*.sqlite
+*.sqlite3
+*.db
+
+# Certificates / private keys
+
+*.pem
+*.key
+*.crt
+
+# Generated files
+
+*.generated.*
+*.cache
+
+# ==========================================
+
+# Keep example environment files
+
+# ==========================================
+
+!.env.example
+!**/.env.example
