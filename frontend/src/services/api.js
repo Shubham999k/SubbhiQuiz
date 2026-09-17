@@ -1,6 +1,6 @@
 // The backend URL based on the environment
 // We use VITE_API_URL in production, fallback to local dev only in development mode
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:5000/api" : "");
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:5000/api" : "https://subbhiquiz.onrender.com/api");
 
 const getHeaders = () => {
   const token = localStorage.getItem("quiz_token");
