@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow any origin so phones on local IP can connect
+    origin: process.env.CLIENT_URL || "*", // Allow specified client or any origin for local dev
     methods: ["GET", "POST"],
   },
 });
