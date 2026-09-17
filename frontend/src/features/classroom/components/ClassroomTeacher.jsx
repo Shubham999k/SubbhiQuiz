@@ -333,7 +333,7 @@ const ClassroomTeacher = () => {
               {showQR && (
                 <div className="bg-white p-4 rounded-2xl shadow-sm border-2 border-indigo-100 mb-8 inline-block">
                   <QrCodeComponent
-                    value={`${window.location.protocol}//${window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? (typeof __LOCAL_IP__ !== "undefined" ? __LOCAL_IP__ : window.location.hostname) : window.location.hostname}:${window.location.port}/student/join?session=${sessionCode}`}
+                    value={import.meta.env.DEV ? `${window.location.protocol}//${window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? (typeof __LOCAL_IP__ !== "undefined" ? __LOCAL_IP__ : window.location.hostname) : window.location.hostname}:${window.location.port}/student/join?session=${sessionCode}` : `${window.location.origin}/student/join?session=${sessionCode}`}
                     size={200}
                     bgColor={"#ffffff"}
                     fgColor={"#312e81"}

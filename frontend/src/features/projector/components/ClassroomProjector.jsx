@@ -73,7 +73,9 @@ const ClassroomProjector = () => {
         ? __LOCAL_IP__
         : window.location.hostname
       : window.location.hostname;
-  const joinUrl = `${window.location.protocol}//${serverHostname}:${window.location.port}/student/join?session=${sessionCode}`;
+  const joinUrl = import.meta.env.DEV 
+    ? `${window.location.protocol}//${serverHostname}:${window.location.port}/student/join?session=${sessionCode}` 
+    : `${window.location.origin}/student/join?session=${sessionCode}`;
 
   // Show Lobby / QR View if quiz hasn't started or teacher toggles Show QR
   if (!quizStarted || showQR) {

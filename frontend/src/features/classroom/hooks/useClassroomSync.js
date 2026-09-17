@@ -27,7 +27,7 @@ export const useClassroomSync = (
     // In production, VITE_SOCKET_URL might be completely different domain (e.g. wss://backend.onrender.com)
     const serverUrl =
       import.meta.env.VITE_SOCKET_URL ||
-      `${window.location.protocol}//${serverHostname}:5000`;
+      (import.meta.env.DEV ? `${window.location.protocol}//${serverHostname}:5000` : "");
     const socket = io(serverUrl);
     socketRef.current = socket;
 
