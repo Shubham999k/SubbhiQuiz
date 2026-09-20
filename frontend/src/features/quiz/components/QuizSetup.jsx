@@ -319,6 +319,7 @@ const QuizSetup = () => {
         setOriginalStateStr(currentStateStr);
       }
       toast.success("Custom Quiz Saved Successfully!");
+      navigate('/dashboard', { state: { tab: 'saved-quizzes' } });
     } catch (error) {
       console.error("Failed to save custom quiz:", error);
       const errMsg = error.message || "";

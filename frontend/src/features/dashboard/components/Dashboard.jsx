@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthContext";
 import { api } from "../../../services/api";
 import {
@@ -33,11 +33,12 @@ const StatCard = ({ title, value, icon: Icon, colorClass }) => (
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [history, setHistory] = useState([]);
   const [savedQuizzes, setSavedQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "overview");
   
   // Delete modal state
   const [quizToDelete, setQuizToDelete] = useState(null);
