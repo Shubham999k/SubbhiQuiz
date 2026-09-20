@@ -58,6 +58,7 @@ const ClassroomTeacher = () => {
   // New features state
   const [quizStarted, setQuizStarted] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [qrShownOnce, setQrShownOnce] = useState(false); // tracks if teacher viewed QR at least once
   const [joinedStudents, setJoinedStudents] = useState([]);
   const [studentAnswers, setStudentAnswers] = useState({}); // { roll: { option, timeRemaining } }
   const [cumulativeStudentAnswers, setCumulativeStudentAnswers] = useState({}); // { roll: { questionId: option } }
@@ -464,6 +465,10 @@ const ClassroomTeacher = () => {
             <>
               <button
                 onClick={() => {
+                  if (!qrShownOnce) {
+                    toast.error("Please generate the QR Code first so students can join before starting the quiz!", { duration: 4000, icon: "📱" });
+                    return;
+                  }
                   setQuizStarted(true);
                   setShowQR(false);
                   setIsTimerPaused(false);
@@ -572,7 +577,7 @@ const ClassroomTeacher = () => {
               <div className="bg-base-100 flex-1 rounded-2xl shadow-sm border border-base-300 p-8 flex items-center justify-center">
                 <div className="flex flex-wrap items-center justify-center gap-4">
                   <button
-                    onClick={() => setShowQR(true)}
+                    onClick={() => { setShowQR(true); setQrShownOnce(true); }}
                     className="px-6 py-3 bg-base-200 text-base-content rounded-xl font-bold text-sm flex items-center gap-2 transition-colors border border-base-200 shadow-sm"
                   >
                     <QrCode size={18} />
