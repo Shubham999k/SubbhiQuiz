@@ -56,6 +56,33 @@ export const api = {
     return userStr ? JSON.parse(userStr) : null;
   },
 
+  updateProfile: async (data) => {
+    const response = await fetch(`${API_URL}/auth/profile`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Failed to update profile";
+      try {
+        const error = await response.clone().json();
+        errorMsg = error.message || errorMsg;
+      } catch (e) {
+        const text = await response.text();
+        errorMsg = text.substring(0, 50) + "..."; // First 50 chars of HTML
+      }
+      throw new Error(errorMsg);
+    }
+
+    const updatedData = await response.json();
+    localStorage.setItem("quiz_current_user", JSON.stringify(updatedData));
+    if (updatedData.token) {
+      localStorage.setItem("quiz_token", updatedData.token);
+    }
+    return updatedData;
+  },
+
   // Categories & Questions
   getCategories: async () => {
     const response = await fetch(`${API_URL}/quiz/categories`);
@@ -127,6 +154,20 @@ export const api = {
     return await response.json();
   },
 
+  deleteCustomQuiz: async (id) => {
+    const response = await fetch(`${API_URL}/quiz/custom/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to delete custom quiz");
+    }
+
+    return await response.json();
+  },
+
   // Quiz Results & History
   submitQuizResult: async (resultData) => {
     const response = await fetch(`${API_URL}/history`, {
@@ -176,8 +217,8 @@ export const api = {
     return await response.json();
   },
 
-  getLeaderboard: async (filter = "weekly") => {
-    const response = await fetch(`${API_URL}/leaderboard?filter=${filter}`, {
+  getLeaderboard: async (filter = "weekly", category = "all") => {
+    const response = await fetch(`${API_URL}/leaderboard?filter=${filter}&category=${encodeURIComponent(category)}`, {
       headers: getHeaders(),
     });
 
@@ -189,6 +230,15 @@ export const api = {
       throw new Error("Failed to fetch leaderboard");
     }
 
+    return await response.json();
+  },
+
+  getPlayedCategories: async () => {
+    const response = await fetch(`${API_URL}/leaderboard/categories`, {
+      headers: getHeaders(),
+    });
+    
+    if (!response.ok) throw new Error("Failed to fetch played categories");
     return await response.json();
   },
 };

@@ -10,13 +10,25 @@ import {
   Play,
   Pause,
   Square,
-  ExternalLink,
   QrCode,
   Users,
   Lock,
   Unlock,
+  GraduationCap,
+  Copy,
+  EyeOff,
+  Wifi,
+  BarChart3,
+  Shield,
+  User,
+  Lightbulb,
+  ChevronUp,
+  Check,
+  X,
+  AlertTriangle
 } from "lucide-react";
 import { QRCodeSVG as QrCodeComponent } from "qrcode.react";
+import toast from "react-hot-toast";
 
 const ClassroomTeacher = () => {
   const { quizId } = useParams();
@@ -26,7 +38,13 @@ const ClassroomTeacher = () => {
 
   const { currentQuiz, questions, submitQuiz, setAnswer } = useQuiz();
 
-  // Local teacher state
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState(null);
+  // { title, message, onConfirm, confirmLabel, confirmClass }
+
+  const showConfirm = (opts) => new Promise((resolve) => {
+    setConfirmModal({ ...opts, onConfirm: resolve });
+  });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
@@ -39,7 +57,7 @@ const ClassroomTeacher = () => {
 
   // New features state
   const [quizStarted, setQuizStarted] = useState(false);
-  const [showQR, setShowQR] = useState(true);
+  const [showQR, setShowQR] = useState(false);
   const [joinedStudents, setJoinedStudents] = useState([]);
   const [studentAnswers, setStudentAnswers] = useState({}); // { roll: { option, timeRemaining } }
   const [cumulativeStudentAnswers, setCumulativeStudentAnswers] = useState({}); // { roll: { questionId: option } }
@@ -64,7 +82,7 @@ const ClassroomTeacher = () => {
     } else if (event.type === "STUDENT_ANSWER") {
       const { roll, option, timeRemaining } = event.payload;
       setStudentAnswers((prev) => ({ ...prev, [roll]: { option, timeRemaining } }));
-      
+
       // Store in cumulative for history review
       if (questions && questions[currentQuestionIndex]) {
         const questionId = questions[currentQuestionIndex].id;
@@ -109,18 +127,18 @@ const ClassroomTeacher = () => {
     // Sanitize questions so students don't get the correct answers prematurely
     const safeQuestions = questions
       ? questions.map((q, idx) => {
-          const isCurrentAndRevealed =
-            idx === currentQuestionIndex && isAnswerRevealed;
-          return {
-            id: q.id,
-            question: q.question,
-            options: q.options,
-            // Only include correct answer and explanation if revealed for the current question
-            ...(isCurrentAndRevealed
-              ? { correctAnswer: q.correctAnswer, explanation: q.explanation }
-              : {}),
-          };
-        })
+        const isCurrentAndRevealed =
+          idx === currentQuestionIndex && isAnswerRevealed;
+        return {
+          id: q.id,
+          question: q.question,
+          options: q.options,
+          // Only include correct answer and explanation if revealed for the current question
+          ...(isCurrentAndRevealed
+            ? { correctAnswer: q.correctAnswer, explanation: q.explanation }
+            : {}),
+        };
+      })
       : [];
 
     broadcastState({
@@ -295,7 +313,14 @@ const ClassroomTeacher = () => {
   };
 
   const handleEndQuiz = async () => {
-    if (!window.confirm("Are you sure you want to end the quiz?")) return;
+    const ok = await showConfirm({
+      title: "End Quiz",
+      message: "Are you sure you want to end the quiz? This will stop the session for all students.",
+      confirmLabel: "Yes, End Quiz",
+      confirmClass: "bg-error hover:bg-red-600 text-white",
+    });
+    setConfirmModal(null);
+    if (!ok) return;
 
     setIsSubmitting(true);
     setQuizCompleted(true);
@@ -327,7 +352,7 @@ const ClassroomTeacher = () => {
         const averageCorrect = totalCorrect / totalStudents;
         averageAccuracy = (averageCorrect / questions.length) * 100;
       }
-      
+
       // Calculate ranks for history
       const sortedStudents = [...joinedStudents].sort((a, b) => {
         const scoreA = studentScores[a.roll] || 0;
@@ -365,7 +390,7 @@ const ClassroomTeacher = () => {
       };
 
       const result = await api.submitQuizResult(resultData);
-      
+
       // Removed redirect to dashboard, stay on admin results page
     } catch {
       // Failed to submit history, but we can still show the leaderboard
@@ -373,9 +398,16 @@ const ClassroomTeacher = () => {
     }
   };
 
-  const handleReleaseResults = () => {
-    if (!window.confirm("Are you sure you want to release the results?\n\nOnce released, students will be notified and their rank-wise result popup will appear.")) return;
-    
+  const handleReleaseResults = async () => {
+    const ok = await showConfirm({
+      title: "Release Results",
+      message: "Are you sure you want to release the results? Once released, students will be notified and their rank-wise result popup will appear.",
+      confirmLabel: "Yes, Release",
+      confirmClass: "bg-primary hover:opacity-90 text-white",
+    });
+    setConfirmModal(null);
+    if (!ok) return;
+
     setResultsReleased(true);
     releaseResults({
       studentScores,
@@ -392,41 +424,63 @@ const ClassroomTeacher = () => {
     return `${m}:${s}`;
   };
 
+  const joinUrl = import.meta.env.DEV ? `${window.location.protocol}//${window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? (typeof __LOCAL_IP__ !== "undefined" ? __LOCAL_IP__ : window.location.hostname) : window.location.hostname}:${window.location.port}/student/join?session=${sessionCode}` : `${window.location.origin}/student/join?session=${sessionCode}`;
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8 flex flex-col">
+    <>
+      <div className="bg-base-200 flex flex-col">
       {/* Header */}
-      <div className="bg-indigo-900 text-white p-4 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <div className="text-center sm:text-left">
-          <h1 className="text-xl md:text-2xl font-bold flex flex-wrap items-center justify-center sm:justify-start gap-2">
-            Teacher Control{" "}
-            <span className="bg-indigo-700 text-xs px-2 py-1 rounded">
-              CLASSROOM MODE
-            </span>
-          </h1>
-          <p className="text-indigo-200 text-sm mt-1 capitalize">
-            {currentQuiz.category} • {questions.length} Questions • Code:{" "}
-            <span className="font-mono text-white font-bold">
-              {sessionCode}
-            </span>
-          </p>
+      <div className="bg-base-100 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 border border-base-300">
+        <div className="flex items-center gap-4 text-center sm:text-left">
+          <div className="bg-primary text-white p-3 rounded-2xl shadow-md hidden sm:block">
+            <GraduationCap size={28} />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-base-content flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              Teacher Control{" "}
+              <span className="bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm">
+                CLASSROOM MODE
+              </span>
+            </h1>
+            <p className="text-base-content/70 text-sm mt-1 font-medium capitalize">
+              {currentQuiz.category} • {questions.length} Questions • Code:{" "}
+              <span className="font-bold text-base-content">
+                {sessionCode}
+              </span>
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          <button
-            onClick={openProjector}
-            className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 px-3 py-2 sm:px-4 rounded-lg transition-colors text-sm font-medium"
-          >
-            <ExternalLink size={18} /> Open Projector
-          </button>
+        <div className="flex flex-wrap justify-center items-center gap-4">
+          {!quizStarted && (
+            <div className="flex items-center gap-2 mr-2 text-sm font-medium text-base-content/70">
+              <span className="w-2 h-2 rounded-full bg-success"></span>
+              Quiz Ready
+            </div>
+          )}
+
 
           {!quizCompleted && (
-            <button
-              onClick={handleEndQuiz}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-3 py-2 sm:px-4 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
-            >
-              <Square size={18} /> End Quiz
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  setQuizStarted(true);
+                  setShowQR(false);
+                  setIsTimerPaused(false);
+                }}
+                className="px-6 py-3 bg-primary hover:opacity-90 text-white rounded-xl font-bold text-sm transition-colors shadow-md flex items-center gap-2"
+              >
+                <Play size={18} fill="currentColor" /> Start Quiz
+              </button>
+              <button
+                onClick={handleEndQuiz}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 bg-error hover:opacity-90 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl transition-colors text-sm font-bold shadow-sm disabled:opacity-50"
+              >
+                <Square size={18} /> End Quiz
+              </button>
+
+            </>
           )}
         </div>
       </div>
@@ -435,13 +489,13 @@ const ClassroomTeacher = () => {
         {/* Left Column - Main Content */}
         <div className="flex-1 flex flex-col gap-6">
           {quizCompleted ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col min-h-[400px]">
+            <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-8 flex flex-col order-1 lg:order-2 min-h-[300px] sm:min-h-[400px]">
               <div className="flex justify-between items-center mb-8 border-b pb-4">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800">Leaderboard Management</h2>
-                  <p className="text-gray-500 mt-1">Submissions: {joinedStudents.length}</p>
+                  <h2 className="text-3xl font-bold text-base-content">Leaderboard Management</h2>
+                  <p className="text-base-content/70 mt-1">Submissions: {joinedStudents.length}</p>
                 </div>
-                <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 ${resultsReleased ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 ${resultsReleased ? 'bg-success/20 text-green-700' : 'bg-amber-100 text-warning'}`}>
                   {resultsReleased ? (
                     <><Unlock size={18} /> Results: Released</>
                   ) : (
@@ -452,7 +506,7 @@ const ClassroomTeacher = () => {
 
               <div className="flex-1 overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+                  <thead className="bg-base-200 text-base-content/70 uppercase text-xs tracking-wider">
                     <tr>
                       <th className="p-4 rounded-tl-lg">Student</th>
                       <th className="p-4">Roll No</th>
@@ -473,21 +527,21 @@ const ClassroomTeacher = () => {
                         // Calculate rank based on sorting
                         const rank = index + 1;
                         return (
-                          <tr key={student.roll} className="hover:bg-gray-50">
+                          <tr key={student.roll} className="hover:bg-base-200">
                             <td className="p-4 flex items-center gap-3">
-                              <span className="font-bold text-gray-400 w-6">#{rank}</span>
-                              <span className="font-bold text-gray-800">{student.name}</span>
+                              <span className="font-bold text-base-content/50 w-6">#{rank}</span>
+                              <span className="font-bold text-base-content">{student.name}</span>
                             </td>
-                            <td className="p-4 text-gray-600 font-mono">{student.roll}</td>
-                            <td className="p-4 text-center font-bold text-indigo-600">{studentScores[student.roll] || 0}</td>
-                            <td className="p-4 text-center text-gray-600">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
+                            <td className="p-4 text-base-content/70 font-mono">{student.roll}</td>
+                            <td className="p-4 text-center font-bold text-primary">{studentScores[student.roll] || 0}</td>
+                            <td className="p-4 text-center text-base-content/70">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
                             <td className="p-4"></td>
                           </tr>
                         );
                       })}
                     {joinedStudents.length === 0 && (
                       <tr>
-                        <td colSpan="5" className="p-8 text-center text-gray-500 italic">No students joined this session.</td>
+                        <td colSpan="5" className="p-8 text-center text-base-content/70 italic">No students joined this session.</td>
                       </tr>
                     )}
                   </tbody>
@@ -498,14 +552,14 @@ const ClassroomTeacher = () => {
                 {!resultsReleased ? (
                   <button
                     onClick={handleReleaseResults}
-                    className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-lg shadow-md transition-colors flex items-center gap-2"
+                    className="px-8 py-3 bg-primary hover:opacity-80 text-white rounded-lg font-bold text-lg shadow-md transition-colors flex items-center gap-2"
                   >
                     <Unlock size={20} /> Release Ranks
                   </button>
                 ) : (
                   <button
                     disabled
-                    className="px-8 py-3 bg-green-100 text-green-700 rounded-lg font-bold text-lg cursor-not-allowed flex items-center gap-2"
+                    className="px-8 py-3 bg-success/20 text-green-700 rounded-lg font-bold text-lg cursor-not-allowed flex items-center gap-2"
                   >
                     <CheckCircle2 size={20} /> Ranks Already Released
                   </button>
@@ -513,84 +567,95 @@ const ClassroomTeacher = () => {
               </div>
             </div>
           ) : !quizStarted ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col items-center justify-center min-h-[400px] text-center">
-              <Users className="w-20 h-20 text-indigo-200 mb-4" />
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Waiting for Students
-              </h2>
-              <p className="text-gray-500 mb-6 text-lg">
-                Project the QR code for students to join the classroom session.
-              </p>
+            <div className="flex flex-col flex-1 gap-6">
 
+              <div className="bg-base-100 flex-1 rounded-2xl shadow-sm border border-base-300 p-8 flex items-center justify-center">
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <button
+                    onClick={() => setShowQR(true)}
+                    className="px-6 py-3 bg-base-200 text-base-content rounded-xl font-bold text-sm flex items-center gap-2 transition-colors border border-base-200 shadow-sm"
+                  >
+                    <QrCode size={18} />
+                    Generate QR Code
+                  </button>
+                </div>
+              </div>
+
+              {/* QR Modal Overlay */}
               {showQR && (
-                <div className="bg-white p-4 rounded-2xl shadow-sm border-2 border-indigo-100 mb-8 inline-block">
-                  <QrCodeComponent
-                    value={import.meta.env.DEV ? `${window.location.protocol}//${window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? (typeof __LOCAL_IP__ !== "undefined" ? __LOCAL_IP__ : window.location.hostname) : window.location.hostname}:${window.location.port}/student/join?session=${sessionCode}` : `${window.location.origin}/student/join?session=${sessionCode}`}
-                    size={200}
-                    bgColor={"#ffffff"}
-                    fgColor={"#312e81"}
-                    level={"H"}
-                    includeMargin={false}
-                  />
+                <div className="fixed inset-0 bg-base-200/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-base-100 p-8 rounded-3xl shadow-2xl relative max-w-sm w-full flex flex-col items-center border border-base-300 animate-in fade-in zoom-in duration-200">
+                    <button
+                      onClick={() => setShowQR(false)}
+                      className="absolute top-4 right-4 text-base-content/50 hover:text-base-content p-2 rounded-full hover:bg-base-200 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-base-200">
+                      <QrCodeComponent
+                        value={joinUrl}
+                        size={240}
+                        bgColor={"#ffffff"}
+                        fgColor={"#1e1b4b"}
+                        level={"H"}
+                        includeMargin={false}
+                      />
+                    </div>
+                    <div className="mt-6 w-full space-y-3">
+                      <p className="text-base-content/70 font-medium bg-base-200 px-6 py-3 rounded-xl border border-base-300 text-center">
+                        Class Code: <span className="font-bold text-base-content tracking-wider text-lg ml-1">{sessionCode}</span>
+                      </p>
+                      <div className="bg-base-200 pl-4 pr-2 py-2 rounded-xl border border-base-300 flex items-center justify-between gap-2 overflow-hidden">
+                        <span className="text-xs truncate font-mono text-base-content/70 select-all" title={joinUrl}>{joinUrl}</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(joinUrl);
+                            toast.success("Link copied to clipboard!");
+                          }}
+                          className="shrink-0 p-2 hover:bg-base-300 rounded-lg text-primary transition-colors flex items-center justify-center gap-1"
+                          title="Copy Link"
+                        >
+                          <Copy size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
-
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowQR(!showQR)}
-                  className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium text-lg flex items-center gap-2 transition-colors"
-                >
-                  <QrCode size={20} />{" "}
-                  {showQR ? "Hide QR Code" : "Show QR Code"}
-                </button>
-                <button
-                  onClick={() => {
-                    setQuizStarted(true);
-                    setShowQR(false);
-                    setIsTimerPaused(false);
-                  }}
-                  className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-lg transition-colors shadow-md"
-                >
-                  Start Quiz
-                </button>
-              </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex justify-between items-start mb-6 border-b pb-4">
-                <h2 className="text-lg font-bold text-gray-700 uppercase tracking-wide">
+            <div className="flex flex-col gap-6 w-full">
+              {/* Question Card */}
+              <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-5">
+                <div className="flex justify-between items-start mb-4 border-b pb-3">
+                <h2 className="text-base font-bold text-base-content uppercase tracking-wide">
                   Question {currentQuestionIndex + 1} / {questions.length}
                 </h2>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowQR(!showQR)}
-                    className={`p-2 border rounded transition-colors ${showQR ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "hover:bg-gray-50"}`}
-                    title="Toggle QR on Projector"
-                  >
-                    <QrCode size={20} />
-                  </button>
+
                   <button
                     onClick={handlePrev}
                     disabled={currentQuestionIndex === 0}
-                    className="p-2 border rounded hover:bg-gray-50 disabled:opacity-50"
+                    className="px-2 py-1 border rounded hover:bg-base-200 disabled:opacity-50"
                   >
-                    <ChevronLeft size={20} />
+                    Prev
                   </button>
                   <button
                     onClick={handleNext}
                     disabled={isLastQuestion}
-                    className="p-2 border rounded hover:bg-gray-50 disabled:opacity-50"
+                    className="px-2 py-1 border rounded hover:bg-base-200 disabled:opacity-50"
                   >
-                    <ChevronRight size={20} />
+                    Next
                   </button>
                 </div>
               </div>
 
-              <h3 className="text-2xl font-medium text-gray-900 mb-8 whitespace-pre-line">
+              <h3 className="text-lg md:text-xl font-medium text-base-content mb-5 whitespace-pre-line">
                 {currentQuestion.question}
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {currentQuestion.options.map((option, idx) => {
                   const label = String.fromCharCode(65 + idx);
                   const isSelected = selectedOption === option;
@@ -600,12 +665,12 @@ const ClassroomTeacher = () => {
                   const isIncorrectSelected =
                     isAnswerRevealed && isSelected && !isCorrect;
 
-                  let borderClass = "border-gray-200 hover:border-indigo-300";
-                  if (isCorrect) borderClass = "border-green-500 bg-green-50";
+                  let borderClass = "border-base-300 hover:border-indigo-300";
+                  if (isCorrect) borderClass = "border-success bg-success/10";
                   else if (isIncorrectSelected)
-                    borderClass = "border-red-500 bg-red-50";
+                    borderClass = "border-error bg-error/10";
                   else if (isSelected)
-                    borderClass = "border-indigo-600 bg-indigo-50";
+                    borderClass = "border-primary bg-primary/10";
 
                   return (
                     <button
@@ -616,27 +681,26 @@ const ClassroomTeacher = () => {
                           setAnswer(currentQuestion.id, option);
                         }
                       }}
-                      className={`text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${borderClass} ${isAnswerRevealed ? "cursor-default" : "cursor-pointer"}`}
+                      className={`text-left p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${borderClass} ${isAnswerRevealed ? "cursor-default" : "cursor-pointer"}`}
                     >
                       <div
-                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold shrink-0
-                        ${
-                          isCorrect
-                            ? "border-green-500 bg-green-500 text-white"
+                        className={`w-7 h-7 rounded-full border-2 flex items-center justify-center font-bold shrink-0 text-sm
+                        ${isCorrect
+                            ? "border-success bg-success text-white"
                             : isIncorrectSelected
-                              ? "border-red-500 bg-red-500 text-white"
+                              ? "border-error bg-error text-white"
                               : isSelected
-                                ? "border-indigo-600 bg-indigo-600 text-white"
-                                : "border-gray-300 text-gray-500"
-                        }`}
+                                ? "border-primary bg-primary text-white"
+                                : "border-base-300 text-base-content/70"
+                          }`}
                       >
                         {label}
                       </div>
-                      <span className="text-lg text-gray-800">{option}</span>
+                      <span className="text-base text-base-content">{option}</span>
 
                       {/* Show how many students picked this */}
                       {classResponses[label] > 0 && (
-                        <span className="ml-auto bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">
+                        <span className="ml-auto bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-bold">
                           {classResponses[label]}
                         </span>
                       )}
@@ -646,11 +710,82 @@ const ClassroomTeacher = () => {
               </div>
 
               {isAnswerRevealed && currentQuestion.explanation && (
-                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
                   <h4 className="font-bold text-blue-800 mb-1">Explanation</h4>
                   <p className="text-blue-900">{currentQuestion.explanation}</p>
                 </div>
               )}
+              </div>
+
+              {/* Controls Below Question */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Timer Card */}
+                <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-5 text-center flex flex-col justify-center">
+                  <h3 className="text-base-content/70 font-medium mb-3 uppercase tracking-wider text-sm">
+                    Timer Control
+                  </h3>
+                  <div className={`text-4xl font-mono font-bold mb-4 ${timeRemaining === 0 ? "text-error" : "text-base-content"}`}>
+                    {formatTime(timeRemaining)}
+                  </div>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      onClick={() => setIsTimerPaused(!isTimerPaused)}
+                      className={`w-full py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors ${isTimerPaused
+                          ? "bg-success/20 text-green-700 hover:bg-green-200"
+                          : "bg-amber-100 text-warning hover:bg-amber-200"
+                        }`}
+                    >
+                      {isTimerPaused ? (
+                        <><Play size={18} /> Start</>
+                      ) : (
+                        <><Pause size={18} /> Pause</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Action Card */}
+                <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-5 flex flex-col gap-3 justify-center">
+                  <button
+                    onClick={() => {
+                      setIsAnswerRevealed(true);
+                      // Calculate scores
+                      const currentQuestion = questions[currentQuestionIndex];
+                      setStudentScores((prevScores) => {
+                        const newScores = { ...prevScores };
+                        Object.entries(studentAnswers).forEach(([roll, answerData]) => {
+                          if (answerData.option === currentQuestion.correctAnswer) {
+                            const bonus = answerData.timeRemaining || 0;
+                            newScores[roll] = (newScores[roll] || 0) + 100 + bonus;
+                          }
+                        });
+                        return newScores;
+                      });
+                      setStudentCorrectCount((prevCount) => {
+                        const newCount = { ...prevCount };
+                        Object.entries(studentAnswers).forEach(([roll, answerData]) => {
+                          if (answerData.option === currentQuestion.correctAnswer) {
+                            newCount[roll] = (newCount[roll] || 0) + 1;
+                          }
+                        });
+                        return newCount;
+                      });
+                    }}
+                    disabled={isAnswerRevealed}
+                    className="w-full py-3.5 bg-primary text-white rounded-lg font-bold text-lg hover:opacity-80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle2 size={20} /> Reveal Answer
+                  </button>
+
+                  <button
+                    onClick={handleNext}
+                    disabled={isLastQuestion}
+                    className="w-full py-3 bg-base-200 text-base-content rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    Next Question
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -658,35 +793,39 @@ const ClassroomTeacher = () => {
         {/* Right Column - Controls & Live Tracking */}
         <div className="w-full lg:w-80 flex flex-col gap-6">
           {/* Live Student Tracker */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col max-h-[300px]">
-            <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <Users size={18} /> Live Classroom
+          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden flex flex-col min-h-[300px] lg:min-h-[480px] max-h-[600px] order-2 lg:order-1">
+            <div className="p-5 border-b border-base-200 flex justify-between items-center bg-white">
+              <h3 className="font-extrabold text-base-content flex items-center gap-3 text-[15px]">
+                <Users size={20} className="text-indigo-600" /> Live Classroom
               </h3>
-              <span className="bg-indigo-100 text-indigo-700 font-bold px-2 py-1 rounded text-sm">
-                {joinedStudents.length} Joined
+              <span className="bg-base-200 text-base-content font-bold px-3 py-1 rounded-full text-xs flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-success"></span> {joinedStudents.length} Joined
               </span>
             </div>
-            <div className="p-4 overflow-y-auto flex-1">
+            <div className="p-6 overflow-y-auto flex-1 flex flex-col bg-white">
               {joinedStudents.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center italic py-4">
-                  No students joined yet
-                </p>
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                  <div className="w-20 h-20 bg-base-200 rounded-full flex items-center justify-center text-base-content/30 mb-4">
+                    <Users size={40} />
+                  </div>
+                  <h4 className="font-bold text-base-content mb-1">No students joined yet</h4>
+                  <p className="text-base-content/60 text-sm">Students will appear here after scanning the QR code.</p>
+                </div>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {joinedStudents.map((student, i) => (
-                    <li key={i} className="text-sm text-gray-700">
-                      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <li key={i} className="text-sm text-base-content">
+                      <div className="flex justify-between items-center bg-base-50 p-4 rounded-xl border border-base-200 shadow-sm transition-all hover:border-indigo-200">
                         <div>
-                          <p className="font-bold text-gray-800">
+                          <p className="font-bold text-base-content">
                             {student.name}
                           </p>
-                          <p className="text-xs text-gray-500 font-mono mt-1">
+                          <p className="text-xs text-base-content/70 font-mono mt-1">
                             Roll: {student.roll}{" "}
                             {student.batch && `| Batch: ${student.batch}`}
                           </p>
                         </div>
-                        <CheckCircle2 size={20} className="text-green-500" />
+                        <CheckCircle2 size={20} className="text-success" />
                       </div>
                     </li>
                   ))}
@@ -694,87 +833,56 @@ const ClassroomTeacher = () => {
               )}
             </div>
           </div>
-
-          {quizStarted && (
-            <>
-              {/* Timer Card */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
-                <h3 className="text-gray-500 font-medium mb-4 uppercase tracking-wider text-sm">
-                  Timer Control
-                </h3>
-                <div
-                  className={`text-5xl font-mono font-bold mb-6 ${timeRemaining === 0 ? "text-red-500" : "text-gray-800"}`}
-                >
-                  {formatTime(timeRemaining)}
-                </div>
-                <div className="flex gap-2 justify-center">
-                  <button
-                    onClick={() => setIsTimerPaused(!isTimerPaused)}
-                    className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors ${
-                      isTimerPaused
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-amber-100 text-amber-700 hover:bg-amber-200"
-                    }`}
-                  >
-                    {isTimerPaused ? (
-                      <>
-                        <Play size={18} /> Start
-                      </>
-                    ) : (
-                      <>
-                        <Pause size={18} /> Pause
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Action Card */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col gap-3">
-                <button
-                  onClick={() => {
-                    setIsAnswerRevealed(true);
-                    // Calculate scores
-                    const currentQuestion = questions[currentQuestionIndex];
-                    setStudentScores((prevScores) => {
-                      const newScores = { ...prevScores };
-                      Object.entries(studentAnswers).forEach(([roll, answerData]) => {
-                        if (answerData.option === currentQuestion.correctAnswer) {
-                          const bonus = answerData.timeRemaining || 0;
-                          newScores[roll] = (newScores[roll] || 0) + 100 + bonus;
-                        }
-                      });
-                      return newScores;
-                    });
-                    setStudentCorrectCount((prevCount) => {
-                      const newCount = { ...prevCount };
-                      Object.entries(studentAnswers).forEach(([roll, answerData]) => {
-                        if (answerData.option === currentQuestion.correctAnswer) {
-                          newCount[roll] = (newCount[roll] || 0) + 1;
-                        }
-                      });
-                      return newCount;
-                    });
-                  }}
-                  disabled={isAnswerRevealed}
-                  className="w-full py-4 bg-indigo-600 text-white rounded-lg font-bold text-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 /> Reveal Answer
-                </button>
-
-                <button
-                  onClick={handleNext}
-                  disabled={isLastQuestion}
-                  className="w-full py-3 bg-gray-100 text-gray-800 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
-                >
-                  Next Question
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>
+
+    {/* Custom Confirm Modal */}
+    {confirmModal && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-base-100 rounded-2xl shadow-2xl max-w-md w-full border border-base-300 animate-in zoom-in-95 duration-200">
+          <div className="p-6">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-warning" />
+                </div>
+                <h3 className="text-lg font-bold text-base-content">{confirmModal.title}</h3>
+              </div>
+              <button
+                onClick={() => { setConfirmModal(null); confirmModal.onConfirm(false); }}
+                className="text-base-content/40 hover:text-base-content p-1 rounded-lg hover:bg-base-200 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Message */}
+            <p className="text-base-content/70 text-sm leading-relaxed mb-6 pl-[52px]">
+              {confirmModal.message}
+            </p>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setConfirmModal(null); confirmModal.onConfirm(false); }}
+                className="px-4 py-2 rounded-lg border border-base-300 text-base-content hover:bg-base-200 transition-colors font-medium text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmModal.onConfirm(true)}
+                className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${confirmModal.confirmClass}`}
+              >
+                {confirmModal.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

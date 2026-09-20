@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
-import { Loader2, Plus, Trash2, Save } from "lucide-react";
-import AlertModal from "../../../components/common/AlertModal";
+import { Loader2, Plus, Trash2, Save, Undo2, Redo2 } from "lucide-react";
+import toast from "react-hot-toast";
+import Dropdown from "../../../components/ui/Dropdown";
 
 const dummyCategories = [
   {
@@ -77,6 +78,10 @@ const QuizSetup = () => {
   const [difficulty, setDifficulty] = useState("all");
   const [questionCount, setQuestionCount] = useState(10);
 
+  // Built-in mode timer
+  const [builtinTimerType, setBuiltinTimerType] = useState("overall");
+  const [builtinTimeLimit, setBuiltinTimeLimit] = useState(10);
+
   const { setupQuiz, setupCustomQuiz } = useQuiz();
   const navigate = useNavigate();
 
@@ -86,6 +91,10 @@ const QuizSetup = () => {
   const initialMode = preloadedQuiz ? "custom" : (searchParams.get("mode") === "custom" ? "custom" : "builtin");
   const [quizMode, setQuizMode] = useState(initialMode); // 'builtin' or 'custom'
   const [customQuizTitle, setCustomQuizTitle] = useState(preloadedQuiz ? preloadedQuiz.title : "");
+  
+  const [timerType, setTimerType] = useState(preloadedQuiz?.timerType || "overall");
+  const [timeLimit, setTimeLimit] = useState(preloadedQuiz?.timeLimit || 10);
+
   const [customQuestions, setCustomQuestions] = useState(() => {
     if (preloadedQuiz && preloadedQuiz.questions) {
       return preloadedQuiz.questions;
@@ -100,24 +109,90 @@ const QuizSetup = () => {
       },
     ];
   });
+  const [savedQuizId, setSavedQuizId] = useState(preloadedQuiz ? preloadedQuiz._id : null);
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Alert Modal State
-  const [alertConfig, setAlertConfig] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    type: "info",
-    onConfirm: null
-  });
 
-  const showAlert = (title, message, type = "info", onConfirm = null) => {
-    setAlertConfig({ isOpen: true, title, message, type, onConfirm });
-  };
+  // Tracking dirty state to prevent redundant saves
+  const [originalStateStr, setOriginalStateStr] = useState(
+    preloadedQuiz ? JSON.stringify({
+      title: preloadedQuiz.title,
+      timerType: preloadedQuiz.timerType,
+      timeLimit: preloadedQuiz.timeLimit,
+      questions: preloadedQuiz.questions.map(q => ({
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation
+      }))
+    }) : null
+  );
+
+  const currentStateStr = JSON.stringify({
+    title: customQuizTitle,
+    timerType,
+    timeLimit,
+    questions: customQuestions.map(q => ({
+      question: q.question,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation
+    }))
+  });
   
-  const closeAlert = () => {
-    setAlertConfig(prev => ({ ...prev, isOpen: false }));
+  const isDirty = originalStateStr === null || currentStateStr !== originalStateStr;
+
+  // Using react-hot-toast instead of AlertModal
+  
+  // Undo/Redo State
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+
+  // Title validation state
+  const titleInputRef = useRef(null);
+  const [titleError, setTitleError] = useState("");
+
+  const updateQuestionsHistory = (newQuestions) => {
+    setUndoStack(prev => [...prev, customQuestions]);
+    setRedoStack([]);
+    setCustomQuestions(newQuestions);
   };
+
+  const handleUndo = () => {
+    if (undoStack.length === 0) return;
+    const prevQuestions = undoStack[undoStack.length - 1];
+    setRedoStack(prev => [...prev, customQuestions]);
+    setCustomQuestions(prevQuestions);
+    setUndoStack(prev => prev.slice(0, -1));
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+    const nextQuestions = redoStack[redoStack.length - 1];
+    setUndoStack(prev => [...prev, customQuestions]);
+    setCustomQuestions(nextQuestions);
+    setRedoStack(prev => prev.slice(0, -1));
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (quizMode !== "custom") return;
+      
+      // Ctrl+Z (Undo)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+      
+      // Ctrl+Y or Ctrl+Shift+Z (Redo)
+      if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && e.shiftKey)) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [quizMode, undoStack, redoStack, customQuestions]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -161,15 +236,29 @@ const QuizSetup = () => {
             q.options.some((opt) => !opt.trim()) ||
             !q.correctAnswer
           ) {
-            showAlert("Incomplete Question", `Please complete all fields for Question ${i + 1}`, "error");
+            toast.error(`Incomplete Question: Please complete all fields for Question ${i + 1}`);
             setIsStarting(false);
             setIsStartingClassroom(false);
             return;
           }
         }
-        await setupCustomQuiz(customQuestions, customQuestions.length * 60); // 60 seconds per question
+        
+        let timeLimitSeconds;
+        if (timerType === "per_question") {
+           timeLimitSeconds = timeLimit;
+        } else {
+           timeLimitSeconds = timeLimit * 60;
+        }
+
+        await setupCustomQuiz(customQuestions, timeLimitSeconds, timerType);
       } else {
-        await setupQuiz(selectedCategory, difficulty, questionCount);
+        let builtinTimeLimitSeconds;
+        if (builtinTimerType === "per_question") {
+          builtinTimeLimitSeconds = builtinTimeLimit;
+        } else {
+          builtinTimeLimitSeconds = builtinTimeLimit * 60;
+        }
+        await setupQuiz(selectedCategory, difficulty, questionCount, builtinTimeLimitSeconds, builtinTimerType);
       }
 
       const categoryPath = quizMode === "custom" ? "custom" : selectedCategory;
@@ -191,11 +280,12 @@ const QuizSetup = () => {
 
   const handleSaveCustomQuiz = async () => {
     if (!customQuizTitle.trim()) {
-      showAlert("Missing Title", "Please provide a Quiz Title before saving.", "error");
+      toast.error("Missing Title: Please provide a Quiz Title before saving.");
       return;
     }
 
-    // Validate custom questions
+    // Validate custom questions & detect duplicates
+    const questionTexts = new Set();
     for (let i = 0; i < customQuestions.length; i++) {
       const q = customQuestions[i];
       if (
@@ -203,196 +293,323 @@ const QuizSetup = () => {
         q.options.some((opt) => !opt.trim()) ||
         !q.correctAnswer
       ) {
-        showAlert("Incomplete Question", `Please complete all fields for Question ${i + 1}`, "error");
+        toast.error(`Incomplete Question: Please complete all fields for Question ${i + 1}`);
         return;
       }
+      
+      const qTextNormalized = q.question.trim().toLowerCase();
+      if (questionTexts.has(qTextNormalized)) {
+        toast.error(`Duplicate Question: Question ${i + 1} is identical to an earlier question.`);
+        return;
+      }
+      questionTexts.add(qTextNormalized);
     }
 
     setIsSaving(true);
     try {
-      await api.saveCustomQuiz({
+      const response = await api.saveCustomQuiz({
+        id: savedQuizId,
         title: customQuizTitle,
-        questions: customQuestions
+        questions: customQuestions,
+        timerType: timerType,
+        timeLimit: timeLimit,
       });
-      showAlert("Success", "Custom Quiz Saved Successfully!", "info");
+      if (response && response._id) {
+        setSavedQuizId(response._id);
+        setOriginalStateStr(currentStateStr);
+      }
+      toast.success("Custom Quiz Saved Successfully!");
     } catch (error) {
       console.error("Failed to save custom quiz:", error);
-      showAlert("Save Failed", `Failed to save custom quiz: ${error.message}`, "error");
+      const errMsg = error.message || "";
+      if (errMsg.includes("already exists") || errMsg.includes("unique title")) {
+        setTitleError(errMsg);
+        if (titleInputRef.current) {
+          titleInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          titleInputRef.current.focus();
+        }
+      } else {
+        toast.error(`Failed to save: ${errMsg || "Unknown error"}`);
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
   const addCustomQuestion = () => {
-    setCustomQuestions((prev) => [
-      ...prev,
+    const newQuestions = [
+      ...customQuestions,
       {
-        id: `custom_${Date.now()}_${prev.length}`,
+        id: `custom_${Date.now()}_${customQuestions.length}`,
         question: "",
         options: ["", "", "", ""],
         correctAnswer: "",
         explanation: "",
       },
-    ]);
+    ];
+    updateQuestionsHistory(newQuestions);
   };
 
   const removeCustomQuestion = (index) => {
     if (customQuestions.length > 1) {
-      setCustomQuestions((prev) => prev.filter((_, i) => i !== index));
+      const newQuestions = customQuestions.filter((_, i) => i !== index);
+      updateQuestionsHistory(newQuestions);
     }
   };
 
   const updateCustomQuestion = (index, field, value, optionIndex = null) => {
-    setCustomQuestions((prev) => {
-      const newQuestions = [...prev];
+    const newQuestions = customQuestions.map((q, i) => {
+      if (i !== index) return q;
+      const newQ = { ...q };
       if (optionIndex !== null) {
-        newQuestions[index].options[optionIndex] = value;
-        // If the correct answer matches the old option text, we don't auto-update it, but they should re-select.
+        newQ.options = [...q.options];
+        const oldOptionValue = newQ.options[optionIndex];
+        newQ.options[optionIndex] = value;
+        // Keep correct answer in sync if they edit the text of the selected correct option
+        if (newQ.correctAnswer === oldOptionValue && oldOptionValue !== "") {
+          newQ.correctAnswer = value;
+        }
       } else {
-        newQuestions[index][field] = value;
+        newQ[field] = value;
       }
-      return newQuestions;
+      return newQ;
     });
+    updateQuestionsHistory(newQuestions);
   };
 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 text-primary-600 animate-spin" />
+        <Loader2 className="h-8 w-8 text-primary animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-text-base">
-          Configure Your Quiz
-        </h1>
-        <p className="mt-2 text-text-muted">
-          Customize your practice session or create your own custom quiz.
-        </p>
-      </div>
+    <div className="mx-auto space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-base-content">
+            Configure Your Quiz
+          </h1>
+          <p className="text-base-content/70">
+            Customize your practice session or create your own custom quiz.
+          </p>
+        </div>
 
-      <div className="inline-flex bg-bg-surface p-1 rounded-lg border border-border-subtle">
-        <button
-          className={`px-6 py-2.5 rounded-md font-medium text-sm transition-colors ${
-            quizMode === "builtin"
-              ? "bg-primary-600 text-white shadow-sm"
-              : "text-text-muted hover:text-text-base hover:bg-bg-base"
-          }`}
-          onClick={() => setQuizMode("builtin")}
-        >
-          Built-in Categories
-        </button>
-        <button
-          className={`px-6 py-2.5 rounded-md font-medium text-sm transition-colors ${
-            quizMode === "custom"
-              ? "bg-primary-600 text-white shadow-sm"
-              : "text-text-muted hover:text-text-base hover:bg-bg-base"
-          }`}
-          onClick={() => setQuizMode("custom")}
-        >
-          Custom Quiz Builder
-        </button>
+        <div className="inline-flex bg-base-100 p-1 rounded-lg border border-base-300">
+          <button
+            className={`px-6 py-2.5 rounded-md font-medium text-sm transition-colors ${quizMode === "builtin"
+              ? "bg-primary text-white shadow-sm"
+              : "text-base-content/70 hover:text-base-content hover:bg-base-200"
+              }`}
+            onClick={() => setQuizMode("builtin")}
+          >
+            Built-in Categories
+          </button>
+          <button
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${quizMode === "custom"
+              ? "bg-primary text-white shadow-sm"
+              : "text-base-content/70 hover:text-base-content hover:bg-base-200"
+              }`}
+            onClick={() => setQuizMode("custom")}
+          >
+            Custom Quiz Builder
+          </button>
+        </div>
       </div>
 
       <form className="space-y-8">
         {quizMode === "builtin" ? (
-          <div className="space-y-8 bg-bg-surface p-6 md:p-8 rounded-xl border border-border-subtle shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-base-100 p-6 md:p-8 rounded-xl border border-base-300 shadow-sm">
             <div>
               <label
                 htmlFor="category"
-                className="block text-sm font-semibold text-text-base mb-2"
+                className="block text-sm font-semibold text-base-content mb-2"
               >
                 Select Topic
               </label>
-              <select
-                id="category"
-                className="mt-1 block w-full rounded-md border-border-subtle bg-bg-base text-text-base py-3 pl-4 pr-10 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm border transition-colors"
+              <Dropdown
+                options={categories.map((c) => ({ label: c.name, value: c.id }))}
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedCategory(val)}
+                placeholder="Select a category"
+                className="mt-1 w-full"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-text-base mb-3">
+              <label className="block text-sm font-semibold text-base-content mb-2">
                 Difficulty Level
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {["all", "easy", "medium", "hard"].map((level) => (
-                  <div
-                    key={level}
-                    className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${
-                      difficulty === level
-                        ? "border-primary-600 bg-primary-600 text-white shadow-md transform scale-[1.02]"
-                        : "border-border-subtle bg-bg-base text-text-base hover:border-primary-400 hover:bg-bg-surface"
-                    }`}
-                    onClick={() => setDifficulty(level)}
-                  >
-                    <span className="capitalize font-medium">{level}</span>
-                  </div>
-                ))}
-              </div>
+              <Dropdown
+                options={[
+                  { label: "All", value: "all" },
+                  { label: "Easy", value: "easy" },
+                  { label: "Medium", value: "medium" },
+                  { label: "Hard", value: "hard" }
+                ]}
+                value={difficulty}
+                onChange={(val) => setDifficulty(val)}
+                placeholder="Select difficulty"
+                className="mt-1 w-full"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-text-base mb-3">
+              <label className="block text-sm font-semibold text-base-content mb-2">
                 Number of Questions
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[5, 10, 15, 20].map((num) => (
-                  <div
-                    key={num}
-                    className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${
-                      questionCount === num
-                        ? "border-primary-600 bg-primary-600 text-white shadow-md transform scale-[1.02]"
-                        : "border-border-subtle bg-bg-base text-text-base hover:border-primary-400 hover:bg-bg-surface"
-                    }`}
-                    onClick={() => setQuestionCount(num)}
-                  >
-                    <span className="font-medium">{num}</span>
-                  </div>
-                ))}
-              </div>
+              <Dropdown
+                options={[
+                  { label: "5", value: 5 },
+                  { label: "10", value: 10 },
+                  { label: "15", value: 15 },
+                  { label: "20", value: 20 },
+                  { label: "25", value: 25 },
+                  { label: "30", value: 30 }
+                ]}
+                value={questionCount}
+                onChange={(val) => setQuestionCount(val)}
+                placeholder="Select number of questions"
+                className="mt-1 w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-base-content mb-2">
+                Timer Type
+              </label>
+              <Dropdown
+                options={[
+                  { label: "Overall Quiz Timer", value: "overall" },
+                  { label: "Per Question Timer", value: "per_question" },
+                ]}
+                value={builtinTimerType}
+                onChange={(val) => {
+                  setBuiltinTimerType(val);
+                  if (val === "per_question" && builtinTimeLimit === 10) setBuiltinTimeLimit(60);
+                  if (val === "overall" && builtinTimeLimit === 60) setBuiltinTimeLimit(10);
+                }}
+                placeholder="Select timer type"
+                className="mt-1 w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-base-content mb-2">
+                Time Limit ({builtinTimerType === "overall" ? "Minutes" : "Seconds"})
+              </label>
+              <input
+                type="number"
+                min="1"
+                className="mt-1 w-full bg-base-100 border border-base-300 px-4 py-2.5 rounded-lg font-medium text-sm text-base-content hover:border-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors shadow-sm"
+                value={builtinTimeLimit}
+                onChange={(e) => setBuiltinTimeLimit(parseInt(e.target.value) || 1)}
+              />
             </div>
           </div>
         ) : (
           <div className="space-y-8">
-            <div className="bg-bg-surface p-6 rounded-xl border border-border-subtle shadow-sm mb-6">
-              <label className="block text-sm font-semibold text-text-base mb-2">
+            <div className="bg-base-100 p-6 rounded-xl border border-base-300 shadow-sm mb-6 relative">
+              <div className="fixed bottom-24 right-8 z-[60] flex flex-col space-y-3 bg-base-100 p-2.5 rounded-2xl shadow-2xl border border-base-300 transition-all">
+                <button
+                  type="button"
+                  onClick={handleUndo}
+                  disabled={undoStack.length === 0}
+                  className="p-3 bg-base-200 text-base-content hover:bg-base-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-sm"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 size={24} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRedo}
+                  disabled={redoStack.length === 0}
+                  className="p-3 bg-base-200 text-base-content hover:bg-base-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-sm"
+                  title="Redo (Ctrl+Y)"
+                >
+                  <Redo2 size={24} />
+                </button>
+              </div>
+
+              <label className="block text-sm font-semibold text-base-content mb-2 pr-24">
                 Quiz Title
               </label>
               <input
+                ref={titleInputRef}
                 type="text"
-                className="w-full rounded-md border-border-subtle bg-bg-base text-text-base py-3 px-4 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 border transition-colors"
+                className={`w-full rounded-md bg-base-200 text-base-content py-3 px-4 focus:outline-none focus:ring-1 border transition-colors ${
+                  titleError 
+                    ? "border-error focus:border-error focus:ring-error" 
+                    : "border-base-300 focus:border-primary focus:ring-primary"
+                }`}
                 value={customQuizTitle}
-                onChange={(e) => setCustomQuizTitle(e.target.value)}
+                onChange={(e) => {
+                  setCustomQuizTitle(e.target.value);
+                  if (titleError) setTitleError("");
+                }}
                 placeholder="e.g. Weekly Assessment: React Hooks"
                 required
               />
+              {titleError && (
+                <p className="text-error text-sm mt-1 mb-5 flex items-center gap-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-error inline-block"></span>
+                  {titleError}
+                </p>
+              )}
+              {!titleError && <div className="mb-6"></div>}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-base-content mb-2">
+                    Timer Type
+                  </label>
+                  <Dropdown
+                    options={[
+                      { label: "Overall Quiz Timer", value: "overall" },
+                      { label: "Per Question Timer", value: "per_question" },
+                    ]}
+                    value={timerType}
+                    onChange={(val) => {
+                      setTimerType(val);
+                      if (val === "per_question" && timeLimit === 10) setTimeLimit(60); // Default 60s
+                      if (val === "overall" && timeLimit === 60) setTimeLimit(10); // Default 10m
+                    }}
+                    placeholder="Select timer type"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-base-content mb-2">
+                    Time Limit ({timerType === "overall" ? "Minutes" : "Seconds"})
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full rounded-md border-base-300 bg-base-200 text-base-content py-2.5 px-4 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary border transition-colors"
+                    value={timeLimit}
+                    onChange={(e) => setTimeLimit(parseInt(e.target.value) || 1)}
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
             {customQuestions.map((q, qIndex) => (
               <div
                 key={q.id}
-                className="bg-bg-base p-4 rounded-lg border border-border-subtle"
+                className="bg-base-200 p-4 rounded-lg border border-base-300"
               >
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-bold text-text-base">
+                  <h4 className="font-bold text-base-content">
                     Question {qIndex + 1}
                   </h4>
                   {customQuestions.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeCustomQuestion(qIndex)}
-                      className="text-red-500 hover:text-red-700 p-1"
+                      className="text-error hover:text-red-700 p-1"
                       title="Remove Question"
                     >
                       <Trash2 size={18} />
@@ -402,12 +619,12 @@ const QuizSetup = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">
+                    <label className="block text-xs font-medium text-base-content/70 mb-1">
                       Question Text
                     </label>
                     <input
                       type="text"
-                      className="w-full rounded-md border-border-subtle bg-bg-surface text-text-base py-2 px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 border"
+                      className="w-full rounded-md border-base-300 bg-base-100 text-base-content py-2 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary border"
                       value={q.question}
                       onChange={(e) =>
                         updateCustomQuestion(qIndex, "question", e.target.value)
@@ -417,66 +634,58 @@ const QuizSetup = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {q.options.map((opt, optIndex) => (
-                      <div key={optIndex}>
-                        <label className="block text-xs font-medium text-text-muted mb-1">
-                          Option {String.fromCharCode(65 + optIndex)}
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full rounded-md border-border-subtle bg-bg-surface text-text-base py-2 px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 border"
-                          value={opt}
-                          onChange={(e) =>
-                            updateCustomQuestion(
-                              qIndex,
-                              "options",
-                              e.target.value,
-                              optIndex,
-                            )
-                          }
-                          placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
-                          required
-                        />
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {q.options.map((opt, optIndex) => {
+                      const isCorrect = q.correctAnswer === opt && opt.trim() !== "";
+                      return (
+                        <div key={optIndex}>
+                          <div className="flex justify-between items-center mb-1">
+                            <label className="block text-xs font-medium text-base-content/70">
+                              Option {String.fromCharCode(65 + optIndex)}
+                            </label>
+                            <label className="cursor-pointer flex items-center space-x-1.5 text-xs text-base-content/70 hover:text-success transition-colors">
+                              <input
+                                type="radio"
+                                name={`correct-${q.id}`}
+                                checked={isCorrect}
+                                onChange={() => updateCustomQuestion(qIndex, "correctAnswer", opt)}
+                                disabled={!opt.trim()}
+                                className="radio radio-success radio-xs"
+                              />
+                              <span className={isCorrect ? "font-bold text-success" : ""}>Mark Correct</span>
+                            </label>
+                          </div>
+                          <input
+                            type="text"
+                            className={`w-full rounded-md bg-base-100 text-base-content py-2 px-3 text-sm focus:outline-none border transition-all ${
+                              isCorrect
+                                ? 'border-success ring-1 ring-success bg-success/5'
+                                : 'border-base-300 focus:border-primary focus:ring-1 focus:ring-primary'
+                            }`}
+                            value={opt}
+                            onChange={(e) =>
+                              updateCustomQuestion(
+                                qIndex,
+                                "options",
+                                e.target.value,
+                                optIndex,
+                              )
+                            }
+                            placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
+                            required
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">
-                      Correct Answer
-                    </label>
-                    <select
-                      className="w-full rounded-md border-border-subtle bg-bg-surface text-text-base py-2 px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 border"
-                      value={q.correctAnswer}
-                      onChange={(e) =>
-                        updateCustomQuestion(
-                          qIndex,
-                          "correctAnswer",
-                          e.target.value,
-                        )
-                      }
-                      required
-                    >
-                      <option value="">Select the correct option...</option>
-                      {q.options.map(
-                        (opt, optIndex) =>
-                          opt.trim() && (
-                            <option key={optIndex} value={opt}>
-                              Option {String.fromCharCode(65 + optIndex)}: {opt}
-                            </option>
-                          ),
-                      )}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">
+                    <label className="block text-xs font-medium text-base-content/70 mb-1">
                       Explanation (Optional)
                     </label>
                     <input
                       type="text"
-                      className="w-full rounded-md border-border-subtle bg-bg-surface text-text-base py-2 px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 border"
+                      className="w-full rounded-md border-base-300 bg-base-100 text-base-content py-2 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary border"
                       value={q.explanation}
                       onChange={(e) =>
                         updateCustomQuestion(
@@ -495,23 +704,23 @@ const QuizSetup = () => {
             <button
               type="button"
               onClick={addCustomQuestion}
-              className="w-full py-3 border-2 border-dashed border-border-subtle rounded-lg text-text-muted font-medium hover:border-primary-500 hover:text-primary-600 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 border-2 border-dashed border-base-300 rounded-lg text-base-content/70 font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
             >
               <Plus size={20} /> Add Another Question
             </button>
           </div>
         )}
 
-        <div className="pt-6 flex flex-col gap-3 border-t border-border-subtle mt-6">
+        <div className="pt-6 flex flex-row justify-end gap-3 mt-6">
           <button
             type="button"
             onClick={(e) => handleStart(e, "normal")}
             disabled={isStarting || isStartingClassroom}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-75 transition-colors"
+            className="flex items-center justify-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 transition-colors"
           >
             {isStarting ? (
               <>
-                <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" />
+                <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
                 Starting...
               </>
             ) : (
@@ -523,11 +732,11 @@ const QuizSetup = () => {
             type="button"
             onClick={(e) => handleStart(e, "classroom")}
             disabled={isStarting || isStartingClassroom}
-            className="w-full flex justify-center py-3 px-4 border-2 border-primary-600 rounded-md shadow-sm text-lg font-medium text-primary-600 bg-bg-surface hover:bg-bg-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-75 transition-colors"
+            className="flex items-center justify-center px-6 py-2.5 border-2 border-primary rounded-lg shadow-sm text-sm font-bold text-primary bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 transition-colors"
           >
             {isStartingClassroom ? (
               <>
-                <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6 text-primary-600" />
+                <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" />
                 Preparing Classroom...
               </>
             ) : (
@@ -538,33 +747,25 @@ const QuizSetup = () => {
             <button
               type="button"
               onClick={handleSaveCustomQuiz}
-              disabled={isSaving || isStarting || isStartingClassroom}
-              className="w-full flex justify-center py-3 px-4 border border-border-subtle rounded-md shadow-sm text-lg font-medium text-text-base bg-bg-surface hover:bg-bg-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-75 transition-colors"
+              disabled={isSaving || isStarting || isStartingClassroom || !isDirty}
+              className={`flex items-center justify-center px-6 py-2.5 border border-base-300 rounded-lg shadow-sm text-sm font-bold text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${!isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6" />
+                  <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-base-content" />
                   Saving...
                 </>
+              ) : !isDirty ? (
+                "Saved"
               ) : (
-                <>
-                  <Save className="mr-2 w-6 h-6" />
-                  Save Quiz
-                </>
+                "Save Quiz"
               )}
             </button>
           )}
         </div>
       </form>
 
-      <AlertModal
-        isOpen={alertConfig.isOpen}
-        onClose={closeAlert}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        type={alertConfig.type}
-        onConfirm={alertConfig.onConfirm}
-      />
+
     </div>
   );
 };

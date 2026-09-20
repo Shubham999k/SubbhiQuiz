@@ -108,12 +108,12 @@ const Categories = () => {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-bg-base rounded w-1/4"></div>
+        <div className="h-8 bg-base-200 rounded w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="bg-bg-surface p-6 rounded-xl border border-border-subtle h-48"
+              className="bg-base-100 p-6 rounded-xl border border-base-300 h-48"
             ></div>
           ))}
         </div>
@@ -124,10 +124,8 @@ const Categories = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-base">Quiz Categories</h1>
-        <p className="mt-1 text-sm text-text-muted">
-          Select a topic to start practicing.
-        </p>
+        <h1 className="text-xl font-bold text-base-content">Quiz Categories</h1>
+        <p className="text-sm text-base-content/70">Select a category to start practicing.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -137,27 +135,27 @@ const Categories = () => {
           return (
             <div
               key={category.id}
-              className="bg-bg-surface rounded-xl shadow-sm border border-border-subtle p-6 flex flex-col hover:shadow-md transition-shadow group"
+              className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex flex-col hover:shadow-md transition-shadow group"
             >
               <div className="flex items-center mb-4">
-                <div className="p-3 rounded-lg bg-primary-50 text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-bold text-text-base">
+                  <h3 className="text-lg font-bold text-base-content">
                     {category.name}
                   </h3>
-                  <p className="text-xs font-medium text-primary-600">
+                  <p className="text-xs font-medium text-primary">
                     {category.quizCount} Quizzes
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-text-muted flex-grow mb-6">
+              <p className="text-sm text-base-content/70 flex-grow mb-6">
                 {category.description}
               </p>
               <Link
                 to={`/quiz/setup?category=${category.id}`}
-                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
               >
                 Start Practice
               </Link>

@@ -1,4 +1,5 @@
 import QuizResult from "../models/QuizResult.js";
+import User from "../models/User.js";
 
 // @desc    Get leaderboard
 // @route   GET /api/leaderboard
@@ -6,50 +7,72 @@ import QuizResult from "../models/QuizResult.js";
 export const getLeaderboard = async (req, res) => {
   try {
     const filter = req.query.filter || "weekly"; // daily, weekly, monthly, all
+    const category = req.query.category || "all";
 
-    let dateFilter = {};
-    if (filter !== "all") {
+    let matchFilter = {};
+    
+    if (filter !== "all" && filter !== "all_time") {
       const date = new Date();
       if (filter === "daily") date.setDate(date.getDate() - 1);
       else if (filter === "weekly") date.setDate(date.getDate() - 7);
       else if (filter === "monthly") date.setMonth(date.getMonth() - 1);
-      dateFilter = { date: { $gte: date } };
+      matchFilter.date = { $gte: date };
+    }
+
+    if (category !== "all") {
+      matchFilter.category = category;
     }
 
     const leaderboard = await QuizResult.aggregate([
-      { $match: dateFilter },
+      { $match: matchFilter },
+      { $unwind: "$participants" },
       {
         $group: {
-          _id: "$userId",
+          _id: { $toLower: { $trim: { input: "$participants.name" } } },
+          originalName: { $first: { $trim: { input: "$participants.name" } } },
           quizzes: { $sum: 1 },
-          average: { $avg: "$accuracy" },
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "user",
-        },
-      },
-      {
-        $unwind: "$user",
+          average: {
+            $avg: {
+              $multiply: [
+                {
+                  $divide: [
+                    "$participants.correctCount",
+                    { $max: ["$totalQuestions", 1] }
+                  ]
+                },
+                100
+              ]
+            }
+          }
+        }
       },
       {
         $project: {
           _id: 1,
-          name: "$user.name",
+          name: "$originalName",
+          avatar: { $literal: null },
           quizzes: 1,
           average: { $round: ["$average", 1] },
-        },
+        }
       },
       {
-        $sort: { average: -1, quizzes: -1 },
+        $sort: { average: -1, quizzes: -1, name: 1 },
       },
     ]);
 
     res.json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get categories that have been played (exist in results)
+// @route   GET /api/leaderboard/categories
+// @access  Private
+export const getPlayedCategories = async (req, res) => {
+  try {
+    const categories = await QuizResult.distinct("category");
+    res.json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

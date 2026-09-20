@@ -32,6 +32,7 @@ export const registerUser = async (req, res) => {
           id: user._id,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
         },
         token: generateToken(user._id),
       });
@@ -58,6 +59,7 @@ export const loginUser = async (req, res) => {
           id: user._id,
           name: user.name,
           email: user.email,
+          avatar: user.avatar,
         },
         token: generateToken(user._id),
       });
@@ -77,6 +79,36 @@ export const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id).select("-password");
     if (user) {
       res.json(user);
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+export const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      if (req.body.avatar !== undefined) {
+        user.avatar = req.body.avatar;
+      }
+
+      const updatedUser = await user.save();
+
+      res.json({
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+        token: generateToken(updatedUser._id),
+      });
     } else {
       res.status(404).json({ message: "User not found" });
     }

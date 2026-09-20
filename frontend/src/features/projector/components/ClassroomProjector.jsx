@@ -55,7 +55,7 @@ const ClassroomProjector = () => {
         <h1 className="text-4xl font-bold mb-4">
           Waiting for teacher to start session...
         </h1>
-        <p className="text-gray-400">The presentation will begin shortly.</p>
+        <p className="text-base-content/50">The presentation will begin shortly.</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ const ClassroomProjector = () => {
         <h1 className="text-5xl font-bold mb-4">
           Quiz Completed!
         </h1>
-        <p className="text-indigo-200 text-2xl animate-pulse">Waiting for teacher to release results...</p>
+        <p className="text-primary-content text-2xl animate-pulse">Waiting for teacher to release results...</p>
       </div>
     );
   }
@@ -84,11 +84,11 @@ const ClassroomProjector = () => {
 
     return (
       <div className="min-h-screen bg-indigo-900 text-white flex flex-col items-center py-12 px-4 overflow-y-auto">
-        <div className="w-full max-w-5xl bg-white text-gray-900 rounded-3xl shadow-2xl p-10 flex flex-col items-center">
+        <div className="w-full max-w-5xl bg-base-100 text-base-content rounded-3xl shadow-2xl p-10 flex flex-col items-center">
           <h1 className="text-5xl font-bold mb-4 text-indigo-900 flex items-center gap-4 uppercase tracking-widest">
-            <Trophy className="w-14 h-14 text-yellow-500" /> Leaderboard
+            <Trophy className="w-14 h-14 text-warning" /> Leaderboard
           </h1>
-          <p className="text-xl text-gray-500 mb-12 font-medium capitalize">
+          <p className="text-xl text-base-content/70 mb-12 font-medium capitalize">
             {currentQuiz.category} Fundamentals
           </p>
 
@@ -98,11 +98,11 @@ const ClassroomProjector = () => {
             {topThree[1] && (
               <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 <div className="text-center mb-4">
-                  <div className="text-2xl font-bold text-gray-700 truncate w-32">{topThree[1].name}</div>
-                  <div className="text-lg font-mono text-indigo-600 font-bold">{topThree[1].score} pts</div>
+                  <div className="text-2xl font-bold text-base-content truncate w-32">{topThree[1].name}</div>
+                  <div className="text-lg font-mono text-primary font-bold">{topThree[1].score} pts</div>
                 </div>
-                <div className="w-full bg-gray-300 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '140px' }}>
-                  <span className="text-4xl font-bold text-gray-500">2</span>
+                <div className="w-full bg-base-300 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '140px' }}>
+                  <span className="text-4xl font-bold text-base-content/70">2</span>
                 </div>
               </div>
             )}
@@ -111,11 +111,11 @@ const ClassroomProjector = () => {
             {topThree[0] && (
               <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                 <div className="text-center mb-4">
-                  <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-2 drop-shadow-md" />
-                  <div className="text-3xl font-bold text-gray-800 truncate w-40">{topThree[0].name}</div>
-                  <div className="text-xl font-mono text-indigo-600 font-bold">{topThree[0].score} pts</div>
+                  <Trophy className="w-12 h-12 text-warning mx-auto mb-2 drop-shadow-md" />
+                  <div className="text-3xl font-bold text-base-content truncate w-40">{topThree[0].name}</div>
+                  <div className="text-xl font-mono text-primary font-bold">{topThree[0].score} pts</div>
                 </div>
-                <div className="w-full bg-yellow-400 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '180px' }}>
+                <div className="w-full bg-warning rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '180px' }}>
                   <span className="text-5xl font-bold text-yellow-700">1</span>
                 </div>
               </div>
@@ -125,8 +125,8 @@ const ClassroomProjector = () => {
             {topThree[2] && (
               <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
                 <div className="text-center mb-4">
-                  <div className="text-2xl font-bold text-gray-600 truncate w-32">{topThree[2].name}</div>
-                  <div className="text-lg font-mono text-indigo-600 font-bold">{topThree[2].score} pts</div>
+                  <div className="text-2xl font-bold text-base-content/70 truncate w-32">{topThree[2].name}</div>
+                  <div className="text-lg font-mono text-primary font-bold">{topThree[2].score} pts</div>
                 </div>
                 <div className="w-full bg-orange-300 rounded-t-lg shadow-inner flex justify-center pt-4" style={{ height: '110px' }}>
                   <span className="text-4xl font-bold text-orange-700">3</span>
@@ -137,16 +137,16 @@ const ClassroomProjector = () => {
 
           {/* Rest of Leaderboard */}
           {others.length > 0 && (
-            <div className="w-full max-w-2xl bg-gray-50 rounded-2xl p-6 border border-gray-200">
-              <h3 className="text-xl font-bold text-gray-700 mb-4 uppercase tracking-wider text-center border-b pb-4">Runner Ups</h3>
+            <div className="w-full max-w-2xl bg-base-200 rounded-2xl p-6 border border-base-300">
+              <h3 className="text-xl font-bold text-base-content mb-4 uppercase tracking-wider text-center border-b pb-4">Runner Ups</h3>
               <div className="space-y-3">
                 {others.map((student, idx) => (
-                  <div key={student.roll} className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                  <div key={student.roll} className="flex justify-between items-center bg-base-100 p-4 rounded-xl shadow-sm border border-base-300 transition-all hover:shadow-md">
                     <div className="flex items-center gap-4">
-                      <span className="w-8 text-center font-bold text-gray-400 text-lg">#{idx + 4}</span>
-                      <span className="font-bold text-lg text-gray-800">{student.name}</span>
+                      <span className="w-8 text-center font-bold text-base-content/50 text-lg">#{idx + 4}</span>
+                      <span className="font-bold text-lg text-base-content">{student.name}</span>
                     </div>
-                    <span className="font-mono font-bold text-indigo-600">{student.score} pts</span>
+                    <span className="font-mono font-bold text-primary">{student.score} pts</span>
                   </div>
                 ))}
               </div>
@@ -155,7 +155,7 @@ const ClassroomProjector = () => {
           
           <button
             onClick={() => window.close()}
-            className="mt-12 px-8 py-4 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 rounded-full font-bold text-lg transition-colors"
+            className="mt-12 px-8 py-4 bg-primary/20 text-primary hover:bg-indigo-200 rounded-full font-bold text-lg transition-colors"
           >
             Close Projector
           </button>
@@ -178,7 +178,7 @@ const ClassroomProjector = () => {
   // Show Lobby / QR View if quiz hasn't started or teacher toggles Show QR
   if (!quizStarted || showQR) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-hidden">
+      <div className="min-h-screen bg-base-200 flex flex-col font-sans overflow-hidden">
         <div className="bg-indigo-900 text-white p-6 shadow-md flex justify-between items-center shrink-0">
           <div>
             <h1 className="text-4xl font-bold capitalize tracking-wide">
@@ -187,22 +187,22 @@ const ClassroomProjector = () => {
           </div>
           <button
             onClick={toggleFullscreen}
-            className="p-3 bg-indigo-800 hover:bg-indigo-700 rounded-lg text-white transition-colors"
+            className="p-3 bg-primary hover:opacity-80 rounded-lg text-white transition-colors"
           >
             <Maximize size={28} />
           </button>
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center p-8">
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-12 max-w-4xl w-full text-center flex flex-col items-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-2 uppercase tracking-widest">
+          <div className="bg-base-100 rounded-3xl shadow-xl border border-base-300 p-12 max-w-4xl w-full text-center flex flex-col items-center">
+            <h2 className="text-4xl font-bold text-base-content mb-2 uppercase tracking-widest">
               Join the Quiz
             </h2>
-            <p className="text-gray-500 text-xl mb-12">
+            <p className="text-base-content/70 text-xl mb-12">
               Scan QR with your phone camera to join the classroom
             </p>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border-4 border-indigo-100 mb-10">
+            <div className="bg-base-100 p-6 rounded-2xl shadow-sm border-4 border-primary/10 mb-10">
               <QRCodeSVG
                 value={joinUrl}
                 size={350}
@@ -214,8 +214,8 @@ const ClassroomProjector = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-8 items-center justify-center w-full mt-4">
-              <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl px-10 py-6 text-center">
-                <p className="text-indigo-600 font-bold uppercase tracking-wide text-sm mb-1">
+              <div className="bg-primary/10 border-2 border-primary/20 rounded-2xl px-10 py-6 text-center">
+                <p className="text-primary font-bold uppercase tracking-wide text-sm mb-1">
                   Quiz Code
                 </p>
                 <p className="text-5xl font-mono font-bold text-indigo-900 tracking-wider">
@@ -223,8 +223,8 @@ const ClassroomProjector = () => {
                 </p>
               </div>
 
-              <div className="bg-green-50 border-2 border-green-200 rounded-2xl px-10 py-6 text-center">
-                <p className="text-green-600 font-bold uppercase tracking-wide text-sm mb-1">
+              <div className="bg-success/10 border-2 border-green-200 rounded-2xl px-10 py-6 text-center">
+                <p className="text-success font-bold uppercase tracking-wide text-sm mb-1">
                   Students Joined
                 </p>
                 <div className="text-5xl font-bold text-green-700 flex items-center justify-center gap-3">
@@ -234,7 +234,7 @@ const ClassroomProjector = () => {
             </div>
 
             {!quizStarted && (
-              <div className="mt-12 text-2xl text-gray-400 font-medium animate-pulse">
+              <div className="mt-12 text-2xl text-base-content/50 font-medium animate-pulse">
                 Waiting for teacher to start...
               </div>
             )}
@@ -265,30 +265,30 @@ const ClassroomProjector = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-hidden">
+    <div className="min-h-screen bg-base-200 flex flex-col font-sans overflow-hidden">
       {/* Header */}
       <div className="bg-indigo-900 text-white p-4 sm:p-6 shadow-md flex flex-col sm:flex-row justify-between items-center shrink-0 gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold capitalize tracking-wide">
             {currentQuiz.category} Fundamentals
           </h1>
-          <div className="text-indigo-200 text-lg sm:text-xl mt-1 sm:mt-2 font-medium">
+          <div className="text-primary-content text-lg sm:text-xl mt-1 sm:mt-2 font-medium">
             Question {currentQuestionIndex + 1} / {questions.length}
           </div>
         </div>
 
         <div className="flex items-center gap-4 sm:gap-6">
-          <div className="bg-indigo-800 px-4 py-2 rounded-xl text-center">
-            <div className="text-indigo-200 text-xs font-bold uppercase">
+          <div className="bg-primary px-4 py-2 rounded-xl text-center">
+            <div className="text-primary-content text-xs font-bold uppercase">
               Joined
             </div>
             <div className="text-white font-bold text-xl">{joinedCount}</div>
           </div>
 
           <div
-            className={`flex items-center px-4 py-2 sm:px-6 sm:py-3 rounded-xl font-mono text-2xl sm:text-4xl font-bold bg-white text-indigo-900 shadow-inner
-            ${timeRemaining <= 10 && timeRemaining > 0 ? "text-red-600 animate-pulse" : ""}
-            ${timeRemaining === 0 ? "text-red-600" : ""}
+            className={`flex items-center px-4 py-2 sm:px-6 sm:py-3 rounded-xl font-mono text-2xl sm:text-4xl font-bold bg-base-100 text-indigo-900 shadow-inner
+            ${timeRemaining <= 10 && timeRemaining > 0 ? "text-error animate-pulse" : ""}
+            ${timeRemaining === 0 ? "text-error" : ""}
           `}
           >
             <Clock className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" />
@@ -297,7 +297,7 @@ const ClassroomProjector = () => {
 
           <button
             onClick={toggleFullscreen}
-            className="p-2 sm:p-3 bg-indigo-800 hover:bg-indigo-700 rounded-lg text-white transition-colors"
+            className="p-2 sm:p-3 bg-primary hover:opacity-80 rounded-lg text-white transition-colors"
             title="Toggle Fullscreen"
           >
             <Maximize className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -315,7 +315,7 @@ const ClassroomProjector = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 p-4 sm:p-8 lg:p-12 flex flex-col justify-center overflow-y-auto">
-        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-medium text-gray-900 mb-6 sm:mb-12 leading-tight whitespace-pre-line text-center">
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-medium text-base-content mb-6 sm:mb-12 leading-tight whitespace-pre-line text-center">
           {currentQuestion.question}
         </h2>
 
@@ -328,29 +328,29 @@ const ClassroomProjector = () => {
             const isIncorrectSelected =
               isAnswerRevealed && isSelected && !isCorrect;
 
-            let cardClass = "bg-white border-gray-300 shadow-sm";
-            let labelClass = "bg-gray-100 text-gray-500 border-gray-300";
-            let textClass = "text-gray-800";
+            let cardClass = "bg-base-100 border-base-300 shadow-sm";
+            let labelClass = "bg-base-200 text-base-content/70 border-base-300";
+            let textClass = "text-base-content";
 
             if (isCorrect) {
               cardClass =
-                "bg-green-500 border-green-600 shadow-lg scale-[1.02] transform transition-all";
-              labelClass = "bg-green-600 text-white border-green-400";
+                "bg-success border-green-600 shadow-lg scale-[1.02] transform transition-all";
+              labelClass = "bg-success text-white border-green-400";
               textClass = "text-white font-bold";
             } else if (isIncorrectSelected) {
               cardClass =
-                "bg-red-500 border-red-600 shadow-lg scale-[1.02] transform transition-all";
-              labelClass = "bg-red-600 text-white border-red-400";
+                "bg-error border-red-600 shadow-lg scale-[1.02] transform transition-all";
+              labelClass = "bg-error text-white border-red-400";
               textClass = "text-white font-bold";
             } else if (isSelected) {
               cardClass =
-                "bg-indigo-600 border-indigo-700 shadow-lg scale-[1.02] transform transition-all";
-              labelClass = "bg-indigo-700 text-white border-indigo-500";
+                "bg-primary border-indigo-700 shadow-lg scale-[1.02] transform transition-all";
+              labelClass = "bg-indigo-700 text-white border-primary";
               textClass = "text-white font-bold";
             } else if (isAnswerRevealed) {
               // Dim other options if answer is revealed
-              cardClass = "bg-gray-100 border-gray-200 opacity-60";
-              textClass = "text-gray-500";
+              cardClass = "bg-base-200 border-base-300 opacity-60";
+              textClass = "text-base-content/70";
             }
 
             return (
@@ -396,8 +396,8 @@ const ClassroomProjector = () => {
 
             {/* Class Response Stats */}
             {classResponses && totalResponses > 0 && (
-              <div className="flex-1 bg-white p-6 lg:p-8 rounded-xl shadow-md border border-gray-200">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
+              <div className="flex-1 bg-base-100 p-6 lg:p-8 rounded-xl shadow-md border border-base-300">
+                <h3 className="text-xl font-bold text-base-content mb-4">
                   Class Response
                 </h3>
                 <div className="flex flex-col gap-3">
@@ -412,16 +412,16 @@ const ClassroomProjector = () => {
 
                     return (
                       <div key={idx} className="flex items-center gap-4">
-                        <div className="w-8 font-bold text-xl text-gray-600">
+                        <div className="w-8 font-bold text-xl text-base-content/70">
                           {label}
                         </div>
-                        <div className="flex-1 bg-gray-100 h-8 rounded-full overflow-hidden relative">
+                        <div className="flex-1 bg-base-200 h-8 rounded-full overflow-hidden relative">
                           <div
-                            className={`h-full ${isCorrect ? "bg-green-500" : "bg-gray-400"} transition-all duration-1000`}
+                            className={`h-full ${isCorrect ? "bg-success" : "bg-gray-400"} transition-all duration-1000`}
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
-                        <div className="w-16 text-right font-bold text-lg text-gray-700">
+                        <div className="w-16 text-right font-bold text-lg text-base-content">
                           {count}
                         </div>
                       </div>

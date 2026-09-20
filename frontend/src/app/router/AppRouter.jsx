@@ -24,12 +24,12 @@ import StudentJoin from "../../features/students/components/StudentJoin";
 import StudentActive from "../../features/students/components/StudentActive";
 
 const NotFound = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col">
-    <h1 className="text-6xl font-bold text-indigo-600 mb-4">404</h1>
-    <p className="text-xl text-gray-600 mb-8">Page Not Found</p>
+  <div className="min-h-screen flex items-center justify-center bg-base-200 flex-col">
+    <h1 className="text-6xl font-bold text-primary mb-4">404</h1>
+    <p className="text-xl text-base-content/70 mb-8">Page Not Found</p>
     <a
       href="/"
-      className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700"
+      className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:opacity-80"
     >
       Go Home
     </a>
@@ -62,6 +62,7 @@ export default function AppRouter() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/classroom/teacher/:quizId" element={<ClassroomTeacher />} />
         </Route>
 
         {/* Protected Quiz Routes (No Sidebar, Full Screen) */}
@@ -69,7 +70,7 @@ export default function AppRouter() {
           path="/quiz/:quizId"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-gray-50">
+              <div className="min-h-screen bg-base-200">
                 <QuizActive />
               </div>
             </ProtectedRoute>
@@ -79,7 +80,7 @@ export default function AppRouter() {
           path="/quiz/:quizId/result"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-gray-50">
+              <div className="min-h-screen bg-base-200">
                 <QuizResult />
               </div>
             </ProtectedRoute>
@@ -89,7 +90,7 @@ export default function AppRouter() {
           path="/quiz/:quizId/review"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-gray-50">
+              <div className="min-h-screen bg-base-200">
                 <QuizReview />
               </div>
             </ProtectedRoute>
@@ -97,14 +98,6 @@ export default function AppRouter() {
         />
 
         {/* Classroom Routes */}
-        <Route
-          path="/classroom/teacher/:quizId"
-          element={
-            <ProtectedRoute>
-              <ClassroomTeacher />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/classroom/projector/:quizId"
           element={

@@ -1,5 +1,5 @@
 import express from "express";
-import { getCategories, getQuestions, saveCustomQuiz, getCustomQuizzes } from "../controllers/quizController.js";
+import { getCategories, getQuestions, saveCustomQuiz, getCustomQuizzes, deleteCustomQuiz } from "../controllers/quizController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -10,5 +10,8 @@ router.get("/questions", getQuestions);
 router.route("/custom")
   .post(protect, saveCustomQuiz)
   .get(protect, getCustomQuizzes);
+
+router.route("/custom/:id")
+  .delete(protect, deleteCustomQuiz);
 
 export default router;

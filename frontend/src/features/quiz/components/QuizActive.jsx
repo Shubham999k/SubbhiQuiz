@@ -44,7 +44,17 @@ const QuizActive = () => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(timerId);
-          setTimeout(handleAutoSubmit, 0);
+          if (currentQuiz.timerType === 'per_question') {
+            setTimeout(() => {
+              if (currentQuestionIndex === questions.length - 1) {
+                handleAutoSubmit();
+              } else {
+                nextQuestion();
+              }
+            }, 0);
+          } else {
+            setTimeout(handleAutoSubmit, 0);
+          }
           return 0;
         }
         return prev - 1;
@@ -52,7 +62,14 @@ const QuizActive = () => {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [isQuizActive, handleAutoSubmit, setTimeRemaining]);
+  }, [isQuizActive, handleAutoSubmit, setTimeRemaining, currentQuiz?.timerType, currentQuestionIndex, questions.length, nextQuestion]);
+
+  // Reset timer on question change for per_question mode
+  useEffect(() => {
+    if (currentQuiz?.timerType === 'per_question') {
+      setTimeRemaining(currentQuiz.timeLimit);
+    }
+  }, [currentQuestionIndex, currentQuiz?.timerType, currentQuiz?.timeLimit, setTimeRemaining]);
 
   // Protect against direct access without quiz setup
   useEffect(() => {
@@ -92,12 +109,12 @@ const QuizActive = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-base-100 p-4 rounded-xl shadow-sm border border-base-300 mb-6 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 capitalize">
+          <h2 className="text-xl font-bold text-base-content capitalize">
             {currentQuiz.category} Quiz
           </h2>
-          <div className="flex items-center text-sm text-gray-500 mt-1">
+          <div className="flex items-center text-sm text-base-content/70 mt-1">
             <span className="font-medium">
               Question {currentQuestionIndex + 1} of {questions.length}
             </span>
@@ -111,10 +128,10 @@ const QuizActive = () => {
         <div
           className={`flex items-center px-4 py-2 rounded-lg font-mono text-lg font-bold ${
             isDangerTime
-              ? "bg-red-100 text-red-700 animate-pulse"
+              ? "bg-error/20 text-red-700 animate-pulse"
               : isWarningTime
-                ? "bg-amber-100 text-amber-700"
-                : "bg-indigo-50 text-indigo-700"
+                ? "bg-amber-100 text-warning"
+                : "bg-primary/10 text-primary"
           }`}
         >
           <Clock className="w-5 h-5 mr-2" />
@@ -125,7 +142,7 @@ const QuizActive = () => {
       {/* Progress Bar */}
       <div className="w-full bg-gray-200 rounded-full h-2 mb-8">
         <div
-          className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+          className="bg-primary h-2 rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
         ></div>
       </div>
@@ -133,8 +150,8 @@ const QuizActive = () => {
       <div className="flex flex-col lg:flex-row gap-8 flex-grow">
         {/* Main Question Area */}
         <div className="lg:w-2/3 flex flex-col">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex-grow">
-            <h3 className="text-xl font-medium text-gray-900 mb-6 whitespace-pre-line">
+          <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex-grow">
+            <h3 className="text-xl font-medium text-base-content mb-6 whitespace-pre-line">
               {currentQuestion.question}
             </h3>
 
@@ -147,16 +164,16 @@ const QuizActive = () => {
                     onClick={() => setAnswer(currentQuestion.id, option)}
                     className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                       isSelected
-                        ? "border-indigo-600 bg-indigo-50"
-                        : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
+                        ? "border-primary bg-primary/10"
+                        : "border-base-300 hover:border-indigo-300 hover:bg-base-200"
                     }`}
                   >
                     <div className="flex items-center">
                       <div
                         className={`flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center mr-3 ${
                           isSelected
-                            ? "border-indigo-600 bg-indigo-600 text-white"
-                            : "border-gray-300"
+                            ? "border-primary bg-primary text-white"
+                            : "border-base-300"
                         }`}
                       >
                         {isSelected ? (
@@ -168,7 +185,7 @@ const QuizActive = () => {
                         )}
                       </div>
                       <span
-                        className={`text-base ${isSelected ? "text-indigo-900 font-medium" : "text-gray-700"}`}
+                        className={`text-base ${isSelected ? "text-indigo-900 font-medium" : "text-base-content"}`}
                       >
                         {option}
                       </span>
@@ -184,7 +201,7 @@ const QuizActive = () => {
             <button
               onClick={prevQuestion}
               disabled={currentQuestionIndex === 0}
-              className="flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center px-4 py-2 border border-base-300 rounded-md shadow-sm text-sm font-medium text-base-content bg-base-100 hover:bg-base-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-5 h-5 mr-1" /> Previous
             </button>
@@ -192,14 +209,14 @@ const QuizActive = () => {
             {isLastQuestion ? (
               <button
                 onClick={() => setShowConfirmModal(true)}
-                className="flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                className="flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-success hover:bg-green-700"
               >
                 Submit Quiz
               </button>
             ) : (
               <button
                 onClick={nextQuestion}
-                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:opacity-80"
               >
                 Next <ChevronRight className="w-5 h-5 ml-1" />
               </button>
@@ -209,8 +226,8 @@ const QuizActive = () => {
 
         {/* Question Navigator Sidebar */}
         <div className="lg:w-1/3">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
-            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+          <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 sticky top-6">
+            <h4 className="text-sm font-bold text-base-content uppercase tracking-wider mb-4">
               Question Navigator
             </h4>
 
@@ -224,13 +241,13 @@ const QuizActive = () => {
 
                 if (isCurrent) {
                   btnClass +=
-                    "border-indigo-600 bg-indigo-100 text-indigo-700 ring-2 ring-indigo-300 ring-offset-1";
+                    "border-primary bg-primary/20 text-primary ring-2 ring-indigo-300 ring-offset-1";
                 } else if (isAnswered) {
                   btnClass +=
-                    "border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700";
+                    "border-primary bg-primary text-white hover:opacity-80";
                 } else {
                   btnClass +=
-                    "border-gray-200 bg-white text-gray-600 hover:bg-gray-50";
+                    "border-base-300 bg-base-100 text-base-content/70 hover:bg-base-200";
                 }
 
                 return (
@@ -245,16 +262,16 @@ const QuizActive = () => {
               })}
             </div>
 
-            <div className="border-t border-gray-200 pt-4 mb-6">
+            <div className="border-t border-base-300 pt-4 mb-6">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-500">Answered:</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-base-content/70">Answered:</span>
+                <span className="font-medium text-base-content">
                   {answeredCount}/{questions.length}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Unanswered:</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-base-content/70">Unanswered:</span>
+                <span className="font-medium text-base-content">
                   {questions.length - answeredCount}
                 </span>
               </div>
@@ -262,7 +279,7 @@ const QuizActive = () => {
 
             <button
               onClick={() => setShowConfirmModal(true)}
-              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               Submit Quiz
             </button>
@@ -290,29 +307,29 @@ const QuizActive = () => {
             >
               &#8203;
             </span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div className="inline-block align-bottom bg-base-100 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div className="sm:flex sm:items-start">
                 <div
-                  className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${answeredCount < questions.length ? "bg-amber-100" : "bg-indigo-100"}`}
+                  className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${answeredCount < questions.length ? "bg-amber-100" : "bg-primary/20"}`}
                 >
                   {answeredCount < questions.length ? (
-                    <AlertTriangle className="h-6 w-6 text-amber-600" />
+                    <AlertTriangle className="h-6 w-6 text-warning" />
                   ) : (
-                    <AlertCircle className="h-6 w-6 text-indigo-600" />
+                    <AlertCircle className="h-6 w-6 text-primary" />
                   )}
                 </div>
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                   <h3
-                    className="text-lg leading-6 font-medium text-gray-900"
+                    className="text-lg leading-6 font-medium text-base-content"
                     id="modal-title"
                   >
                     Submit Quiz?
                   </h3>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-base-content/70">
                       Are you sure you want to submit your quiz?
                       {answeredCount < questions.length && (
-                        <span className="block mt-1 font-medium text-amber-600">
+                        <span className="block mt-1 font-medium text-warning">
                           You still have {questions.length - answeredCount}{" "}
                           unanswered questions.
                         </span>
@@ -326,7 +343,7 @@ const QuizActive = () => {
                   type="button"
                   onClick={handleManualSubmit}
                   disabled={isSubmitting}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-75"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-75"
                 >
                   {isSubmitting ? "Submitting..." : "Yes, Submit"}
                 </button>
@@ -334,7 +351,7 @@ const QuizActive = () => {
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
                   disabled={isSubmitting}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-base-300 shadow-sm px-4 py-2 bg-base-100 text-base font-medium text-base-content hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:w-auto sm:text-sm"
                 >
                   Cancel
                 </button>

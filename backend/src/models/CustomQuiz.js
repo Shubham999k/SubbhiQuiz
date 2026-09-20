@@ -20,6 +20,15 @@ const customQuizSchema = new mongoose.Schema(
         explanation: String,
       }
     ],
+    timeLimit: {
+      type: Number,
+      default: 10,
+    },
+    timerType: {
+      type: String,
+      enum: ["overall", "per_question"],
+      default: "overall",
+    },
     date: {
       type: Date,
       default: Date.now,

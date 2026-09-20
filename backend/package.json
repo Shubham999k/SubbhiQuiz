@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "lint": "oxlint",
     "build": "echo \"No build required for Node.js ESM backend\"",
     "outdated": "npm outdated",

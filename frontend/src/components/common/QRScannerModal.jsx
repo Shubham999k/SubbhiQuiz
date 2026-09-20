@@ -39,25 +39,25 @@ const QRScannerModal = ({ isOpen, onClose, onScan }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-bg-surface rounded-2xl shadow-xl border border-border-subtle w-full max-w-md overflow-hidden animate-slide-up relative">
-        <div className="p-4 border-b border-border-subtle flex justify-between items-center bg-bg-base">
-          <h3 className="text-lg font-bold text-text-base">
+      <div className="bg-base-100 rounded-2xl shadow-xl border border-base-300 w-full max-w-md overflow-hidden animate-slide-up relative">
+        <div className="p-4 border-b border-base-300 flex justify-between items-center bg-base-200">
+          <h3 className="text-lg font-bold text-base-content">
             Scan Classroom QR
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-text-muted hover:text-text-base hover:bg-bg-hover transition-colors"
+            className="p-1 rounded-md text-base-content/70 hover:text-base-content hover:hover:bg-base-200 transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         <div className="p-6">
-          <p className="text-text-muted text-sm text-center mb-4">
+          <p className="text-base-content/70 text-sm text-center mb-4">
             Point your camera at the QR code projected on the classroom screen.
           </p>
 
-          <div className="rounded-xl overflow-hidden border-2 border-primary-500/30">
+          <div className="rounded-xl overflow-hidden border-2 border-primary/30">
             <div id="qr-reader" className="w-full"></div>
           </div>
         </div>

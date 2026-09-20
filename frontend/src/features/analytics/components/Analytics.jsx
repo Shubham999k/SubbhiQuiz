@@ -18,7 +18,7 @@ const Analytics = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+        <Loader2 className="h-8 w-8 text-primary animate-spin" />
       </div>
     );
   }
@@ -57,60 +57,58 @@ const Analytics = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Performance Analytics
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-xl font-bold text-base-content">Performance Analytics</h1>
+        <p className="text-sm text-base-content/70">
           Detailed insights into your learning progress.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
-          <div className="bg-blue-100 p-3 rounded-lg mr-4 text-blue-600">
+        <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300 flex items-center">
+          <div className="bg-primary/20 p-3 rounded-lg mr-4 text-primary">
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Total Quizzes</p>
-            <h3 className="text-2xl font-bold text-gray-900">{totalQuizzes}</h3>
+            <p className="text-sm font-medium text-base-content/70">Total Quizzes</p>
+            <h3 className="text-2xl font-bold text-base-content">{totalQuizzes}</h3>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
-          <div className="bg-indigo-100 p-3 rounded-lg mr-4 text-indigo-600">
+        <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300 flex items-center">
+          <div className="bg-primary/20 p-3 rounded-lg mr-4 text-primary">
             <Target className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/70">
               Questions Attempted
             </p>
-            <h3 className="text-2xl font-bold text-gray-900">
+            <h3 className="text-2xl font-bold text-base-content">
               {totalQuestions}
             </h3>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
-          <div className="bg-green-100 p-3 rounded-lg mr-4 text-green-600">
+        <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300 flex items-center">
+          <div className="bg-success/20 p-3 rounded-lg mr-4 text-success">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-base-content/70">
               Overall Accuracy
             </p>
-            <h3 className="text-2xl font-bold text-gray-900">
+            <h3 className="text-2xl font-bold text-base-content">
               {Math.round(overallAccuracy)}%
             </h3>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
-          <div className="bg-amber-100 p-3 rounded-lg mr-4 text-amber-600">
+        <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300 flex items-center">
+          <div className="bg-amber-100 p-3 rounded-lg mr-4 text-warning">
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Total Time</p>
-            <h3 className="text-xl font-bold text-gray-900">
+            <p className="text-sm font-medium text-base-content/70">Total Time</p>
+            <h3 className="text-xl font-bold text-base-content">
               {Math.floor(history.reduce((a, c) => a + c.timeTaken, 0) / 60)}{" "}
               mins
             </h3>
@@ -120,13 +118,13 @@ const Analytics = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Performance */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">
+        <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300">
+          <h2 className="text-lg font-bold text-base-content mb-6">
             Performance by Category
           </h2>
 
           {categoryAverages.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">
+            <p className="text-base-content/70 text-center py-4">
               Not enough data to display.
             </p>
           ) : (
@@ -134,10 +132,10 @@ const Analytics = () => {
               {categoryAverages.map((cat) => (
                 <div key={cat.name}>
                   <div className="flex justify-between items-end mb-1">
-                    <span className="text-sm font-medium text-gray-700 capitalize">
+                    <span className="text-sm font-medium text-base-content capitalize">
                       {cat.name}
                     </span>
-                    <span className="text-sm font-bold text-gray-900">
+                    <span className="text-sm font-bold text-base-content">
                       {Math.round(cat.average)}%
                     </span>
                   </div>
@@ -145,10 +143,10 @@ const Analytics = () => {
                     <div
                       className={`h-2 rounded-full ${
                         cat.average >= 80
-                          ? "bg-green-500"
+                          ? "bg-success"
                           : cat.average >= 60
-                            ? "bg-amber-500"
-                            : "bg-red-500"
+                            ? "bg-warning"
+                            : "bg-error"
                       }`}
                       style={{ width: `${Math.round(cat.average)}%` }}
                     ></div>
@@ -160,13 +158,13 @@ const Analytics = () => {
         </div>
 
         {/* Recent Trend */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">
+        <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300">
+          <h2 className="text-lg font-bold text-base-content mb-6">
             Recent Score Trend
           </h2>
 
           {history.length < 2 ? (
-            <p className="text-gray-500 text-center py-4">
+            <p className="text-base-content/70 text-center py-4">
               Take more quizzes to see your trend.
             </p>
           ) : (
@@ -191,11 +189,11 @@ const Analytics = () => {
                           attempt.accuracy >= 70
                             ? "bg-indigo-500"
                             : "bg-indigo-300"
-                        } group-hover:bg-indigo-600`}
+                        } group-hover:bg-primary`}
                         style={{ height: `${Math.max(attempt.accuracy, 5)}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs text-gray-400 mt-2 truncate w-full text-center">
+                    <span className="text-xs text-base-content/50 mt-2 truncate w-full text-center">
                       Q{idx + 1}
                     </span>
                   </div>

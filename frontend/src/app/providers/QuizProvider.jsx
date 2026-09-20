@@ -11,7 +11,7 @@ export const QuizProvider = ({ children }) => {
   const [isQuizActive, setIsQuizActive] = useState(false);
   const [quizResult, setQuizResult] = useState(null);
 
-  const setupQuiz = async (category, difficulty, count) => {
+  const setupQuiz = async (category, difficulty, count, timeLimitSeconds = null, timerType = "overall") => {
     const fetchedQuestions = await api.getQuestions(
       category,
       difficulty,
@@ -19,23 +19,24 @@ export const QuizProvider = ({ children }) => {
     );
     setQuestions(fetchedQuestions);
 
-    const timeLimitSeconds = fetchedQuestions.length * 60; // 1 minute per question
+    const resolvedTimeLimit = timeLimitSeconds !== null ? timeLimitSeconds : fetchedQuestions.length * 60;
 
     setCurrentQuiz({
       category,
       difficulty,
       count: fetchedQuestions.length,
-      timeLimit: timeLimitSeconds,
+      timeLimit: resolvedTimeLimit,
+      timerType: timerType,
     });
 
     setAnswers({});
     setCurrentQuestionIndex(0);
-    setTimeRemaining(timeLimitSeconds);
+    setTimeRemaining(resolvedTimeLimit);
     setQuizResult(null);
     setIsQuizActive(true);
   };
 
-  const setupCustomQuiz = (customQuestions, timeLimitSeconds) => {
+  const setupCustomQuiz = (customQuestions, timeLimitSeconds, timerType = "overall") => {
     setQuestions(customQuestions);
 
     setCurrentQuiz({
@@ -43,6 +44,7 @@ export const QuizProvider = ({ children }) => {
       difficulty: "mixed",
       count: customQuestions.length,
       timeLimit: timeLimitSeconds,
+      timerType: timerType,
       isCustom: true,
     });
 

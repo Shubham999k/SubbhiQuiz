@@ -44,12 +44,12 @@ const QuizResult = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden text-center">
+      <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden text-center">
         {/* Header Banner */}
         <div
-          className={`py-10 px-6 ${isPassing ? "bg-green-600" : "bg-amber-500"}`}
+          className={`py-10 px-6 ${isPassing ? "bg-success" : "bg-warning"}`}
         >
-          <div className="inline-flex items-center justify-center p-4 bg-white bg-opacity-20 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center p-4 bg-base-100 bg-opacity-20 rounded-full mb-4">
             <Trophy className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -62,18 +62,18 @@ const QuizResult = () => {
 
         {/* Score Ring */}
         <div className="relative -mt-16 mb-8 flex justify-center">
-          <div className="w-32 h-32 bg-white rounded-full p-2 shadow-lg">
+          <div className="w-32 h-32 bg-base-100 rounded-full p-2 shadow-lg">
             <div
               className={`w-full h-full rounded-full flex flex-col items-center justify-center border-4 ${
                 isPassing
-                  ? "border-green-500 text-green-600"
-                  : "border-amber-500 text-amber-600"
+                  ? "border-success text-success"
+                  : "border-amber-500 text-warning"
               }`}
             >
               <span className="text-3xl font-bold">
                 {Math.round(accuracy)}%
               </span>
-              <span className="text-xs font-medium text-gray-500 mt-1 uppercase tracking-wider">
+              <span className="text-xs font-medium text-base-content/70 mt-1 uppercase tracking-wider">
                 Score
               </span>
             </div>
@@ -83,40 +83,40 @@ const QuizResult = () => {
         {/* Stats Grid */}
         <div className="px-8 pb-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex items-center justify-center text-gray-500 mb-2">
-                <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+            <div className="bg-base-200 rounded-xl p-4 border border-base-300">
+              <div className="flex items-center justify-center text-base-content/70 mb-2">
+                <CheckCircle className="w-5 h-5 mr-2 text-success" />
                 <span className="text-sm font-medium">Correct</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-base-content">
                 {correctAnswers}
               </p>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex items-center justify-center text-gray-500 mb-2">
-                <XCircle className="w-5 h-5 mr-2 text-red-500" />
+            <div className="bg-base-200 rounded-xl p-4 border border-base-300">
+              <div className="flex items-center justify-center text-base-content/70 mb-2">
+                <XCircle className="w-5 h-5 mr-2 text-error" />
                 <span className="text-sm font-medium">Incorrect</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-base-content">
                 {incorrectAnswers}
               </p>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex items-center justify-center text-gray-500 mb-2">
-                <AlertCircle className="w-5 h-5 mr-2 text-amber-500" />
+            <div className="bg-base-200 rounded-xl p-4 border border-base-300">
+              <div className="flex items-center justify-center text-base-content/70 mb-2">
+                <AlertCircle className="w-5 h-5 mr-2 text-warning" />
                 <span className="text-sm font-medium">Unanswered</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{unanswered}</p>
+              <p className="text-2xl font-bold text-base-content">{unanswered}</p>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex items-center justify-center text-gray-500 mb-2">
+            <div className="bg-base-200 rounded-xl p-4 border border-base-300">
+              <div className="flex items-center justify-center text-base-content/70 mb-2">
                 <Clock className="w-5 h-5 mr-2 text-blue-500" />
                 <span className="text-sm font-medium">Time Taken</span>
               </div>
-              <p className="text-xl font-bold text-gray-900 mt-1">
+              <p className="text-xl font-bold text-base-content mt-1">
                 {formatTime(timeTaken)}
               </p>
             </div>
@@ -125,9 +125,9 @@ const QuizResult = () => {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link
               to={`/quiz/${quizId}/review`}
-              className="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-base-300 shadow-sm text-base font-medium rounded-md text-base-content bg-base-100 hover:bg-base-200 transition-colors"
             >
-              <CheckCircle className="w-5 h-5 mr-2 text-indigo-600" />
+              <CheckCircle className="w-5 h-5 mr-2 text-primary" />
               Review Answers
             </Link>
 
@@ -136,7 +136,7 @@ const QuizResult = () => {
                 resetQuiz();
                 navigate(`/quiz/setup?category=${category}`);
               }}
-              className="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-primary hover:opacity-80 transition-colors"
             >
               <RotateCcw className="w-5 h-5 mr-2" />
               Retry Quiz
@@ -145,7 +145,7 @@ const QuizResult = () => {
             <Link
               to="/dashboard"
               onClick={resetQuiz}
-              className="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-primary bg-primary/20 hover:bg-indigo-200 transition-colors"
             >
               Back to Dashboard
             </Link>

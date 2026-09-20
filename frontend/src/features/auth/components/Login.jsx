@@ -32,19 +32,16 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-130px)] flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+    <div className="flex flex-col justify-center sm:px-6 py-2 lg:px-8 bg-base-200">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <BookOpen className="h-12 w-12 text-indigo-600" />
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-base-content">
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-base-content/70">
           Or{" "}
           <Link
             to="/register"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
+            className="font-medium text-primary hover:text-indigo-500"
           >
             create a new account
           </Link>
@@ -52,10 +49,10 @@ const Login = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
+        <div className="bg-base-100 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-base-300">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+              <div className="bg-error/10 border border-red-200 text-error px-4 py-3 rounded-md text-sm">
                 {error}
               </div>
             )}
@@ -63,7 +60,7 @@ const Login = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-sm font-medium leading-6 text-base-content"
               >
                 Email address
               </label>
@@ -76,7 +73,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 px-3 text-base-content ring-1 ring-inset ring-gray-300 placeholder:text-base-content/50 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                 />
               </div>
             </div>
@@ -84,7 +81,7 @@ const Login = () => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-sm font-medium leading-6 text-base-content"
               >
                 Password
               </label>
@@ -97,12 +94,12 @@ const Login = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 px-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 px-3 pr-10 text-base-content ring-1 ring-inset ring-gray-300 placeholder:text-base-content/50 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-base-content/50 hover:text-base-content/70"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -119,11 +116,11 @@ const Login = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  className="h-4 w-4 rounded border-base-300 text-primary focus:ring-primary"
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
+                  className="ml-2 block text-sm text-base-content"
                 >
                   Remember me
                 </label>
@@ -132,7 +129,7 @@ const Login = () => {
               <div className="text-sm">
                 <a
                   href="#"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-primary hover:text-indigo-500"
                 >
                   Forgot your password?
                 </a>
@@ -143,7 +140,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
+                className="flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -157,15 +154,15 @@ const Login = () => {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-base-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">
+                <span className="bg-base-100 px-2 text-base-content/70">
                   Demo Account
                 </span>
               </div>
             </div>
-            <div className="mt-4 text-center text-sm text-gray-600">
+            <div className="mt-4 text-center text-sm text-base-content/70">
               Email: <b>student@example.com</b> <br />
               Password: <b>student123</b>
             </div>
