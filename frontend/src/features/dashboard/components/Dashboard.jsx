@@ -185,7 +185,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Quick Actions */}
             <div className="lg:col-span-1 bg-base-100 rounded-xl shadow-sm border border-base-300 p-6">
-              <h2 className="text-lg font-bold text-base-content mb-4">
+              <h2 className="text-lg font-bold text-base-content mb-4 border-b border-base-300 pb-4">
                 Quick Actions
               </h2>
               <div className="space-y-3">
@@ -257,7 +257,7 @@ const Dashboard = () => {
 
             {/* Recent Attempts */}
             <div className="lg:col-span-2 bg-base-100 rounded-xl shadow-sm border border-base-300 p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 border-b border-base-300 pb-4">
                 <h2 className="text-lg font-bold text-base-content">
                   Recent Attempts
                 </h2>
@@ -308,9 +308,9 @@ const Dashboard = () => {
                       {history.slice(0, 4).map((attempt) => (
                         <tr
                           key={attempt.id}
-                          className="hover:bg-base-200 transition-colors"
+                          className="group hover:bg-base-200/70 transition-colors cursor-pointer"
                         >
-                          <td className="sticky left-0 z-10 bg-base-100 hover:bg-base-200 px-3 py-4 whitespace-nowrap transition-colors">
+                          <td className="sticky left-0 z-10 bg-base-100 group-hover:bg-base-200/70 px-3 py-4 whitespace-nowrap transition-colors">
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-base-content capitalize">
                                 {attempt.categoryId || attempt.category || 'Unknown'}
@@ -340,9 +340,10 @@ const Dashboard = () => {
                           <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <Link
                               to={`/quiz/${attempt._id}/review`}
-                              className="text-primary hover:text-primary"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:border-primary hover:bg-primary hover:text-white transition-all duration-200 group/btn"
                             >
                               Review
+                              <ArrowRight className="w-3 h-3 translate-x-0 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
                             </Link>
                           </td>
                         </tr>

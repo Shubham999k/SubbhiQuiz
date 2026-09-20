@@ -38,7 +38,7 @@ const Dropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-2 bg-base-100 rounded-xl shadow-lg border border-base-300 p-2 flex flex-col gap-1 max-h-60 overflow-y-auto scrollbar-thin">
+        <div className="absolute z-50 w-full mt-2 bg-base-100 rounded-xl shadow-lg border border-base-300 p-2 flex flex-col gap-1 max-h-60 overflow-y-auto scrollbar-thin">
           {options.map((option) => (
             <button
               key={option.value}
