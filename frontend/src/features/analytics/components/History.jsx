@@ -158,9 +158,9 @@ const History = () => {
                 {filteredHistory.map((attempt) => (
                   <tr
                     key={attempt.id}
-                    className="group hover:bg-base-200/70 transition-colors cursor-pointer border-b border-base-300"
+                    className="group hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-colors cursor-pointer border-b border-base-300"
                   >
-                    <td className="sticky left-0 z-10 bg-base-100 group-hover:bg-base-200/70 px-6 py-5 whitespace-nowrap transition-colors">
+                    <td className="sticky left-0 z-10 bg-white dark:bg-[#121212] group-hover:bg-gray-50 dark:group-hover:bg-[#1e1e1e] px-6 py-5 whitespace-nowrap transition-colors">
                       <div>
                         <div className="text-sm font-bold text-base-content capitalize">
                           {attempt.category}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthContext";
+import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
 import {
   PlayCircle,
@@ -15,6 +16,7 @@ import {
   Edit3,
   Trash2,
   X,
+  Users,
 } from "lucide-react";
 import QRScannerModal from "../../../components/common/QRScannerModal";
 
@@ -32,6 +34,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass }) => (
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { setupCustomQuiz } = useQuiz();
   const navigate = useNavigate();
   const location = useLocation();
   const [history, setHistory] = useState([]);
@@ -40,10 +43,44 @@ const Dashboard = () => {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(location.state?.tab || "overview");
   
+  // Start modal state
+  const [quizToStart, setQuizToStart] = useState(null);
+  const [isStarting, setIsStarting] = useState(false);
+  const [isStartingClassroom, setIsStartingClassroom] = useState(false);
+  
   // Delete modal state
   const [quizToDelete, setQuizToDelete] = useState(null);
   const [deleteInput, setDeleteInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleStartQuiz = async (quiz, mode) => {
+    if (mode === "classroom") {
+      setIsStartingClassroom(true);
+    } else {
+      setIsStarting(true);
+    }
+
+    try {
+      let timeLimitSeconds = quiz.timeLimit || 10;
+      if (quiz.timerType !== "per_question") {
+        timeLimitSeconds = timeLimitSeconds * 60;
+      }
+      
+      setupCustomQuiz(quiz.questions, timeLimitSeconds, quiz.timerType || "overall");
+      
+      if (mode === "classroom") {
+        const sessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        navigate(`/classroom/teacher/custom?session=${sessionId}`);
+      } else {
+        navigate(`/quiz/custom`);
+      }
+    } catch (error) {
+      console.error("Failed to start quiz:", error);
+    } finally {
+      setIsStarting(false);
+      setIsStartingClassroom(false);
+    }
+  };
 
   const handleDeleteQuiz = async () => {
     if (deleteInput.toLowerCase() !== "delete") return;
@@ -192,7 +229,7 @@ const Dashboard = () => {
               <div className="space-y-3">
                 <Link
                   to="/categories"
-                  className="flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-primary hover:hover:bg-base-200 transition-all group"
+                  className="flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-primary hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-all group"
                 >
                   <div className="flex items-center">
                     <div className="bg-primary/20 p-2 rounded-lg text-primary mr-4">
@@ -215,7 +252,7 @@ const Dashboard = () => {
 
                 <Link
                   to="/history"
-                  className="flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-primary hover:hover:bg-base-200 transition-all group"
+                  className="flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-primary hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-all group"
                 >
                   <div className="flex items-center">
                     <div className="bg-primary/20 p-2 rounded-md mr-3">
@@ -233,7 +270,7 @@ const Dashboard = () => {
 
                 <button
                   onClick={() => setIsScannerOpen(true)}
-                  className="w-full flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-success hover:hover:bg-base-200 transition-all group text-left"
+                  className="w-full flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-success hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-all group text-left"
                 >
                   <div className="flex items-center">
                     <div className="bg-success/20 p-2 rounded-lg text-success mr-4">
@@ -309,9 +346,9 @@ const Dashboard = () => {
                       {history.slice(0, 4).map((attempt) => (
                         <tr
                           key={attempt.id}
-                          className="group hover:bg-base-200/70 transition-colors cursor-pointer"
+                          className="group hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-colors cursor-pointer"
                         >
-                          <td className="sticky left-0 z-10 bg-base-100 group-hover:bg-base-200/70 px-3 py-4 whitespace-nowrap transition-colors">
+                          <td className="sticky left-0 z-10 bg-white dark:bg-[#121212] group-hover:bg-gray-50 dark:group-hover:bg-[#1e1e1e] px-3 py-4 whitespace-nowrap transition-colors">
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-base-content capitalize">
                                 {attempt.categoryId || attempt.category || 'Unknown'}
@@ -401,7 +438,7 @@ const Dashboard = () => {
                   </div>
 
                   <button
-                    onClick={() => navigate('/quiz/setup', { state: { customQuiz: quiz } })}
+                    onClick={() => setQuizToStart(quiz)}
                     className="w-full flex items-center justify-center gap-2 bg-primary text-primary-content hover:opacity-90 py-2 rounded-lg font-semibold transition-colors mt-auto"
                   >
                     <Play size={16} /> Load Quiz
@@ -418,6 +455,77 @@ const Dashboard = () => {
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScan}
       />
+
+      {/* Start Quiz Modal */}
+      {quizToStart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-base-100 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-base-300 transform transition-all">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/20 p-3 rounded-xl">
+                    <Play className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-base-content mb-1">
+                      Ready to begin?
+                    </h3>
+                    <p className="text-sm text-base-content/70 line-clamp-1" title={quizToStart.title}>
+                      {quizToStart.title}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setQuizToStart(null)}
+                  className="text-base-content/50 hover:text-base-content bg-base-200 hover:bg-base-300 rounded-full p-1.5 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="bg-base-200 rounded-xl p-4 mb-6 border border-base-300 flex justify-between items-center">
+                 <div className="text-center flex-1">
+                    <p className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1">Questions</p>
+                    <p className="font-bold text-base-content text-lg">{quizToStart.questions?.length || 0}</p>
+                 </div>
+                 <div className="w-px h-8 bg-base-300"></div>
+                 <div className="text-center flex-1">
+                    <p className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1">Timer</p>
+                    <p className="font-bold text-base-content text-lg capitalize">{quizToStart.timerType?.replace('_', ' ') || 'Overall'}</p>
+                 </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => handleStartQuiz(quizToStart, "normal")}
+                  disabled={isStarting || isStartingClassroom}
+                  className="flex-1 flex flex-col items-center justify-center p-4 border border-transparent rounded-xl shadow-sm text-center text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 group"
+                >
+                  {isStarting ? (
+                    <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mb-2"></span>
+                  ) : (
+                    <PlayCircle className="w-6 h-6 mb-2 text-white/90 group-hover:scale-110 transition-transform" />
+                  )}
+                  <span className="font-bold text-sm">Quiz Now</span>
+                </button>
+                
+                <button
+                  onClick={() => handleStartQuiz(quizToStart, "classroom")}
+                  disabled={isStarting || isStartingClassroom}
+                  className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-primary rounded-xl shadow-sm text-center text-primary bg-base-100 hover:bg-primary/5 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 group"
+                >
+                  {isStartingClassroom ? (
+                    <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-2"></span>
+                  ) : (
+                    <Users className="w-6 h-6 mb-2 text-primary/90 group-hover:scale-110 transition-transform" />
+                  )}
+                  <span className="font-bold text-sm">Classroom Mode</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {quizToDelete && (
