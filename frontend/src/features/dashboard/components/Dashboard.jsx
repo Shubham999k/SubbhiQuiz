@@ -246,7 +246,7 @@ const Dashboard = () => {
                   </div>
                   <ArrowRight
                     size={20}
-                    className="text-border-subtle group-hover:text-primary transition-colors"
+                    className="text-base-content/30 group-hover:text-primary transition-colors"
                   />
                 </Link>
 
@@ -264,7 +264,7 @@ const Dashboard = () => {
                   </div>
                   <ArrowRight
                     size={20}
-                    className="text-border-subtle group-hover:text-primary transition-colors"
+                    className="text-base-content/30 group-hover:text-primary transition-colors"
                   />
                 </Link>
 
@@ -287,7 +287,7 @@ const Dashboard = () => {
                   </div>
                   <ArrowRight
                     size={20}
-                    className="text-border-subtle group-hover:text-success transition-colors"
+                    className="text-base-content/30 group-hover:text-success transition-colors"
                   />
                 </button>
               </div>
@@ -325,10 +325,10 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-border-subtle">
+                  <table className="min-w-full divide-y divide-base-300">
                     <thead>
-                      <tr>
-                        <th className="sticky left-0 z-10 bg-base-100 px-3 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider min-w-[120px]">
+                      <tr className="sticky top-0 z-30 bg-base-100 shadow-md border-b border-base-300">
+                        <th className="sticky left-0 z-40 bg-base-100 px-3 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider min-w-[120px]">
                           Quiz
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider whitespace-nowrap">
@@ -342,13 +342,13 @@ const Dashboard = () => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-subtle">
+                    <tbody className="divide-y divide-base-300">
                       {history.slice(0, 4).map((attempt) => (
                         <tr
                           key={attempt.id}
-                          className="group hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-colors cursor-pointer"
+                          className="group hover:bg-base-200 cursor-pointer"
                         >
-                          <td className="sticky left-0 z-10 bg-white dark:bg-[#121212] group-hover:bg-gray-50 dark:group-hover:bg-[#1e1e1e] px-3 py-4 whitespace-nowrap transition-colors">
+                          <td className="sticky left-0 z-10 bg-base-100 group-hover:bg-base-200 px-3 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-base-content capitalize">
                                 {attempt.categoryId || attempt.category || 'Unknown'}
@@ -397,7 +397,7 @@ const Dashboard = () => {
         <div className="h-[calc(100vh-170px)] overflow-y-auto scrollbar-none">
           {savedQuizzes.length === 0 ? (
             <div className="text-center py-12 text-base-content/70">
-              <Save className="w-16 h-16 mx-auto mb-4 text-border-subtle" />
+              <Save className="w-16 h-16 mx-auto mb-4 text-base-content/30" />
               <h3 className="text-lg font-bold text-base-content mb-2">No Saved Quizzes</h3>
               <p className="max-w-sm mx-auto">You haven't built any custom quizzes yet. Head over to the Custom Quiz Builder to create and save your first quiz!</p>
             </div>

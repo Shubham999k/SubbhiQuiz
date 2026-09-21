@@ -597,7 +597,7 @@ const ClassroomTeacher = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
 
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-base-200">
+                    <div className="bg-base-100 p-4 rounded-2xl shadow-sm border border-base-200">
                       <QrCodeComponent
                         value={joinUrl}
                         size={240}
@@ -799,7 +799,7 @@ const ClassroomTeacher = () => {
         <div className="w-full lg:w-80 flex flex-col gap-6">
           {/* Live Student Tracker */}
           <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden flex flex-col min-h-[300px] lg:min-h-[480px] max-h-[600px] order-2 lg:order-1">
-            <div className="p-5 border-b border-base-200 flex justify-between items-center bg-white">
+            <div className="p-5 border-b border-base-200 flex justify-between items-center bg-base-100">
               <h3 className="font-extrabold text-base-content flex items-center gap-3 text-[15px]">
                 <Users size={20} className="text-indigo-600" /> Live Classroom
               </h3>
@@ -807,7 +807,7 @@ const ClassroomTeacher = () => {
                 <span className="w-2 h-2 rounded-full bg-success"></span> {joinedStudents.length} Joined
               </span>
             </div>
-            <div className="p-6 overflow-y-auto flex-1 flex flex-col bg-white">
+            <div className="p-6 overflow-y-auto flex-1 flex flex-col bg-base-100">
               {joinedStudents.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <div className="w-20 h-20 bg-base-200 rounded-full flex items-center justify-center text-base-content/30 mb-4">

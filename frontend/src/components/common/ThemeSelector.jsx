@@ -45,18 +45,18 @@ const ThemeSelector = ({ className = "" }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#1e1e1e] transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 flex items-center justify-center"
+        className="p-2 rounded-lg text-base-content hover:bg-base-200 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 flex items-center justify-center"
         aria-label="Select Theme"
       >
         <Palette size={22} className="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 w-72 mt-2 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-3 flex h-64">
+        <div className="absolute right-0 z-50 w-72 mt-2 bg-base-100 rounded-xl shadow-lg border border-base-200 p-3 flex h-64">
 
           {/* Left Column - Mode */}
           <div className="flex-1 border-r border-gray-200 dark:border-gray-700 pr-3 mr-3 overflow-y-auto scrollbar-hide">
-            <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-2 sticky top-0 bg-white dark:bg-[#1e1e1e] pb-1 z-10">Mode</div>
+            <div className="text-[10px] font-bold text-base-content/60 uppercase tracking-wider mb-2 px-2 sticky top-0 bg-base-100 pb-1 z-10">Mode</div>
             {["light", "dark"].map((m) => (
               <button
                 key={m}
@@ -64,7 +64,7 @@ const ThemeSelector = ({ className = "" }) => {
                 onClick={() => setMode(m)}
                 className={`w-full text-left px-3 py-2 mb-1 text-sm rounded-lg transition-colors capitalize ${mode === m
                     ? "bg-primary text-white font-semibold shadow-sm"
-                    : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#1e1e1e]"
+                    : "text-base-content hover:bg-base-200"
                   }`}
               >
                 {m}
@@ -74,7 +74,7 @@ const ThemeSelector = ({ className = "" }) => {
 
           {/* Right Column - Themes */}
           <div className="flex-1 overflow-y-auto scrollbar-hide pr-1">
-            <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-2 sticky top-0 bg-white dark:bg-[#1e1e1e] pb-1 z-10">Themes</div>
+            <div className="text-[10px] font-bold text-base-content/60 uppercase tracking-wider mb-2 px-2 sticky top-0 bg-base-100 pb-1 z-10">Themes</div>
             {themeOptions.map((option) => (
               <button
                 key={option.value}
@@ -83,7 +83,7 @@ const ThemeSelector = ({ className = "" }) => {
                 className={`w-full text-left px-3 py-2 mb-1 text-sm rounded-lg transition-colors ${
                   palette === option.value
                     ? "bg-primary/10 text-primary font-semibold"
-                    : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#1e1e1e]"
+                    : "text-base-content hover:bg-base-200"
                 }`}
               >
                 {option.label}

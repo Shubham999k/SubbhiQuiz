@@ -6,37 +6,25 @@
 }
 
 @layer base {
-  /* Enforce Light Backgrounds regardless of Theme */
-  html, html[data-theme] {
-    --fallback-b1: #ffffff;
-    --fallback-b2: #f3f4f6;
-    --fallback-b3: #e5e7eb;
-    --fallback-bc: #111827;
+  /* Enforce Light Backgrounds regardless of Theme when not in dark mode */
+  html:not(.dark) {
+    --color-base-100: #ffffff !important;
+    --color-base-200: #f9fafb !important;
+    --color-base-300: #e5e7eb !important;
+    --color-base-content: #111827 !important;
   }
   
-  html[data-theme] .bg-base-100 { background-color: #ffffff !important; }
-  html[data-theme] .bg-base-200 { background-color: #f3f4f6 !important; }
-  html[data-theme] .bg-base-300 { background-color: #e5e7eb !important; }
-  html[data-theme] .text-base-content { color: #111827 !important; }
-  html[data-theme] [class*="text-base-content/"] { color: rgba(17, 24, 39, 0.7) !important; }
-  html[data-theme] .border-base-200 { border-color: #e5e7eb !important; }
-  html[data-theme] .border-base-300 { border-color: #d1d5db !important; }
-
-  /* Enforce Dark Backgrounds when Mode is Dark */
-  html.dark, html.dark[data-theme] {
-    --fallback-b1: #121212;
-    --fallback-b2: #1e1e1e;
-    --fallback-b3: #2a2a2a;
-    --fallback-bc: #f3f4f6;
+  /* Enforce Dark Backgrounds regardless of Theme when in dark mode */
+  html.dark {
+    --color-base-100: #121212 !important;
+    --color-base-200: #1e1e1e !important;
+    --color-base-300: #2a2a2a !important;
+    --color-base-content: #f3f4f6 !important;
   }
   
-  html.dark[data-theme] .bg-base-100 { background-color: #121212 !important; }
-  html.dark[data-theme] .bg-base-200 { background-color: #1e1e1e !important; }
-  html.dark[data-theme] .bg-base-300 { background-color: #2a2a2a !important; }
-  html.dark[data-theme] .text-base-content { color: #f3f4f6 !important; }
-  html.dark[data-theme] [class*="text-base-content/"] { color: rgba(243, 244, 246, 0.7) !important; }
-  html.dark[data-theme] .border-base-200 { border-color: #2a2a2a !important; }
-  html.dark[data-theme] .border-base-300 { border-color: #374151 !important; }
+  body {
+    @apply bg-base-100 text-base-content;
+  }
 }
 
 @layer utilities {

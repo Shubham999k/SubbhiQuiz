@@ -103,8 +103,8 @@ const Leaderboard = () => {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 ${filter === f
-                  ? "bg-base-100 text-primary shadow-md scale-105"
-                  : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
+                ? "bg-base-100 text-primary shadow-md scale-105"
+                : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
                 }`}
             >
               {f.replace("_", " ")}
@@ -276,8 +276,8 @@ const Leaderboard = () => {
           )}
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-base-200/95 backdrop-blur-sm text-base-content/80 text-sm border-b border-base-300 sticky top-0 z-10 shadow-sm">
-                <th className="sticky left-0 z-20 bg-base-200/95 backdrop-blur-sm py-2 px-4 font-semibold w-16 text-center whitespace-nowrap">#</th>
+              <tr className="bg-base-200 text-base-content/80 text-sm border-b border-base-300 sticky top-0 z-30 shadow-md">
+                <th className="sticky left-0 z-40 bg-base-200 py-2 px-4 font-semibold w-16 text-center whitespace-nowrap">#</th>
                 <th className="py-2 px-4 font-semibold whitespace-nowrap min-w-[160px]">Student</th>
                 <th className="py-2 px-4 font-semibold text-center whitespace-nowrap hidden md:table-cell">Quizzes Taken</th>
                 <th className="py-2 px-4 font-semibold text-right whitespace-nowrap">Accuracy</th>
@@ -296,14 +296,14 @@ const Leaderboard = () => {
                   return (
                     <tr
                       key={student.id}
-                      className={`group transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${student.isCurrentUser
-                          ? "bg-primary/5 hover:bg-primary/10"
-                          : "hover:bg-base-200/50"
+                      className={`group animate-in fade-in slide-in-from-bottom-2 ${student.isCurrentUser
+                        ? "bg-primary/5 hover:bg-primary/10"
+                        : "hover:bg-base-200"
                         }`}
                       style={{ animationFillMode: 'both', animationDelay: `${idx * 50}ms` }}
                     >
                       {/* Rank - sticky */}
-                      <td className={`sticky left-0 z-10 py-2 px-4 text-center whitespace-nowrap ${student.isCurrentUser ? "bg-primary/5" : "bg-base-100"} group-hover:brightness-95 transition-all`}>
+                      <td className={`sticky left-0 z-10 py-2 px-4 text-center whitespace-nowrap ${student.isCurrentUser ? "bg-primary/5 group-hover:bg-primary/10" : "bg-base-100 group-hover:bg-base-200"}`}>
                         <span className={`inline-block px-2 py-1 rounded-md text-sm font-black ${student.isCurrentUser ? "bg-primary text-white" : "text-base-content/50 bg-base-200"}`}>
                           #{actualRank}
                         </span>
@@ -346,14 +346,14 @@ const Leaderboard = () => {
                       <td className="py-4 px-6 text-right">
                         <div className="flex flex-col items-end">
                           <span className={`text-lg font-black ${student.average >= 80 ? "text-success" :
-                              student.average >= 50 ? "text-warning" : "text-error"
+                            student.average >= 50 ? "text-warning" : "text-error"
                             }`}>
                             {student.average}%
                           </span>
                           <div className="w-24 h-1.5 bg-base-300 rounded-full mt-1 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${student.average >= 80 ? "bg-success" :
-                                  student.average >= 50 ? "bg-warning" : "bg-error"
+                                student.average >= 50 ? "bg-warning" : "bg-error"
                                 }`}
                               style={{ width: `${student.average}%` }}
                             ></div>

@@ -79,7 +79,7 @@ const DashboardLayout = () => {
                     className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
                         ? "bg-primary/10 text-primary"
-                        : "text-base-content hover:bg-gray-50 dark:hover:bg-[#1e1e1e]"
+                        : "text-base-content hover:bg-base-200"
                     }`}
                   >
                     <item.icon
@@ -93,7 +93,7 @@ const DashboardLayout = () => {
           </div>
 
           <div className="p-4 border-t border-base-300">
-            <div className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-colors mb-2">
+            <div className="flex items-center px-3 py-2 rounded-lg hover:bg-base-200 transition-colors mb-2">
               <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
                 {user?.name?.charAt(0) || "S"}
               </div>
@@ -108,7 +108,7 @@ const DashboardLayout = () => {
             </div>
             <button
               onClick={handleLogoutClick}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-error rounded-lg hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-colors"
+              className="w-full flex items-center px-3 py-2 text-sm font-medium text-error rounded-lg hover:bg-base-200 transition-colors"
             >
               <LogOut className="flex-shrink-0 -ml-1 mr-3 h-5 w-5 text-error" />
               Sign out
@@ -132,7 +132,7 @@ const DashboardLayout = () => {
             </Link>
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-base-content/70 hover:text-base-content hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-all"
+              className="p-2 rounded-lg text-base-content/70 hover:text-base-content hover:bg-base-200 transition-all"
             >
               <Menu className="h-6 w-6" />
             </button>

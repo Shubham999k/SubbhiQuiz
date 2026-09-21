@@ -123,11 +123,11 @@ const History = () => {
         <div className="bg-base-100 shadow-sm rounded-xl border border-base-300 overflow-hidden">
           <div className="overflow-auto relative h-[70vh] scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-base-100">
             <table className="min-w-full text-left border-collapse">
-              <thead className="bg-base-200/95 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+              <thead className="bg-base-200 sticky top-0 z-30 shadow-md">
                 <tr>
                   <th
                     scope="col"
-                    className="sticky left-0 top-0 z-30 bg-base-200/95 backdrop-blur-sm px-6 py-4 text-left text-xs font-bold text-base-content/70 uppercase tracking-wider min-w-[140px]"
+                    className="sticky left-0 top-0 z-40 bg-base-200 px-6 py-4 text-left text-xs font-bold text-base-content/70 uppercase tracking-wider min-w-[140px]"
                   >
                     Quiz
                   </th>
@@ -158,9 +158,9 @@ const History = () => {
                 {filteredHistory.map((attempt) => (
                   <tr
                     key={attempt.id}
-                    className="group hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-colors cursor-pointer border-b border-base-300"
+                    className="group hover:bg-base-200 cursor-pointer border-b border-base-300"
                   >
-                    <td className="sticky left-0 z-10 bg-white dark:bg-[#121212] group-hover:bg-gray-50 dark:group-hover:bg-[#1e1e1e] px-6 py-5 whitespace-nowrap transition-colors">
+                    <td className="sticky left-0 z-10 bg-base-100 group-hover:bg-base-200 px-6 py-5 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-bold text-base-content capitalize">
                           {attempt.category}
@@ -174,8 +174,8 @@ const History = () => {
                       <div className="flex items-center">
                         <div
                           className={`w-2.5 h-2.5 rounded-full mr-2 ${attempt.accuracy >= 70
-                              ? "bg-success"
-                              : "bg-warning"
+                            ? "bg-success"
+                            : "bg-warning"
                             }`}
                         ></div>
                         <div className="text-sm font-medium text-base-content">
