@@ -162,7 +162,7 @@ const DashboardLayout = () => {
           <div className="h-16 flex items-center px-5 border-b border-base-300 w-64 overflow-hidden">
             <Link to="/dashboard" className="flex items-center space-x-3 w-full">
               <BookOpen className="h-8 w-8 text-primary flex-shrink-0" />
-              <span className={`text-xl font-bold text-base-content whitespace-nowrap transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'opacity-0 max-w-0' : 'opacity-100 max-w-[200px]'}`}>Quizzz-Zone</span>
+              <span className={`text-xl font-bold text-base-content whitespace-nowrap transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'opacity-100 max-w-[200px] md:opacity-0 md:max-w-0' : 'opacity-100 max-w-[200px]'}`}>Quizzz-Zone</span>
             </Link>
           </div>
 
@@ -178,7 +178,7 @@ const DashboardLayout = () => {
                     key={item.name}
                     to={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`group relative flex items-center ${sidebarCollapsed ? 'w-12' : 'w-full'} px-3 py-3 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
+                    className={`group relative flex items-center ${sidebarCollapsed ? 'w-full md:w-12' : 'w-full'} px-3 py-3 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
                       isActive
                         ? "bg-primary text-primary-content shadow-md shadow-primary/20"
                         : "text-base-content hover:bg-base-200"
@@ -187,10 +187,10 @@ const DashboardLayout = () => {
                     <item.icon
                       className={`flex-shrink-0 h-6 w-6 ${isActive ? "text-primary-content" : "text-base-content/70"} transition-all duration-300`}
                     />
-                    <span className={`truncate whitespace-nowrap transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'opacity-0 max-w-0 ml-0' : 'opacity-100 max-w-[200px] ml-3'}`}>{item.name}</span>
+                    <span className={`truncate whitespace-nowrap transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'opacity-100 max-w-[200px] ml-3 md:opacity-0 md:max-w-0 md:ml-0' : 'opacity-100 max-w-[200px] ml-3'}`}>{item.name}</span>
                     
                     {sidebarCollapsed && (
-                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-base-100 text-base-content text-sm font-medium rounded-md opacity-0 group-hover:opacity-100 pointer-events-none z-50 whitespace-nowrap shadow-xl border-2 border-primary">
+                      <div className="hidden md:block absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-base-100 text-base-content text-sm font-medium rounded-md opacity-0 group-hover:opacity-100 pointer-events-none z-50 whitespace-nowrap shadow-xl border-2 border-primary">
                         <div className="absolute top-1/2 -translate-y-1/2 -left-[6px] w-2.5 h-2.5 bg-base-100 border-l-2 border-b-2 border-primary rotate-45"></div>
                         {item.name}
                       </div>
@@ -223,13 +223,13 @@ const DashboardLayout = () => {
 
             <button
               onClick={handleLogoutClick}
-              className={`group relative w-full flex items-center ${sidebarCollapsed ? 'w-12' : 'w-full'} px-3 py-3 text-sm font-medium text-error rounded-lg hover:bg-base-200 transition-all duration-300 ease-in-out`}
+              className={`group relative w-full flex items-center ${sidebarCollapsed ? 'w-full md:w-12' : 'w-full'} px-3 py-3 text-sm font-medium text-error rounded-lg hover:bg-base-200 transition-all duration-300 ease-in-out`}
             >
               <LogOut className="flex-shrink-0 h-6 w-6 text-error transition-all duration-300" />
-              <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'opacity-0 max-w-0 ml-0' : 'opacity-100 max-w-[200px] ml-3'}`}>Sign out</span>
+              <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'opacity-100 max-w-[200px] ml-3 md:opacity-0 md:max-w-0 md:ml-0' : 'opacity-100 max-w-[200px] ml-3'}`}>Sign out</span>
               
               {sidebarCollapsed && (
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-base-100 text-base-content text-sm font-medium rounded-md opacity-0 group-hover:opacity-100 pointer-events-none z-50 whitespace-nowrap shadow-xl border-2 border-error">
+                <div className="hidden md:block absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-base-100 text-base-content text-sm font-medium rounded-md opacity-0 group-hover:opacity-100 pointer-events-none z-50 whitespace-nowrap shadow-xl border-2 border-error">
                   <div className="absolute top-1/2 -translate-y-1/2 -left-[6px] w-2.5 h-2.5 bg-base-100 border-l-2 border-b-2 border-error rotate-45"></div>
                   Sign out
                 </div>
