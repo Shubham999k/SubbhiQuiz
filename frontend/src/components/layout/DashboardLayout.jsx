@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthContext";
 import ThemeSelector from "../common/ThemeSelector";
@@ -41,6 +42,49 @@ const DashboardLayout = () => {
     setIsLogoutModalOpen(false);
     navigate("/login");
   };
+
+  const generateBreadcrumbs = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs = [];
+    let currentPath = '';
+    
+    paths.forEach((path, index) => {
+      currentPath += `/${path}`;
+      let name = path.charAt(0).toUpperCase() + path.slice(1);
+      
+      if (path === 'dashboard') name = 'Dashboard';
+      else if (path === 'categories') name = 'Categories';
+      else if (path === 'quiz') name = 'Quiz';
+      else if (path === 'setup') name = 'Setup';
+      else if (path === 'history') name = 'History';
+      else if (path === 'analytics') name = 'Analytics';
+      else if (path === 'leaderboard') name = 'Leaderboard';
+      else if (path === 'profile') name = 'Profile';
+      else if (path === 'classroom') name = 'Classroom';
+      else if (path === 'teacher') name = 'Teacher Mode';
+      
+      if (path.length === 24 && /^[0-9a-fA-F]{24}$/.test(path)) {
+        name = 'Details';
+      }
+
+      const redirectPaths = ['classroom', 'teacher', 'projector'];
+      const finalHref = redirectPaths.includes(path) ? '/dashboard' : currentPath;
+      breadcrumbs.push({ name, href: finalHref });
+    });
+
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    if (tab) {
+      if (tab === 'saved-quizzes') breadcrumbs.push({ name: 'Saved Quizzes', href: '/dashboard?tab=saved-quizzes' });
+      if (tab === 'overview') breadcrumbs.push({ name: 'Overview', href: '/dashboard?tab=overview' });
+    }
+
+    if (breadcrumbs.length === 0) breadcrumbs.push({ name: 'Dashboard', href: '/dashboard' });
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = generateBreadcrumbs();
 
   return (
     <div className="h-screen overflow-hidden bg-base-200 flex transition-colors duration-200 text-base-content">
@@ -138,10 +182,26 @@ const DashboardLayout = () => {
             </button>
           </div>
 
-          <div className="hidden md:flex items-center">
-            <h2 className="text-lg font-bold text-base-content">
-              Welcome back, {user?.name || "Student"} !
-            </h2>
+          <div className="hidden md:flex items-center space-x-2 overflow-hidden flex-1 mr-4">
+            {breadcrumbs.map((crumb, index) => {
+              const isLast = index === breadcrumbs.length - 1;
+              return (
+                <React.Fragment key={index}>
+                  {isLast ? (
+                    <span className="text-sm md:text-base whitespace-nowrap truncate font-bold text-base-content">
+                      {crumb.name}
+                    </span>
+                  ) : (
+                    <Link to={crumb.href} className="text-sm md:text-base whitespace-nowrap truncate text-base-content/60 font-medium hover:text-primary transition-colors">
+                      {crumb.name}
+                    </Link>
+                  )}
+                  {!isLast && (
+                    <ChevronRight className="h-4 w-4 text-base-content/40 flex-shrink-0" />
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
 
           <div className="flex items-center space-x-4">

@@ -3,13 +3,41 @@ import { api } from "../../services/api";
 import { QuizContext } from "./QuizContext";
 
 export const QuizProvider = ({ children }) => {
-  const [currentQuiz, setCurrentQuiz] = useState(null);
-  const [questions, setQuestions] = useState([]);
+  const [currentQuiz, setCurrentQuiz] = useState(() => {
+    try {
+      const saved = localStorage.getItem("subbhi_currentQuiz");
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [questions, setQuestions] = useState(() => {
+    try {
+      const saved = localStorage.getItem("subbhi_questions");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { questionId: selectedOption }
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [isQuizActive, setIsQuizActive] = useState(false);
+  const [isQuizActive, setIsQuizActive] = useState(() => {
+    try {
+      const saved = localStorage.getItem("subbhi_isQuizActive");
+      return saved ? JSON.parse(saved) : false;
+    } catch { return false; }
+  });
   const [quizResult, setQuizResult] = useState(null);
+
+  // Sync state to localStorage to survive refreshes
+  React.useEffect(() => {
+    if (currentQuiz) {
+      localStorage.setItem("subbhi_currentQuiz", JSON.stringify(currentQuiz));
+      localStorage.setItem("subbhi_questions", JSON.stringify(questions));
+      localStorage.setItem("subbhi_isQuizActive", JSON.stringify(isQuizActive));
+    } else {
+      localStorage.removeItem("subbhi_currentQuiz");
+      localStorage.removeItem("subbhi_questions");
+      localStorage.removeItem("subbhi_isQuizActive");
+    }
+  }, [currentQuiz, questions, isQuizActive]);
 
   const setupQuiz = async (category, difficulty, count, timeLimitSeconds = null, timerType = "overall") => {
     const fetchedQuestions = await api.getQuestions(
@@ -36,11 +64,11 @@ export const QuizProvider = ({ children }) => {
     setIsQuizActive(true);
   };
 
-  const setupCustomQuiz = (customQuestions, timeLimitSeconds, timerType = "overall") => {
+  const setupCustomQuiz = (customQuestions, timeLimitSeconds, timerType = "overall", title = "Custom Quiz") => {
     setQuestions(customQuestions);
 
     setCurrentQuiz({
-      category: "custom",
+      category: title,
       difficulty: "mixed",
       count: customQuestions.length,
       timeLimit: timeLimitSeconds,
@@ -66,7 +94,10 @@ export const QuizProvider = ({ children }) => {
       const selected = answers[q.id];
       if (!selected) {
         unanswered++;
-      } else if (selected === q.correctAnswer) {
+      } else if (
+        selected === q.correctAnswer ||
+        selected === q.options[q.correctAnswer]
+      ) {
         correct++;
       } else {
         incorrect++;

@@ -1,55 +1,376 @@
-// In-memory store for classroom results
-// Structure: { [sessionCode]: { resultsReleased: boolean, releasedAt: Date, students: { [roll]: { rank, score, ... } }, leaderboard: [] } }
+// In-memory store for classroom sessions
+// Structure: {
+//   [sessionCode]: {
+//     resultsReleased, releasedAt, students, leaderboard, totalQuestions,  // EXISTING
+//     summaryReleased,      // NEW — separate from leaderboard release
+//     wildcardEnabled,      // NEW — teacher toggle
+//     wildcardRequests,     // NEW — pending wildcard requests
+//     teacherSocketId,      // NEW — to send targeted events to teacher
+//     quizIntegrity,        // NEW — { [roll]: { violations: [], violationCount: 0, locked: false } }
+//     studentLifelines,     // NEW — { [roll]: { remaining: 2, usedOnQuestions: [] } }
+//     quizSnapshot,         // NEW — current state snapshot for wildcard joins (set by teacher)
+//     studentSummaryData,   // NEW — full summary data (set at release_results time)
+//   }
+// }
 const activeSessions = {};
+
+// Helper: ensure session exists in memory
+function ensureSession(sessionCode) {
+  if (!activeSessions[sessionCode]) {
+    activeSessions[sessionCode] = {
+      // existing fields
+      resultsReleased: false,
+      releasedAt: null,
+      students: {},
+      leaderboard: [],
+      totalQuestions: 0,
+      // new fields
+      summaryReleased: false,
+      wildcardEnabled: false,
+      wildcardRequests: [],
+      teacherSocketId: null,
+      quizIntegrity: {},
+      studentLifelines: {},
+      quizSnapshot: null,
+      studentSummaryData: null,
+      latestState: null, // NEW: Cache latest state for reconnections
+    };
+  }
+  return activeSessions[sessionCode];
+}
+
+// Helper: initialize per-student integrity record
+function ensureIntegrity(session, roll) {
+  if (!session.quizIntegrity[roll]) {
+    session.quizIntegrity[roll] = {
+      violations: [],
+      violationCount: 0,
+      locked: false,
+    };
+  }
+  return session.quizIntegrity[roll];
+}
+
+// Helper: initialize per-student lifelines
+function ensureLifelines(session, roll) {
+  if (!session.studentLifelines[roll]) {
+    session.studentLifelines[roll] = {
+      remaining: 2,
+      usedOnQuestions: [],
+    };
+  }
+  return session.studentLifelines[roll];
+}
 
 export const setupSocket = (io) => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    // Students join session and identify themselves
+    // ─────────────────────────────────────────────────────────────
+    // EXISTING: Students/projector join a session room
+    // ─────────────────────────────────────────────────────────────
     socket.on("join_session", (data) => {
-      // Compatibility with old clients passing string
       const sessionCode = typeof data === "string" ? data : data.sessionCode;
       if (!sessionCode) return;
-      
       socket.join(sessionCode);
+      
+      // If a student refreshes, instantly send them the latest state
+      const session = ensureSession(sessionCode);
+      if (session.latestState) {
+        socket.emit("state_update", session.latestState);
+      }
+      
       console.log(`User ${socket.id} joined session ${sessionCode}`);
-
-      // If they passed roll, we can map it. For now, we'll just handle it in check_result.
     });
 
+    // EXISTING: Teacher broadcasts full state to everyone in room
     socket.on("broadcast_state", ({ sessionCode, state }) => {
-      // Broadcast state to all clients in the room
+      const session = ensureSession(sessionCode);
+      session.latestState = state; // Cache it
       socket.to(sessionCode).emit("state_update", state);
     });
 
+    // EXISTING: Students send events like STUDENT_JOIN or STUDENT_ANSWER
     socket.on("student_event", ({ sessionCode, event }) => {
-      // Students send events like STUDENT_JOIN or STUDENT_ANSWER
       socket.to(sessionCode).emit("student_event", event);
     });
 
-    // ADMIN: Teacher releases results
-    socket.on("release_results", ({ sessionCode, studentScores, joinedStudents, totalQuestions }) => {
-      if (!sessionCode || !studentScores || !joinedStudents) return;
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher registers as teacher for this session (to receive targeted events)
+    // ─────────────────────────────────────────────────────────────
+    socket.on("teacher_register", ({ sessionCode }) => {
+      if (!sessionCode) return;
+      const session = ensureSession(sessionCode);
+      session.teacherSocketId = socket.id;
+      console.log(`Teacher registered for session ${sessionCode}: ${socket.id}`);
+    });
 
-      // 1. Calculate Ranks Server-Side
-      const leaderboard = joinedStudents.map(student => {
-        const score = studentScores[student.roll] || 0;
-        return {
-          ...student,
-          score,
-        };
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher saves quiz snapshot so wildcard students can join mid-quiz
+    // Payload: { sessionCode, snapshot: { questions, currentQuestionIndex, timeRemaining, quizStarted, currentQuiz } }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("teacher_state_snapshot", ({ sessionCode, snapshot }) => {
+      if (!sessionCode || !snapshot) return;
+      const session = ensureSession(sessionCode);
+      session.quizSnapshot = snapshot;
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher toggles wildcard entry
+    // Payload: { sessionCode, enabled: boolean }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("teacher_set_wildcard", ({ sessionCode, enabled }) => {
+      if (!sessionCode) return;
+      const session = ensureSession(sessionCode);
+      session.wildcardEnabled = !!enabled;
+      console.log(`Wildcard entry ${enabled ? "enabled" : "disabled"} for session ${sessionCode}`);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Student requests wildcard entry
+    // Payload: { sessionCode, name, roll, batch }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("wildcard_request", ({ sessionCode, name, roll, batch }) => {
+      if (!sessionCode || !roll) return;
+      const session = ensureSession(sessionCode);
+
+      if (!session.wildcardEnabled) {
+        socket.emit("student_wildcard_rejected", { reason: "Wildcard entry is not enabled." });
+        return;
+      }
+
+      // Prevent duplicate requests
+      const existing = session.wildcardRequests.find((r) => r.roll === roll);
+      if (existing) {
+        socket.emit("student_wildcard_pending", { message: "Your request is already pending." });
+        return;
+      }
+
+      const request = {
+        socketId: socket.id,
+        name,
+        roll,
+        batch: batch || "",
+        requestedAt: new Date(),
+      };
+      session.wildcardRequests.push(request);
+
+      // Notify teacher
+      io.to(sessionCode).emit("teacher_wildcard_request", {
+        sessionCode,
+        request,
       });
 
-      // Sort by score (descending), then by timestamp (ascending) as tie-breaker
+      console.log(`Wildcard request from ${roll} for session ${sessionCode}`);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher approves a wildcard request
+    // Payload: { sessionCode, roll }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("teacher_approve_wildcard", ({ sessionCode, roll }) => {
+      if (!sessionCode || !roll) return;
+      const session = ensureSession(sessionCode);
+
+      const reqIdx = session.wildcardRequests.findIndex((r) => r.roll === roll);
+      if (reqIdx !== -1) {
+        session.wildcardRequests.splice(reqIdx, 1);
+      }
+
+      // Initialize lifelines for this student
+      ensureLifelines(session, roll);
+      
+      // RESET integrity (unlock them) on wildcard approval!
+      session.quizIntegrity[roll] = {
+        violations: [],
+        violationCount: 0,
+        locked: false,
+      };
+
+      // Send approval + current quiz snapshot to the student room with their roll
+      io.to(sessionCode).emit("student_wildcard_approved", {
+        roll,
+        snapshot: session.quizSnapshot,
+      });
+
+      console.log(`Wildcard approved for ${roll} in session ${sessionCode}`);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher rejects a wildcard request
+    // Payload: { sessionCode, roll }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("teacher_reject_wildcard", ({ sessionCode, roll }) => {
+      if (!sessionCode || !roll) return;
+      const session = ensureSession(sessionCode);
+
+      const reqIdx = session.wildcardRequests.findIndex((r) => r.roll === roll);
+      if (reqIdx === -1) return;
+
+      const [req] = session.wildcardRequests.splice(reqIdx, 1);
+
+      io.to(sessionCode).emit("student_wildcard_rejected", {
+        roll,
+        reason: "Your wildcard request was rejected by the teacher.",
+      });
+
+      console.log(`Wildcard rejected for ${roll} in session ${sessionCode}`);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher forcefully locks a student
+    // Payload: { sessionCode, roll }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("teacher_lock_student", ({ sessionCode, roll }) => {
+      if (!sessionCode || !roll) return;
+      const session = ensureSession(sessionCode);
+      const integrity = ensureIntegrity(session, roll);
+
+      integrity.locked = true;
+      integrity.violationCount = Math.max(integrity.violationCount, 3);
+
+      io.to(sessionCode).emit("student_violation_update", {
+        roll,
+        violationCount: integrity.violationCount,
+        locked: true,
+        latestViolation: {
+          eventType: "teacher_forced_lock",
+          timestamp: new Date(),
+        },
+      });
+
+      console.log(`Teacher forcefully locked ${roll} in session ${sessionCode}`);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Student reports a focus/integrity violation
+    // Payload: { sessionCode, roll, eventType, questionIndex, metadata }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("student_focus_violation", ({ sessionCode, roll, eventType, questionIndex, metadata }) => {
+      if (!sessionCode || !roll || !eventType) return;
+      const session = ensureSession(sessionCode);
+      const integrity = ensureIntegrity(session, roll);
+
+      const violation = {
+        eventType,
+        questionIndex: questionIndex ?? null,
+        metadata: metadata ?? {},
+        timestamp: new Date(),
+      };
+      integrity.violations.push(violation);
+      integrity.violationCount = integrity.violations.length;
+
+      // Lock student after 3 violations (configurable threshold)
+      const MAX_VIOLATIONS = 3;
+      if (integrity.violationCount >= MAX_VIOLATIONS && !integrity.locked) {
+        integrity.locked = true;
+      }
+
+      // Notify teacher (using room to ensure delivery even if teacher reconnects and socketId changes)
+      io.to(sessionCode).emit("student_violation_update", {
+        roll,
+        violationCount: integrity.violationCount,
+        locked: integrity.locked,
+        latestViolation: violation,
+      });
+
+      // Confirm to student (inform if locked)
+      socket.emit("violation_recorded", {
+        violationCount: integrity.violationCount,
+        locked: integrity.locked,
+        maxViolations: MAX_VIOLATIONS,
+      });
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Student requests a lifeline
+    // Payload: { sessionCode, roll, questionId, questionIndex }
+    // Callback: { success, hintOption, remaining, reason? }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("lifeline_request", ({ sessionCode, roll, questionId, questionIndex }, callback) => {
+      if (typeof callback !== "function") return;
+
+      if (!sessionCode || !roll) {
+        callback({ success: false, reason: "Invalid request." });
+        return;
+      }
+
+      const session = ensureSession(sessionCode);
+      const lifelines = ensureLifelines(session, roll);
+
+      if (lifelines.remaining <= 0) {
+        callback({ success: false, reason: "No lifelines remaining." });
+        return;
+      }
+
+      // Prevent using a lifeline on the same question twice
+      if (lifelines.usedOnQuestions.includes(questionIndex)) {
+        callback({ success: false, reason: "Lifeline already used on this question." });
+        return;
+      }
+
+      // Get correct answer from quiz snapshot
+      const snapshot = session.quizSnapshot;
+      if (!snapshot || !snapshot.questions) {
+        callback({ success: false, reason: "Quiz data not available." });
+        return;
+      }
+
+      const question = snapshot.questions.find((q) => q.id === questionId);
+      if (!question || !question.correctAnswer) {
+        callback({ success: false, reason: "Question not found." });
+        return;
+      }
+
+      // Consume lifeline
+      lifelines.remaining -= 1;
+      lifelines.usedOnQuestions.push(questionIndex);
+
+      console.log(`Lifeline used by ${roll} on q${questionIndex} in session ${sessionCode}. Remaining: ${lifelines.remaining}`);
+
+      callback({
+        success: true,
+        hintOption: question.correctAnswer,
+        remaining: lifelines.remaining,
+      });
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Student checks their current lifeline status (for reconnect)
+    // Payload: { sessionCode, roll }
+    // Callback: { remaining }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("check_lifelines", ({ sessionCode, roll }, callback) => {
+      if (typeof callback !== "function") return;
+      const session = activeSessions[sessionCode];
+      if (!session) {
+        callback({ remaining: 2 }); // default for new sessions
+        return;
+      }
+      const lifelines = ensureLifelines(session, roll);
+      callback({ remaining: lifelines.remaining });
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // EXISTING: Teacher releases leaderboard results
+    // Extended to also store questions + participant answers for summary
+    // ─────────────────────────────────────────────────────────────
+    socket.on("release_results", ({ sessionCode, studentScores, joinedStudents, totalQuestions, questions, cumulativeAnswers }) => {
+      if (!sessionCode || !studentScores || !joinedStudents) return;
+
+      const session = ensureSession(sessionCode);
+
+      // Calculate ranks (existing logic)
+      const leaderboard = joinedStudents.map((student) => {
+        const score = studentScores[student.roll] || 0;
+        return { ...student, score };
+      });
+
       leaderboard.sort((a, b) => {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
+        if (b.score !== a.score) return b.score - a.score;
         return (a.timestamp || 0) - (b.timestamp || 0);
       });
 
-      // Assign ranks (handling ties properly if scores are exactly equal)
       let currentRank = 1;
       for (let i = 0; i < leaderboard.length; i++) {
         if (i > 0 && leaderboard[i].score === leaderboard[i - 1].score) {
@@ -60,40 +381,41 @@ export const setupSocket = (io) => {
         currentRank++;
       }
 
-      // Store in memory
       const studentsMap = {};
-      leaderboard.forEach(student => {
+      leaderboard.forEach((student) => {
         studentsMap[student.roll] = student;
       });
 
-      const sanitizedLeaderboard = leaderboard.map(s => ({
+      const sanitizedLeaderboard = leaderboard.map((s) => ({
         rank: s.rank,
         name: s.name,
         score: s.score,
-        roll: s.roll
+        roll: s.roll,
       }));
 
-      activeSessions[sessionCode] = {
-        resultsReleased: true,
-        releasedAt: new Date(),
-        students: studentsMap,
-        leaderboard: sanitizedLeaderboard,
-        totalQuestions
-      };
+      session.resultsReleased = true;
+      session.releasedAt = new Date();
+      session.students = studentsMap;
+      session.leaderboard = sanitizedLeaderboard;
+      session.totalQuestions = totalQuestions;
 
-      // Emit global event so students know results are ready
-      // We also send the sanitized leaderboard
+      // NEW: store questions + cumulative answers for summary feature
+      if (questions) {
+        session.studentSummaryData = {
+          questions,         // full questions with correctAnswer + explanation
+          cumulativeAnswers: cumulativeAnswers || {}, // { roll: { questionId: option } }
+        };
+      }
+
       io.to(sessionCode).emit("LEADERBOARD_RELEASED", {
-        releasedAt: activeSessions[sessionCode].releasedAt,
-        leaderboard: sanitizedLeaderboard
+        releasedAt: session.releasedAt,
+        leaderboard: sanitizedLeaderboard,
       });
-      
-      // Also emit individual personal results to each student's specific socket if we mapped them?
-      // Since we don't strictly map socket.id -> roll upon connection currently, 
-      // the safest way is to let the client request it immediately upon hearing LEADERBOARD_RELEASED.
     });
 
-    // STUDENT: Request personal result securely
+    // ─────────────────────────────────────────────────────────────
+    // EXISTING: Student requests their personal result
+    // ─────────────────────────────────────────────────────────────
     socket.on("check_result", ({ sessionCode, roll }, callback) => {
       const session = activeSessions[sessionCode];
       if (session && session.resultsReleased) {
@@ -105,12 +427,60 @@ export const setupSocket = (io) => {
               ...personalResult,
               totalQuestions: session.totalQuestions,
             },
-            leaderboard: session.leaderboard
+            leaderboard: session.leaderboard,
           });
           return;
         }
       }
       callback({ success: false });
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Teacher releases answer summary (separate from leaderboard)
+    // Payload: { sessionCode }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("release_summary", ({ sessionCode }) => {
+      if (!sessionCode) return;
+      const session = ensureSession(sessionCode);
+      session.summaryReleased = true;
+
+      io.to(sessionCode).emit("SUMMARY_RELEASED", {
+        releasedAt: new Date(),
+      });
+
+      console.log(`Answer summary released for session ${sessionCode}`);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Student checks if summary is available + fetches their data
+    // Payload: { sessionCode, roll }
+    // Callback: { success, summaryReleased, myAnswers, questions }
+    // ─────────────────────────────────────────────────────────────
+    socket.on("check_summary", ({ sessionCode, roll }, callback) => {
+      if (typeof callback !== "function") return;
+
+      const session = activeSessions[sessionCode];
+      if (!session || !session.summaryReleased) {
+        callback({ success: false, summaryReleased: false });
+        return;
+      }
+
+      const summaryData = session.studentSummaryData;
+      if (!summaryData) {
+        callback({ success: false, summaryReleased: true, reason: "Summary data not available." });
+        return;
+      }
+
+      // Only return this student's answers (privacy)
+      const myAnswers = summaryData.cumulativeAnswers[roll] || {};
+
+      callback({
+        success: true,
+        summaryReleased: true,
+        myAnswers,
+        questions: summaryData.questions,
+        studentInfo: session.students[roll] || null,
+      });
     });
 
     socket.on("disconnect", () => {

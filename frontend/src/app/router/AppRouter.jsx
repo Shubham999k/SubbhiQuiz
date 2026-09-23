@@ -22,6 +22,7 @@ import ClassroomTeacher from "../../features/classroom/components/ClassroomTeach
 import ClassroomProjector from "../../features/projector/components/ClassroomProjector";
 import StudentJoin from "../../features/students/components/StudentJoin";
 import StudentActive from "../../features/students/components/StudentActive";
+import StudentSummary from "../../features/students/components/StudentSummary";
 
 const NotFound = () => (
   <div className="min-h-screen flex items-center justify-center bg-base-200 flex-col">
@@ -110,6 +111,7 @@ export default function AppRouter() {
         {/* Student Classroom Routes (No Auth Required) */}
         <Route path="/student/join" element={<StudentJoin />} />
         <Route path="/student/active" element={<StudentActive />} />
+        <Route path="/student/summary" element={<StudentSummary />} />
 
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />

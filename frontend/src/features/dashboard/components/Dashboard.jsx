@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthContext";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
@@ -41,7 +41,11 @@ const Dashboard = () => {
   const [savedQuizzes, setSavedQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(location.state?.tab || "overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || location.state?.tab || "overview";
+  const setActiveTab = (tab) => {
+    setSearchParams({ tab });
+  };
   
   // Start modal state
   const [quizToStart, setQuizToStart] = useState(null);
@@ -66,7 +70,7 @@ const Dashboard = () => {
         timeLimitSeconds = timeLimitSeconds * 60;
       }
       
-      setupCustomQuiz(quiz.questions, timeLimitSeconds, quiz.timerType || "overall");
+      setupCustomQuiz(quiz.questions, timeLimitSeconds, quiz.timerType || "overall", quiz.title || "Custom Quiz");
       
       if (mode === "classroom") {
         const sessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -157,8 +161,36 @@ const Dashboard = () => {
     );
   }
 
+  let activeSession = null;
+  try {
+    const data = localStorage.getItem("active_teacher_session");
+    if (data) activeSession = JSON.parse(data);
+  } catch (e) {
+    // ignore
+  }
+
   return (
     <div className="space-y-6">
+      {activeSession && (
+        <div className="bg-primary/10 border border-primary rounded-xl p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary rounded-lg text-white">
+              <Play size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-primary text-lg">Active Session Running</h3>
+              <p className="text-sm text-primary/80">You have an ongoing classroom session.</p>
+            </div>
+          </div>
+          <Link
+            to={`/classroom/teacher/${activeSession.quizId}?session=${activeSession.sessionCode}`}
+            className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-focus transition-colors shadow-sm"
+          >
+            Resume Session
+          </Link>
+        </div>
+      )}
+
       <div className="flex justify-between gap-2">
 
         <div className="inline-flex bg-base-100 p-1 rounded-lg border border-base-300">
