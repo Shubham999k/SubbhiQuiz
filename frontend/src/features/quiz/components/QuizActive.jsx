@@ -147,7 +147,7 @@ const QuizActive = () => {
         ></div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 flex-grow">
+      <div className="flex flex-col lg:flex-row gap-4 flex-grow">
         {/* Main Question Area */}
         <div className="lg:w-2/3 flex flex-col">
           <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex-grow">

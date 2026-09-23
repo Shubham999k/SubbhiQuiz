@@ -93,7 +93,7 @@ const ClassroomProjector = () => {
           </p>
 
           {/* Podium */}
-          <div className="flex items-end justify-center gap-4 sm:gap-8 h-80 mb-16 w-full max-w-3xl">
+          <div className="flex items-end justify-center gap-4 sm:gap-4 h-80 mb-16 w-full max-w-3xl">
             {/* 2nd Place */}
             {topThree[1] && (
               <div className="flex flex-col items-center w-1/3 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
@@ -213,7 +213,7 @@ const ClassroomProjector = () => {
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-8 items-center justify-center w-full mt-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full mt-4">
               <div className="bg-primary/10 border-2 border-primary/20 rounded-2xl px-10 py-6 text-center">
                 <p className="text-primary font-bold uppercase tracking-wide text-sm mb-1">
                   Quiz Code
@@ -277,7 +277,7 @@ const ClassroomProjector = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-4 sm:gap-4">
           <div className="bg-primary px-4 py-2 rounded-xl text-center">
             <div className="text-primary-content text-xs font-bold uppercase">
               Joined
@@ -319,7 +319,7 @@ const ClassroomProjector = () => {
           {currentQuestion.question}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-4 max-w-6xl mx-auto w-full">
           {currentQuestion.options.map((option, idx) => {
             const label = String.fromCharCode(65 + idx);
             const isSelected = selectedOption === option;
@@ -356,7 +356,7 @@ const ClassroomProjector = () => {
             return (
               <div
                 key={idx}
-                className={`p-4 sm:p-6 lg:p-8 rounded-2xl border-4 flex items-center gap-4 sm:gap-6 ${cardClass} transition-all duration-300`}
+                className={`p-4 sm:p-6 lg:p-8 rounded-2xl border-4 flex items-center gap-4 sm:gap-4 ${cardClass} transition-all duration-300`}
               >
                 <div
                   className={`w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full border-4 flex items-center justify-center text-xl sm:text-3xl lg:text-4xl font-bold shrink-0 ${labelClass}`}
@@ -381,7 +381,7 @@ const ClassroomProjector = () => {
         <div
           className={`mt-12 transition-all duration-700 ${isAnswerRevealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}
         >
-          <div className="max-w-6xl mx-auto flex flex-col xl:flex-row gap-8">
+          <div className="max-w-6xl mx-auto flex flex-col xl:flex-row gap-4">
             {/* Explanation */}
             {currentQuestion.explanation && (
               <div className="flex-1 bg-blue-50 border-l-8 border-blue-500 p-6 lg:p-8 rounded-r-xl shadow-md">

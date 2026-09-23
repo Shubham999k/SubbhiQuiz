@@ -28,19 +28,19 @@ const Landing = () => {
   return (
     <div className="bg-white dark:bg-[#121212] transition-colors min-h-full">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-16">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-8 md:pt-12 pb-16">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-4">
           
           {/* Left Text Content */}
           <div className="flex-1 text-center lg:text-left">
             <p className="text-sm font-semibold tracking-[0.2em] text-gray-900 dark:text-gray-100/60 mb-6 uppercase">
               Learn • Practice • Grow
             </p>
-            <h1 className="text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 mb-4 leading-[1.1]">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 mb-6 leading-[1.15]">
               Test Your Knowledge.<br />
               <span className="text-primary">Track Your Growth.</span>
             </h1>
-            <p className="mt-6 text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
+            <p className="mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
               Practice smarter with interactive quizzes designed to improve
               your knowledge and confidence. Professional EdTech platform for
               dedicated learners.
@@ -62,7 +62,7 @@ const Landing = () => {
             </div>
 
             {/* Stats */}
-            <div className="flex items-center justify-center lg:justify-start gap-8 sm:gap-12 border-t border-base-200 pt-8">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-12 border-t border-base-200 pt-8">
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8 text-primary" />
                 <div className="text-left">
@@ -122,7 +122,7 @@ const Landing = () => {
           </Link>
         </div>
 
-        <div className="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x">
+        <div className="flex overflow-x-auto pb-6 gap-4 scrollbar-hide snap-x">
           <div className="snap-start shrink-0">
             <PopularCategoryCard 
               icon={FlaskConical} 

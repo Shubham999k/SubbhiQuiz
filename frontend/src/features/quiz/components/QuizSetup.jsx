@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useLoader } from "../../../hooks/useLoader";
+import { AnimatePresence } from "framer-motion";
+import { AnimatedPage } from "../../../components/common/AnimatedPage";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
 import { Loader2, Plus, Trash2, Save, Undo2, Redo2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Dropdown from "../../../components/ui/Dropdown";
+import Loader from "../../../components/common/Loader";
 
 const dummyCategories = [
   {
@@ -70,7 +74,7 @@ const QuizSetup = () => {
   const defaultCategory = searchParams.get("category") || "python";
 
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useLoader(true);
   const [isStarting, setIsStarting] = useState(false);
   const [isStartingClassroom, setIsStartingClassroom] = useState(false);
 
@@ -91,6 +95,8 @@ const QuizSetup = () => {
   const initialMode = preloadedQuiz ? "custom" : (searchParams.get("mode") === "custom" ? "custom" : "builtin");
   const [quizMode, setQuizMode] = useState(initialMode); // 'builtin' or 'custom'
   const [customQuizTitle, setCustomQuizTitle] = useState(preloadedQuiz ? preloadedQuiz.title : "");
+  const [customQuizDescription, setCustomQuizDescription] = useState(preloadedQuiz ? (preloadedQuiz.description || "") : "");
+  const [customQuizIcon, setCustomQuizIcon] = useState(preloadedQuiz ? (preloadedQuiz.icon || "Save") : "Save");
   
   const [timerType, setTimerType] = useState(preloadedQuiz?.timerType || "overall");
   const [timeLimit, setTimeLimit] = useState(preloadedQuiz?.timeLimit || 10);
@@ -116,6 +122,8 @@ const QuizSetup = () => {
   const [originalStateStr, setOriginalStateStr] = useState(
     preloadedQuiz ? JSON.stringify({
       title: preloadedQuiz.title,
+      description: preloadedQuiz.description || "",
+      icon: preloadedQuiz.icon || "Save",
       timerType: preloadedQuiz.timerType,
       timeLimit: preloadedQuiz.timeLimit,
       questions: preloadedQuiz.questions.map(q => ({
@@ -129,6 +137,8 @@ const QuizSetup = () => {
 
   const currentStateStr = JSON.stringify({
     title: customQuizTitle,
+    description: customQuizDescription,
+    icon: customQuizIcon,
     timerType,
     timeLimit,
     questions: customQuestions.map(q => ({
@@ -310,6 +320,8 @@ const QuizSetup = () => {
       const response = await api.saveCustomQuiz({
         id: savedQuizId,
         title: customQuizTitle,
+        description: customQuizDescription,
+        icon: customQuizIcon,
         questions: customQuestions,
         timerType: timerType,
         timeLimit: timeLimit,
@@ -319,7 +331,7 @@ const QuizSetup = () => {
         setOriginalStateStr(currentStateStr);
       }
       toast.success("Custom Quiz Saved Successfully!");
-      navigate('/dashboard', { state: { tab: 'saved-quizzes' } });
+      navigate('/practice');
     } catch (error) {
       console.error("Failed to save custom quiz:", error);
       const errMsg = error.message || "";
@@ -379,28 +391,21 @@ const QuizSetup = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      </div>
-    );
+    return <Loader message="Loading Quiz Setup..." />;
   }
 
   return (
-    <div className="mx-auto space-y-4">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mx-auto space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-base-content">
             Configure Your Quiz
           </h1>
-          <p className="text-base-content/70">
-            Customize your practice session or create your own custom quiz.
-          </p>
         </div>
 
-        <div className="inline-flex bg-base-100 p-1 rounded-lg border border-base-300">
+        <div className="flex w-full sm:inline-flex sm:w-auto bg-base-100 p-1 rounded-lg border border-base-300">
           <button
-            className={`px-6 py-2.5 rounded-md font-medium text-sm transition-colors ${quizMode === "builtin"
+            className={`flex-1 sm:flex-none flex items-center justify-center px-2 sm:px-6 py-2 sm:py-2.5 rounded-md font-medium text-[11px] sm:text-sm transition-colors whitespace-nowrap ${quizMode === "builtin"
               ? "bg-primary text-white shadow-sm"
               : "text-base-content/70 hover:text-base-content hover:bg-base-200"
               }`}
@@ -409,7 +414,7 @@ const QuizSetup = () => {
             Built-in Categories
           </button>
           <button
-            className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${quizMode === "custom"
+            className={`flex-1 sm:flex-none flex items-center justify-center px-2 sm:px-4 py-2 sm:py-2.5 rounded-md font-medium text-[11px] sm:text-sm transition-colors whitespace-nowrap ${quizMode === "custom"
               ? "bg-primary text-white shadow-sm"
               : "text-base-content/70 hover:text-base-content hover:bg-base-200"
               }`}
@@ -420,9 +425,11 @@ const QuizSetup = () => {
         </div>
       </div>
 
-      <form className="space-y-8">
-        {quizMode === "builtin" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-base-100 p-6 md:p-8 rounded-xl border border-base-300 shadow-sm">
+      <form className="space-y-4">
+        <AnimatePresence mode="wait">
+          <AnimatedPage key={quizMode}>
+            {quizMode === "builtin" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-base-100 p-6 md:p-8 rounded-xl border border-base-300 shadow-sm">
             <div>
               <label
                 htmlFor="category"
@@ -511,7 +518,7 @@ const QuizSetup = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4">
             <div className="bg-base-100 p-6 rounded-xl border border-base-300 shadow-sm mb-6 relative">
               <div className="fixed bottom-24 right-8 z-[60] flex flex-col space-y-3 bg-base-100 p-2.5 rounded-2xl shadow-2xl border border-base-300 transition-all">
                 <button
@@ -561,7 +568,46 @@ const QuizSetup = () => {
               )}
               {!titleError && <div className="mb-6"></div>}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-base-content mb-2">
+                    Quiz Description
+                  </label>
+                  <textarea
+                    className="w-full rounded-md bg-base-200 text-base-content py-3 px-4 focus:outline-none focus:ring-1 border border-base-300 focus:border-primary focus:ring-primary transition-colors resize-none h-24"
+                    value={customQuizDescription}
+                    onChange={(e) => setCustomQuizDescription(e.target.value)}
+                    placeholder="Briefly describe what this quiz is about..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-base-content mb-2">
+                    Quiz Icon
+                  </label>
+                  <Dropdown
+                    options={[
+                      { label: "Save (Default)", value: "Save" },
+                      { label: "Python/Code File", value: "FileCode2" },
+                      { label: "Java/Coffee", value: "Coffee" },
+                      { label: "React/Code", value: "Code2" },
+                      { label: "JavaScript/Terminal", value: "TerminalSquare" },
+                      { label: "HTML/Layout", value: "Layout" },
+                      { label: "CSS/Palette", value: "Palette" },
+                      { label: "SQL/Database", value: "Database" },
+                      { label: "DSA/Network", value: "Network" },
+                      { label: "Brain", value: "Brain" },
+                      { label: "Gamepad", value: "Gamepad2" }
+                    ]}
+                    value={customQuizIcon}
+                    onChange={(val) => setCustomQuizIcon(val)}
+                    placeholder="Select an icon"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-base-content mb-2">
                     Timer Type
@@ -710,7 +756,9 @@ const QuizSetup = () => {
               <Plus size={20} /> Add Another Question
             </button>
           </div>
-        )}
+            )}
+          </AnimatedPage>
+        </AnimatePresence>
 
         <div className="pt-6 flex flex-row justify-end gap-3 mt-6">
           <button
@@ -767,7 +815,7 @@ const QuizSetup = () => {
       </form>
 
 
-    </div>
+    </motion.div>
   );
 };
 

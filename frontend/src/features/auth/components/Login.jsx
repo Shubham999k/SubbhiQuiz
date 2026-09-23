@@ -32,7 +32,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center sm:px-6 py-2 lg:px-8 bg-base-200">
+    <div className="flex-1 flex flex-col justify-center sm:px-6 py-2 lg:px-8 bg-base-200">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-base-content">
           Sign in to your account
@@ -50,7 +50,7 @@ const Login = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-base-100 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-base-300">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-error/10 border border-red-200 text-error px-4 py-3 rounded-md text-sm">
                 {error}

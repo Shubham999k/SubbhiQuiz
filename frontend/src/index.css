@@ -24,6 +24,7 @@
   
   body {
     @apply bg-base-100 text-base-content;
+    overflow-x: hidden;
   }
 }
 
@@ -51,6 +52,16 @@
     scrollbar-width: none;
   }
   
+  @media (max-width: 1024px) {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  }
+
   .animate-bounce-slow {
     animation: bounce 3s infinite;
   }

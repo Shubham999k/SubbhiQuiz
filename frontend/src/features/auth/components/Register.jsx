@@ -40,7 +40,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center sm:px-6 py-2 lg:px-8 bg-base-200">
+    <div className="flex-1 flex flex-col justify-center sm:px-6 py-2 lg:px-8 bg-base-200">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-base-content">
           Create a new account

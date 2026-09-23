@@ -75,7 +75,7 @@ const ClassroomTeacher = () => {
   useEffect(() => {
     return () => {
       if (!quizCompletedRef.current) {
-        toast("Session is running in the background. You can resume it from the Dashboard.", { icon: "ℹ️", duration: 5000 });
+        toast("Session is running in the background. You can resume it from the notification bell.", { icon: "🔔", duration: 5000 });
       }
     };
   }, []);
@@ -803,8 +803,8 @@ const ClassroomTeacher = () => {
       )}
 
       {/* ── 3. Stats Row ────────────────────────────────────────────────── */}
-      <div className="bg-base-100 p-4 rounded-xl shadow-sm border border-base-200 flex flex-wrap items-center justify-between gap-6 mb-6">
-        <div className="flex items-center gap-8 md:gap-16 flex-1 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+      <div className="bg-base-100 p-4 rounded-xl shadow-sm border border-base-200 flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4 md:gap-16 flex-1 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
           <div className="flex items-center gap-3 shrink-0">
             <Users size={24} className="text-blue-500" />
             <div>
@@ -958,7 +958,7 @@ const ClassroomTeacher = () => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* ── Left Column: Question Area / Waiting State ──────────────── */}
           <div className="flex-[3] flex flex-col gap-4">
             {!quizStarted ? (
@@ -1073,7 +1073,7 @@ const ClassroomTeacher = () => {
               {/* Bottom Actions Row */}
               <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 pt-6 border-t border-base-200">
                 {/* Timer block */}
-                <div className="bg-base-100 border border-base-200 rounded-xl p-4 flex items-center gap-6 shadow-sm">
+                <div className="bg-base-100 border border-base-200 rounded-xl p-4 flex items-center gap-4 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
                       <Clock size={20} />

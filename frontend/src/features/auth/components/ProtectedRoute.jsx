@@ -2,17 +2,14 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthContext";
 import { Loader2 } from "lucide-react";
+import Loader from "../../../components/common/Loader";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      </div>
-    );
+    return <div className="min-h-screen bg-base-200"><Loader message="Loading Profile..." /></div>;
   }
 
   if (!user) {

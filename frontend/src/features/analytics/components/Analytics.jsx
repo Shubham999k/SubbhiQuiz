@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../../../services/api";
+import { motion } from "framer-motion";
+import { useLoader } from "../../../hooks/useLoader";
 import { Loader2, TrendingUp, Target, BookOpen, Clock } from "lucide-react";
+import Loader from "../../../components/common/Loader";
+
 
 const Analytics = () => {
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useLoader(true);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -16,11 +20,7 @@ const Analytics = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      </div>
-    );
+    return <Loader message="Loading Analytics..." />;
   }
 
   const totalQuizzes = history.length;
@@ -55,15 +55,9 @@ const Analytics = () => {
     .sort((a, b) => b.average - a.average);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-base-content">Performance Analytics</h1>
-        <p className="text-sm text-base-content/70">
-          Detailed insights into your learning progress.
-        </p>
-      </div>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-4">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300 flex items-center">
           <div className="bg-primary/20 p-3 rounded-lg mr-4 text-primary">
             <BookOpen className="w-6 h-6" />
@@ -116,7 +110,7 @@ const Analytics = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Category Performance */}
         <div className="bg-base-100 p-6 rounded-xl shadow-sm border border-base-300">
           <h2 className="text-lg font-bold text-base-content mb-6">
@@ -128,7 +122,7 @@ const Analytics = () => {
               Not enough data to display.
             </p>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {categoryAverages.map((cat) => (
                 <div key={cat.name}>
                   <div className="flex justify-between items-end mb-1">
@@ -202,7 +196,7 @@ const Analytics = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

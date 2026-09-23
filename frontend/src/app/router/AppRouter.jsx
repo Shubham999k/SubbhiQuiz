@@ -1,5 +1,8 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import { AnimatedPage } from "../../components/common/AnimatedPage";
+
 import PublicLayout from "../../components/layout/PublicLayout";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import ProtectedRoute from "../../features/auth/components/ProtectedRoute";
@@ -25,27 +28,31 @@ import StudentActive from "../../features/students/components/StudentActive";
 import StudentSummary from "../../features/students/components/StudentSummary";
 
 const NotFound = () => (
-  <div className="min-h-screen flex items-center justify-center bg-base-200 flex-col">
-    <h1 className="text-6xl font-bold text-primary mb-4">404</h1>
-    <p className="text-xl text-base-content/70 mb-8">Page Not Found</p>
-    <a
-      href="/"
-      className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:opacity-80"
-    >
-      Go Home
-    </a>
-  </div>
+  <AnimatedPage>
+    <div className="min-h-screen flex items-center justify-center bg-base-200 flex-col">
+      <h1 className="text-6xl font-bold text-primary mb-4">404</h1>
+      <p className="text-xl text-base-content/70 mb-8">Page Not Found</p>
+      <a
+        href="/"
+        className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:opacity-80"
+      >
+        Go Home
+      </a>
+    </div>
+  </AnimatedPage>
 );
 
-export default function AppRouter() {
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<AnimatedPage><Landing /></AnimatedPage>} />
+          <Route path="/login" element={<AnimatedPage><Login /></AnimatedPage>} />
+          <Route path="/register" element={<AnimatedPage><Register /></AnimatedPage>} />
         </Route>
 
         {/* Protected Dashboard Routes */}
@@ -56,14 +63,14 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/quiz/setup" element={<QuizSetup />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/classroom/teacher/:quizId" element={<ClassroomTeacher />} />
+          <Route path="/dashboard" element={<AnimatedPage><Dashboard /></AnimatedPage>} />
+          <Route path="/categories" element={<AnimatedPage><Categories /></AnimatedPage>} />
+          <Route path="/quiz/setup" element={<AnimatedPage><QuizSetup /></AnimatedPage>} />
+          <Route path="/history" element={<AnimatedPage><History /></AnimatedPage>} />
+          <Route path="/analytics" element={<AnimatedPage><Analytics /></AnimatedPage>} />
+          <Route path="/leaderboard" element={<AnimatedPage><Leaderboard /></AnimatedPage>} />
+          <Route path="/profile" element={<AnimatedPage><Profile /></AnimatedPage>} />
+          <Route path="/classroom/teacher/:quizId" element={<AnimatedPage><ClassroomTeacher /></AnimatedPage>} />
         </Route>
 
         {/* Protected Quiz Routes (No Sidebar, Full Screen) */}
@@ -71,9 +78,9 @@ export default function AppRouter() {
           path="/quiz/:quizId"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-base-200">
+              <AnimatedPage className="min-h-screen bg-base-200">
                 <QuizActive />
-              </div>
+              </AnimatedPage>
             </ProtectedRoute>
           }
         />
@@ -81,9 +88,9 @@ export default function AppRouter() {
           path="/quiz/:quizId/result"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-base-200">
+              <AnimatedPage className="min-h-screen bg-base-200">
                 <QuizResult />
-              </div>
+              </AnimatedPage>
             </ProtectedRoute>
           }
         />
@@ -91,9 +98,9 @@ export default function AppRouter() {
           path="/quiz/:quizId/review"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-base-200">
+              <AnimatedPage className="min-h-screen bg-base-200">
                 <QuizReview />
-              </div>
+              </AnimatedPage>
             </ProtectedRoute>
           }
         />
@@ -103,19 +110,29 @@ export default function AppRouter() {
           path="/classroom/projector/:quizId"
           element={
             <ProtectedRoute>
-              <ClassroomProjector />
+              <AnimatedPage>
+                <ClassroomProjector />
+              </AnimatedPage>
             </ProtectedRoute>
           }
         />
 
         {/* Student Classroom Routes (No Auth Required) */}
-        <Route path="/student/join" element={<StudentJoin />} />
-        <Route path="/student/active" element={<StudentActive />} />
-        <Route path="/student/summary" element={<StudentSummary />} />
+        <Route path="/student/join" element={<AnimatedPage><StudentJoin /></AnimatedPage>} />
+        <Route path="/student/active" element={<AnimatedPage><StudentActive /></AnimatedPage>} />
+        <Route path="/student/summary" element={<AnimatedPage><StudentSummary /></AnimatedPage>} />
 
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </AnimatePresence>
+  );
+};
+
+export default function AppRouter() {
+  return (
+    <BrowserRouter>
+      <AnimatedRoutes />
     </BrowserRouter>
   );
 }

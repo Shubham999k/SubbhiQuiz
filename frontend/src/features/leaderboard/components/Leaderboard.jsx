@@ -82,10 +82,10 @@ const Leaderboard = () => {
   const totalParticipants = data.length;
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-8xl mx-auto">
 
       {/* Header & Main Filters */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-base-content tracking-tight flex items-center gap-3">
             <Trophy className="text-warning h-6 w-6" />
@@ -115,7 +115,7 @@ const Leaderboard = () => {
 
       {/* Top 3 Podium (Decorated) */}
       <div className="relative pt-18 pb-8 px-4 flex justify-center items-end max-h-[6
-      0vh] gap-3 sm:gap-8 bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden group">
+      0vh] gap-3 sm:gap-4 bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden group">
 
         {loading && (
           <div className="absolute inset-0 z-50 bg-base-100/60 backdrop-blur-sm flex items-center justify-center">

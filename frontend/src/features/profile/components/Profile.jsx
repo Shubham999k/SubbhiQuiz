@@ -164,22 +164,19 @@ const Profile = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden">
+    <div className="h-[calc(100vh-6rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 lg:overflow-hidden overflow-y-auto hide-scrollbar">
       
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <div>
           <h1 className="text-xl font-bold text-base-content tracking-tight">My Profile</h1>
-          <p className="text-sm text-base-content/70">
-            Manage your account and view your achievements.
-          </p>
         </div>
       </div>
 
-      {/* Grid Layout to fit in single page */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0 overflow-hidden">
+      {/* Grid Layout to fit in single page on LG, stacked on SM */}
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 flex-1 lg:overflow-hidden">
         
         {/* Left Column: Avatar & Stats */}
-        <div className="lg:col-span-4 flex flex-col gap-6 overflow-y-auto pr-2 pb-4">
+        <div className="lg:col-span-4 flex flex-col gap-4 lg:overflow-y-auto shrink-0">
           
           {/* Avatar Card */}
           <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6 flex flex-col items-center relative overflow-hidden group">
@@ -258,8 +255,8 @@ const Profile = () => {
         </div>
 
         {/* Right Column: Profile Info Form */}
-        <div className="lg:col-span-8 flex flex-col min-h-0 pb-4">
-          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 flex flex-col h-full overflow-hidden">
+        <div className="lg:col-span-8 flex flex-col lg:min-h-0 pb-4 shrink-0">
+          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 flex flex-col lg:h-full lg:overflow-hidden">
             <div className="p-5 border-b border-base-300 flex justify-between items-center bg-base-200/30 flex-shrink-0">
               <h3 className="text-lg font-bold text-base-content flex items-center gap-2">
                 <User className="text-primary" size={20} /> Personal Information
@@ -276,8 +273,8 @@ const Profile = () => {
               </button>
             </div>
 
-            <div className="p-6 md:p-8 flex-1 overflow-y-auto">
-              <form onSubmit={handleSave} className="space-y-6 max-w-lg">
+            <div className="p-6 md:p-8 flex-1 lg:overflow-y-auto">
+              <form onSubmit={handleSave} className="space-y-4 max-w-lg">
                 <div>
                   <label className="block text-sm font-semibold text-base-content/80 mb-2 pl-1">
                     Full Name

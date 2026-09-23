@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useLoader } from "../../../hooks/useLoader";
 import { api } from "../../../services/api";
 import {
   CheckCircle2,
@@ -10,10 +12,11 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import Loader from "../../../components/common/Loader";
 
 const QuizReview = () => {
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useLoader(true);
   const [selectedStudentRoll, setSelectedStudentRoll] = useState(null);
   const navigate = useNavigate();
   const { quizId } = useParams();
@@ -42,11 +45,7 @@ const QuizReview = () => {
   }, [navigate, quizId]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-base-200">
-        <Loader2 className="h-10 w-10 text-primary animate-spin" />
-      </div>
-    );
+    return <div className="min-h-screen bg-base-200"><Loader message="Loading Quiz Results..." /></div>;
   }
 
   if (!result || !result.questions || result.questions.length === 0) {
@@ -68,7 +67,7 @@ const QuizReview = () => {
   const selectedStudent = result.participants?.find(p => p.roll === selectedStudentRoll);
 
   return (
-    <div className="min-h-screen bg-base-200 p-4 flex flex-col">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="min-h-screen bg-base-200 p-4 flex flex-col">
       {/* Header */}
       <div className="bg-indigo-900 text-white p-4 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <div>
@@ -88,7 +87,7 @@ const QuizReview = () => {
         </Link>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 flex-grow">
+      <div className="flex flex-col lg:flex-row gap-4 flex-grow">
         {/* Left Sidebar: Participants */}
         <div className="w-full lg:w-80 flex flex-col gap-4">
           <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 overflow-hidden flex flex-col h-[580px]">
@@ -144,7 +143,7 @@ const QuizReview = () => {
         </div>
 
         {/* Right Main Content: Student Review */}
-        <div className="flex-1 flex flex-col gap-6">
+        <div className="flex-1 flex flex-col gap-4">
           {selectedStudent ? (
             (() => {
               const actualCorrectCount = result.questions.filter(q => selectedStudent.answers?.[q.id] === q.correctAnswer).length;
@@ -177,7 +176,7 @@ const QuizReview = () => {
                   </div>
                 </div>
 
-              <div className="space-y-6 overflow-y-auto flex-1 pr-2">
+              <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                 {result.questions.map((q, idx) => {
                   const userAnswer = selectedStudent.answers?.[q.id];
                   const isCorrect = userAnswer === q.correctAnswer;
@@ -297,7 +296,7 @@ const QuizReview = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

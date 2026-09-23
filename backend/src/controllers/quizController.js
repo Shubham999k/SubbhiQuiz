@@ -47,7 +47,7 @@ export const getQuestions = async (req, res) => {
 // @access  Private
 export const saveCustomQuiz = async (req, res) => {
   try {
-    const { id, title, questions, timeLimit, timerType } = req.body;
+    const { id, title, description, icon, questions, timeLimit, timerType } = req.body;
     
     if (!title || !questions || questions.length === 0) {
       return res.status(400).json({ message: "Title and questions are required" });
@@ -71,6 +71,8 @@ export const saveCustomQuiz = async (req, res) => {
       }
       
       existingQuiz.title = title;
+      if (description !== undefined) existingQuiz.description = description;
+      if (icon !== undefined) existingQuiz.icon = icon;
       existingQuiz.questions = questions;
       if (timeLimit !== undefined) existingQuiz.timeLimit = timeLimit;
       if (timerType !== undefined) existingQuiz.timerType = timerType;
@@ -90,6 +92,8 @@ export const saveCustomQuiz = async (req, res) => {
     const result = await CustomQuiz.create({
       userId: req.user._id,
       title,
+      description: description || "Custom quiz created by you.",
+      icon: icon || "Save",
       questions,
       timeLimit,
       timerType,

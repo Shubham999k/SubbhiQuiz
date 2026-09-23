@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useLoader } from "../../../hooks/useLoader";
 import { api } from "../../../services/api";
 import { BookOpen, Filter, Loader2, ArrowRight } from "lucide-react";
 import Dropdown from "../../../components/ui/Dropdown";
+import Loader from "../../../components/common/Loader";
 
 const History = () => {
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useLoader(true);
   const [filter, setFilter] = useState("all_time");
   const [viewLimit, setViewLimit] = useState("all");
 
@@ -49,43 +52,32 @@ const History = () => {
   }, [history, filter, viewLimit]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      </div>
-    );
+    return <Loader message="Loading History..." />;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-base-content">Quiz History</h1>
-          <p className="text-sm text-base-content/70">
-            Review your past performance and track progress.
-          </p>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+        {/* Time Filters */}
+        <div className="flex bg-base-200 p-1.5 gap-2 rounded-xl border border-base-300 shadow-sm overflow-x-auto w-full sm:w-auto">
+          {["daily", "weekly", "monthly", "all_time"].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 sm:px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 whitespace-nowrap ${filter === f
+                ? "bg-base-100 text-primary shadow-md scale-105"
+                : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
+                }`}
+            >
+              {f.replace("_", " ")}
+            </button>
+          ))}
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-
-
-          {/* Time Filters */}
-          <div className="flex bg-base-200 p-1.5 gap-2 rounded-xl border border-base-300 shadow-sm overflow-x-auto w-full sm:w-auto">
-            {["daily", "weekly", "monthly", "all_time"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 sm:px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 whitespace-nowrap ${filter === f
-                  ? "bg-base-100 text-primary shadow-md scale-105"
-                  : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
-                  }`}
-              >
-                {f.replace("_", " ")}
-              </button>
-            ))}
-          </div>
-          {/* View Limit Selector */}
-          <div className="flex items-center gap-2 w-full sm:w-40">
-            <span className="text-sm font-medium text-base-content/70 whitespace-nowrap border-l border-base-300 pl-4">View:</span>
+        
+        {/* View Limit Selector */}
+        <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
+          <span className="text-sm font-medium text-base-content/70 whitespace-nowrap">View:</span>
+          <div className="w-32">
             <Dropdown
               options={[
                 { label: "Top 10", value: 10 },
@@ -211,7 +203,7 @@ const History = () => {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

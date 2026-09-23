@@ -361,7 +361,7 @@ const StudentJoin = () => {
 
           /* ── Normal join form ───────────────────────────────────── */
           ) : (
-            <form onSubmit={handleJoin} className="space-y-6 relative z-10">
+            <form onSubmit={handleJoin} className="space-y-4 relative z-10">
               {error && (
                 <div className="bg-error/10 text-error p-3.5 rounded-xl text-sm font-medium border border-error/20 text-center">
                   {error}

@@ -29,6 +29,14 @@ const customQuizSchema = new mongoose.Schema(
       enum: ["overall", "per_question"],
       default: "overall",
     },
+    description: {
+      type: String,
+      default: "Custom quiz created by you.",
+    },
+    icon: {
+      type: String,
+      default: "Save",
+    },
     date: {
       type: Date,
       default: Date.now,
