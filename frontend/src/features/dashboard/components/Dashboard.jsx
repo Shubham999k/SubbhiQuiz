@@ -17,6 +17,7 @@ import {
   Trash2,
   X,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 import QRScannerModal from "../../../components/common/QRScannerModal";
 
@@ -41,6 +42,15 @@ const Dashboard = () => {
   const [savedQuizzes, setSavedQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [activeSession, setActiveSession] = useState(() => {
+    try {
+      const data = localStorage.getItem("active_teacher_session");
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || location.state?.tab || "overview";
   const setActiveTab = (tab) => {
@@ -153,20 +163,18 @@ const Dashboard = () => {
     }
   };
 
+  const handleEndSession = () => {
+    localStorage.removeItem("active_teacher_session");
+    setActiveSession(null);
+    setShowEndSessionConfirm(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
-  }
-
-  let activeSession = null;
-  try {
-    const data = localStorage.getItem("active_teacher_session");
-    if (data) activeSession = JSON.parse(data);
-  } catch (e) {
-    // ignore
   }
 
   return (
@@ -182,12 +190,20 @@ const Dashboard = () => {
               <p className="text-sm text-primary/80">You have an ongoing classroom session.</p>
             </div>
           </div>
-          <Link
-            to={`/classroom/teacher/${activeSession.quizId}?session=${activeSession.sessionCode}`}
-            className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-focus transition-colors shadow-sm"
-          >
-            Resume Session
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowEndSessionConfirm(true)}
+              className="px-6 py-2 bg-error/10 text-error font-bold rounded-lg hover:bg-error/20 transition-colors shadow-sm"
+            >
+              End Session
+            </button>
+            <Link
+              to={`/classroom/teacher/${activeSession.quizId}?session=${activeSession.sessionCode}`}
+              className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-focus transition-colors shadow-sm"
+            >
+              Resume Session
+            </Link>
+          </div>
         </div>
       )}
 
@@ -487,6 +503,46 @@ const Dashboard = () => {
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScan}
       />
+
+      {/* End Session Confirmation Modal */}
+      {showEndSessionConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-base-100 rounded-xl shadow-xl max-w-md w-full overflow-hidden border border-base-300">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-base-content flex items-center text-error">
+                  <AlertTriangle className="mr-2" size={24} /> End Active Session
+                </h3>
+                <button 
+                  onClick={() => setShowEndSessionConfirm(false)}
+                  className="text-base-content/50 hover:text-base-content bg-base-200 hover:bg-base-300 rounded-full p-1 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <p className="text-base-content/70 mb-6">
+                Are you sure you want to end this active session? The session will be terminated and this card will be removed from your dashboard.
+              </p>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowEndSessionConfirm(false)}
+                  className="px-4 py-2 border border-base-300 rounded-lg text-base-content hover:bg-base-200 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEndSession}
+                  className="px-4 py-2 bg-error text-white rounded-lg hover:bg-red-600 transition-colors font-medium flex items-center"
+                >
+                  End Session
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Start Quiz Modal */}
       {quizToStart && (
