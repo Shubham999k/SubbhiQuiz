@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useLoader } from "../../../hooks/useLoader";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { AnimatedPage } from "../../../components/common/AnimatedPage";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { api } from "../../../services/api";
