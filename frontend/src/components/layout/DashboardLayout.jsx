@@ -157,7 +157,7 @@ const DashboardLayout = () => {
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-75 md:hidden"
+          className="fixed inset-0 z-40 bg-base-content/20 dark:bg-black/40 backdrop-blur-sm md:hidden transition-all duration-300"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -373,7 +373,7 @@ const DashboardLayout = () => {
             </div>
 
             <div className="flex items-center space-x-1">
-              <ThemeSelector className="w-auto z-50" />
+              <ThemeSelector className="w-auto" />
             </div>
           </div>
         </header>
