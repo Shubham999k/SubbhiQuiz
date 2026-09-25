@@ -45,5 +45,10 @@ const customQuizSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Index on userId so getCustomQuizzes and saveCustomQuiz lookups
+// don't require a full collection scan as the quizzes collection grows.
+customQuizSchema.index({ userId: 1 });
+
 const CustomQuiz = mongoose.model("CustomQuiz", customQuizSchema);
 export default CustomQuiz;
+

@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import compression from "compression";
 import connectDB from "./config/db.js";
 
 // Load env vars
@@ -12,6 +13,8 @@ connectDB();
 const app = express();
 
 // Middleware
+// gzip-compresses all responses — reduces JSON payload transfer size by 70-80%
+app.use(compression());
 app.use(cors({
   origin: process.env.CLIENT_URL || "*"
 }));

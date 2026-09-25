@@ -29,5 +29,11 @@ const questionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Compound index covering the getQuestions query pattern:
+//   Question.find({ category, difficulty })
+// Without this, filtering questions requires a full collection scan.
+questionSchema.index({ category: 1, difficulty: 1 });
+
 const Question = mongoose.model("Question", questionSchema);
 export default Question;
+

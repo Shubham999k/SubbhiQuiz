@@ -24,8 +24,17 @@ const ThemeSelector = ({ className = "" }) => {
         setIsOpen(false);
       }
     };
+    const handleScroll = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll, true); // true for capture phase to catch all scrolls
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
   }, []);
 
   const themeOptions = [

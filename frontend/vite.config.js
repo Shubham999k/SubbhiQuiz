@@ -20,6 +20,18 @@ export default defineConfig({
   define: {
     __LOCAL_IP__: JSON.stringify(getLocalIP()),
   },
+  build: {
+    // Warn if any chunk exceeds 700 KB after code splitting
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        // Give chunks readable names for easier network-tab debugging
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
+      },
+    },
+  },
   server: {
     host: true,
     proxy: {
@@ -30,3 +42,4 @@ export default defineConfig({
     },
   },
 });
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLoader } from "../../../hooks/useLoader";
@@ -14,8 +14,11 @@ import {
   ArrowRight,
   QrCode,
 } from "lucide-react";
-import QRScannerModal from "../../../components/common/QRScannerModal";
 import Loader from "../../../components/common/Loader";
+
+// Lazy-load QRScannerModal — html5-qrcode is a large library (~300KB) only
+// needed when the user clicks "Join Classroom". Keep it out of the initial chunk.
+const QRScannerModal = lazy(() => import("../../../components/common/QRScannerModal"));
 
 
 const StatCard = ({ title, value, icon: Icon, themeColor }) => {
@@ -335,8 +338,16 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-          </div>
-    </motion.div>
+        </div>
+
+        <Suspense fallback={null}>
+          <QRScannerModal
+            isOpen={isScannerOpen}
+            onClose={() => setIsScannerOpen(false)}
+            onScan={handleScan}
+          />
+        </Suspense>
+      </motion.div>
   );
 };
 

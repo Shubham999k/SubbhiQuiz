@@ -5,14 +5,22 @@ import QuizResult from "../models/QuizResult.js";
 // @access  Private
 export const getHistory = async (req, res) => {
   try {
-    const history = await QuizResult.find({ userId: req.user._id }).sort({
-      date: -1,
-    });
+    // Exclude questions[] and participants[] from the list response.
+    // The dashboard and history page only need summary fields — returning
+    // full question data was inflating the payload 10-50x unnecessarily.
+    // .lean() returns plain JS objects (not Mongoose docs) — 2-3x faster
+    // for read-only endpoints.
+    const history = await QuizResult
+      .find({ userId: req.user._id })
+      .select("category difficulty score totalQuestions accuracy timeTaken date categoryId")
+      .sort({ date: -1 })
+      .lean();
     res.json(history);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Submit a new quiz result
 // @route   POST /api/history

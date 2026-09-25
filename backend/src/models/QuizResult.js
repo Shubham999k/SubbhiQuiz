@@ -59,5 +59,12 @@ const quizResultSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Compound index covering the most common query pattern:
+//   QuizResult.find({ userId }).sort({ date: -1 })
+// Without this, MongoDB does a full collection scan on every history request.
+// The compound index serves both the equality filter AND the sort in one pass.
+quizResultSchema.index({ userId: 1, date: -1 });
+
 const QuizResult = mongoose.model("QuizResult", quizResultSchema);
 export default QuizResult;
+

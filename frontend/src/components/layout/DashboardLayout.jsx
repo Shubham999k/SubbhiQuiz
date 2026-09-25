@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthContext";
 import ThemeSelector from "../common/ThemeSelector";
+import Loader from "../common/Loader";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -68,9 +69,16 @@ const DashboardLayout = () => {
         setShowNotifications(false);
       }
     };
+    const handleScroll = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll, true); // true for capture phase to catch all scrolls
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
     };
   }, []);
   const [activeSession, setActiveSession] = useState(null);
@@ -371,8 +379,10 @@ const DashboardLayout = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto bg-base-200">
-          <div className="py-4 px-4">
-            <Outlet />
+          <div className="py-4 px-4 h-full">
+            <React.Suspense fallback={<Loader message="Loading page..." />}>
+              <Outlet />
+            </React.Suspense>
           </div>
         </main>
       </div>
