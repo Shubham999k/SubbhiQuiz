@@ -533,22 +533,10 @@ const ClassroomTeacher = () => {
   });
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-base-200">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="bg-primary text-white p-3 shadow-sm flex justify-between items-center z-10 shrink-0 relative">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/dashboard")} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
-            <ChevronLeft size={20} />
-          </button>
-          <div>
-            <h1 className="font-bold text-base leading-tight tracking-wide">Instructor Panel</h1>
-            <p className="text-primary-content/80 text-[10px] font-medium uppercase tracking-widest">Session {sessionCode}</p>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col font-sans">
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto">
+      <div className="flex flex-col">
 
 
 
@@ -757,9 +745,104 @@ const ClassroomTeacher = () => {
         </div>
       )}
 
+      {/* ── Controls Row (Top Cards) ─────────────────────────────────── */}
+      {!quizCompleted && (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4">
+          {/* Wildcard Entry */}
+          <div className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center relative transition-all hover:border-primary hover:shadow-md h-20 md:h-24">
+            {wildcardRequests.length > 0 && (
+              <div
+                onClick={() => setShowWildcardPanel(p => !p)}
+                className="absolute -top-2 -right-2 bg-secondary text-secondary-content w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shadow cursor-pointer animate-bounce z-10"
+              >
+                {wildcardRequests.length}
+              </div>
+            )}
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <Sparkles size={16} className="text-secondary" />
+                <h3 className="font-bold text-base-content text-xs md:text-sm">Wildcard</h3>
+              </div>
+              <input 
+                type="checkbox" 
+                className="checkbox checkbox-accent checkbox-sm md:checkbox-md" 
+                checked={wildcardEnabled}
+                onChange={handleToggleWildcard}
+              />
+            </div>
+            <p className="text-[10px] md:text-xs text-base-content/60 font-medium">Late/rejoin requests</p>
+          </div>
+
+          {/* Join Mode */}
+          <div className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center transition-all hover:border-primary hover:shadow-md relative h-20 md:h-24">
+            {pendingRequests.length > 0 && (
+              <div
+                onClick={() => setShowPendingPanel(p => !p)}
+                className="absolute -top-2 -right-2 bg-warning text-warning-content w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shadow cursor-pointer animate-bounce z-10"
+              >
+                {pendingRequests.length}
+              </div>
+            )}
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <UserPlus size={16} className="text-primary" />
+                <h3 className="font-bold text-base-content text-xs md:text-sm">Join Mode</h3>
+              </div>
+              <Dropdown
+                options={[
+                  { label: "Auto", value: "Auto Allow" },
+                  { label: "Manual", value: "Manual Allow" }
+                ]}
+                value={joinMode}
+                onChange={(val) => {
+                  setJoinMode(val);
+                  toast.success(`Join mode set to ${val}`, { duration: 2000 });
+                }}
+                className="w-24 md:w-32 text-xs"
+              />
+            </div>
+            <p className="text-[10px] md:text-xs text-base-content/60 font-medium mt-1">Accept mode</p>
+          </div>
+
+          {/* Auto Next */}
+          <div className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center transition-all hover:border-primary hover:shadow-md h-20 md:h-24">
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <Play size={16} className="text-info" />
+                <h3 className="font-bold text-base-content text-xs md:text-sm">Auto Next</h3>
+              </div>
+              <input 
+                type="checkbox" 
+                className="checkbox checkbox-accent checkbox-sm md:checkbox-md" 
+                checked={autoNext}
+                onChange={() => {
+                  const newVal = !autoNext;
+                  setAutoNext(newVal);
+                  toast.success(newVal ? "Auto Next enabled" : "Auto Next disabled", { duration: 2000 });
+                }}
+              />
+            </div>
+            <p className="text-[10px] md:text-xs text-base-content/60 font-medium">Move next automatically</p>
+          </div>
+
+          {/* Show QR */}
+          <div 
+            onClick={() => { setShowQR(true); setQrShownOnce(true); }}
+            className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center text-primary cursor-pointer transition-all hover:border-primary hover:shadow-md h-20 md:h-24"
+          >
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <QrCode size={16} className="text-primary" />
+                <h3 className="font-bold text-primary text-xs md:text-sm">Show QR</h3>
+              </div>
+            </div>
+            <p className="text-[10px] md:text-xs text-primary/80 font-medium">Generate joining QR</p>
+          </div>
+        </div>
+      )}
       {/* ── 3. Stats Row ────────────────────────────────────────────────── */}
-      <div className="bg-base-100 p-4 rounded-xl shadow-sm border border-base-200 flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4 md:gap-16 flex-1 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+      <div className="bg-base-100 p-4 rounded-xl shadow-sm border border-base-200 flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-4 md:gap-12 flex-1 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
           <div className="flex items-center gap-3 shrink-0">
             <Users size={24} className="text-blue-500" />
             <div>
@@ -839,7 +922,6 @@ const ClassroomTeacher = () => {
         )}
       </div>
 
-      {/* ── 4. Main Content (Two Columns) ─────────────────────────────── */}
       {/* ── 4. Main Content (Two Columns) ─────────────────────────────── */}
       {quizCompleted ? (
         <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col p-8">
@@ -921,7 +1003,7 @@ const ClassroomTeacher = () => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 mb-4">
           {/* ── Left Column: Question Area / Waiting State ──────────────── */}
           <div className="flex-[3] flex flex-col gap-4">
             {!quizStarted ? (
@@ -1250,101 +1332,6 @@ const ClassroomTeacher = () => {
         </div>
       )}
 
-      {/* ── Controls Row (Bottom Cards) ─────────────────────────────────── */}
-      {!quizCompleted && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mt-6">
-          {/* Wildcard Entry */}
-          <div className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center relative transition-all hover:border-primary hover:shadow-md h-20 md:h-24">
-            {wildcardRequests.length > 0 && (
-              <div
-                onClick={() => setShowWildcardPanel(p => !p)}
-                className="absolute -top-2 -right-2 bg-secondary text-secondary-content w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shadow cursor-pointer animate-bounce z-10"
-              >
-                {wildcardRequests.length}
-              </div>
-            )}
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <Sparkles size={16} className="text-secondary" />
-                <h3 className="font-bold text-base-content text-xs md:text-sm">Wildcard</h3>
-              </div>
-              <input 
-                type="checkbox" 
-                className="checkbox checkbox-accent checkbox-sm md:checkbox-md" 
-                checked={wildcardEnabled}
-                onChange={handleToggleWildcard}
-              />
-            </div>
-            <p className="text-[10px] md:text-xs text-base-content/60 font-medium">Late/rejoin requests</p>
-          </div>
-
-          {/* Join Mode */}
-          <div className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center transition-all hover:border-primary hover:shadow-md relative h-20 md:h-24">
-            {pendingRequests.length > 0 && (
-              <div
-                onClick={() => setShowPendingPanel(p => !p)}
-                className="absolute -top-2 -right-2 bg-warning text-warning-content w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shadow cursor-pointer animate-bounce z-10"
-              >
-                {pendingRequests.length}
-              </div>
-            )}
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <UserPlus size={16} className="text-primary" />
-                <h3 className="font-bold text-base-content text-xs md:text-sm">Join Mode</h3>
-              </div>
-              <Dropdown
-                options={[
-                  { label: "Auto", value: "Auto Allow" },
-                  { label: "Manual", value: "Manual Allow" }
-                ]}
-                value={joinMode}
-                onChange={(val) => {
-                  setJoinMode(val);
-                  toast.success(`Join mode set to ${val}`, { duration: 2000 });
-                }}
-                className="w-24 md:w-32 text-xs"
-              />
-            </div>
-            <p className="text-[10px] md:text-xs text-base-content/60 font-medium mt-1">Accept mode</p>
-          </div>
-
-          {/* Auto Next */}
-          <div className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center transition-all hover:border-primary hover:shadow-md h-20 md:h-24">
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <Play size={16} className="text-info" />
-                <h3 className="font-bold text-base-content text-xs md:text-sm">Auto Next</h3>
-              </div>
-              <input 
-                type="checkbox" 
-                className="checkbox checkbox-accent checkbox-sm md:checkbox-md" 
-                checked={autoNext}
-                onChange={() => {
-                  const newVal = !autoNext;
-                  setAutoNext(newVal);
-                  toast.success(newVal ? "Auto Next enabled" : "Auto Next disabled", { duration: 2000 });
-                }}
-              />
-            </div>
-            <p className="text-[10px] md:text-xs text-base-content/60 font-medium">Move next automatically</p>
-          </div>
-
-          {/* Show QR */}
-          <div 
-            onClick={() => { setShowQR(true); setQrShownOnce(true); }}
-            className="bg-base-100 p-3 md:p-4 rounded-xl shadow-sm border border-base-200 flex flex-col justify-center text-primary cursor-pointer transition-all hover:border-primary hover:shadow-md h-20 md:h-24"
-          >
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <QrCode size={16} className="text-primary" />
-                <h3 className="font-bold text-primary text-xs md:text-sm">Show QR</h3>
-              </div>
-            </div>
-            <p className="text-[10px] md:text-xs text-primary/80 font-medium">Generate joining QR</p>
-          </div>
-        </div>
-      )}
       </div>
 
       {/* ── QR Modal ────────────────────────────────────────────── */}
