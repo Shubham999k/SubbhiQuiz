@@ -21,19 +21,37 @@ import { api } from "../../../services/api";
 import { useAuth } from "../../../app/providers/AuthContext";
 
 const DelayedMarquee = ({ children, className }) => {
-  const [speed, setSpeed] = useState(0);
+  const [startAnimation, setStartAnimation] = useState(false);
   
   useEffect(() => {
     const timer = setTimeout(() => {
-      setSpeed(3);
+      setStartAnimation(true);
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
   
   return (
-    <marquee className={className} scrollamount={speed} onMouseOver={(e) => e.target.stop()} onMouseOut={(e) => e.target.start()}>
-      {children}
-    </marquee>
+    <div className={`overflow-hidden whitespace-nowrap relative ${className}`}>
+      <style>
+        {`
+          @keyframes custom-marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+          }
+        `}
+      </style>
+      <div 
+        className="inline-block"
+        style={{
+          minWidth: '100%',
+          animation: startAnimation ? 'custom-marquee 10s linear infinite' : 'none',
+          transform: startAnimation ? 'translateX(100%)' : 'translateX(0)',
+          willChange: 'transform'
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 };
 
