@@ -28,7 +28,7 @@ const Landing = () => {
   return (
     <div className="bg-white dark:bg-[#121212] transition-colors min-h-full">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-8 md:pt-12 pb-16">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-6 pb-16">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-4">
           
           {/* Left Text Content */}

@@ -183,7 +183,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10 lg:px-0">
+    <div className="min-h-[calc(100vh-6rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 pb-4 lg:px-0">
       
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <div>
@@ -192,7 +192,7 @@ const Profile = () => {
       </div>
 
       {/* Top Row: Avatar & Profile Info */}
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 flex-shrink-0 mb-4">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 flex-shrink-0">
         
         {/* Left Column: Avatar */}
         <div className="lg:col-span-4 flex flex-col shrink-0">

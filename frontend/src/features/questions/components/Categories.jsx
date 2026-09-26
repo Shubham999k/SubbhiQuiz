@@ -94,19 +94,17 @@ const dummyCategories = [
 ];
 
 const DelayedMarquee = ({ children, className }) => {
-  const marqueeRef = useRef(null);
+  const [speed, setSpeed] = useState(0);
+  
   useEffect(() => {
-    if (marqueeRef.current) {
-      marqueeRef.current.stop();
-      const timer = setTimeout(() => {
-        if (marqueeRef.current) marqueeRef.current.start();
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => {
+      setSpeed(3);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
   
   return (
-    <marquee ref={marqueeRef} className={className} scrollamount="3" onMouseOver={(e) => e.target.stop()} onMouseOut={(e) => e.target.start()}>
+    <marquee className={className} scrollamount={speed} onMouseOver={(e) => e.target.stop()} onMouseOut={(e) => e.target.start()}>
       {children}
     </marquee>
   );

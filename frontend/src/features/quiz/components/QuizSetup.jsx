@@ -458,8 +458,7 @@ const QuizSetup = () => {
           </AnimatedPage>
         </AnimatePresence>
 
-        {quizMode !== "json" && (
-          <div className="pt-6 flex flex-row justify-end gap-3 mt-6 pb-12">
+        <div className="pt-6 flex flex-row justify-end gap-3 mt-6 pb-12">
             <button
               type="button"
               onClick={(e) => handleStart(e, "normal")}
@@ -478,7 +477,7 @@ const QuizSetup = () => {
               {isStartingClassroom ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" />Preparing Classroom...</> : "Start Classroom Mode"}
             </button>
             
-            {quizMode === "custom" && (
+            {(quizMode === "custom" || quizMode === "json") && (
               <button
                 type="button"
                 onClick={handleSaveCustomQuiz}
@@ -488,8 +487,7 @@ const QuizSetup = () => {
                 {isSaving ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-base-content" />Saving...</> : !isDirty ? "Saved" : "Save Quiz"}
               </button>
             )}
-          </div>
-        )}
+        </div>
       </form>
     </motion.div>
   );
