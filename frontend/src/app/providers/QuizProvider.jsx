@@ -108,6 +108,8 @@ export const QuizProvider = ({ children }) => {
       questions.length > 0 ? (correct / questions.length) * 100 : 0;
     const timeTaken = currentQuiz.timeLimit - timeRemaining;
 
+    const currentUser = api.getCurrentUser();
+
     const result = {
       quizId: currentQuiz.category,
       category: currentQuiz.category,
@@ -121,6 +123,12 @@ export const QuizProvider = ({ children }) => {
       timeTaken,
       answers: { ...answers },
       questions: [...questions],
+      participants: [{
+        name: currentUser ? currentUser.name : "Student",
+        score: correct,
+        correctCount: correct,
+        rank: 1
+      }]
     };
 
     const savedResult = await api.submitQuizResult(result);
