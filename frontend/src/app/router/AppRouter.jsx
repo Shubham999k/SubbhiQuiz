@@ -64,7 +64,7 @@ const AnimatedRoutes = () => {
         {/* Protected Dashboard Routes — lazily loaded */}
         <Route
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <ProtectedRoute>
                 <DashboardLayout />
               </ProtectedRoute>
@@ -85,7 +85,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/quiz/:quizId"
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <ProtectedRoute>
                 <AnimatedPage className="min-h-screen bg-base-200">
                   <QuizActive />
@@ -97,7 +97,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/quiz/:quizId/result"
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <ProtectedRoute>
                 <AnimatedPage className="min-h-screen bg-base-200">
                   <QuizResult />
@@ -109,7 +109,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/quiz/:quizId/review"
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <ProtectedRoute>
                 <AnimatedPage className="min-h-screen bg-base-200">
                   <QuizReview />
@@ -123,7 +123,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/classroom/projector/:quizId"
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <ProtectedRoute>
                 <AnimatedPage>
                   <ClassroomProjector />
@@ -138,7 +138,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/student/active"
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <AnimatedPage><StudentActive /></AnimatedPage>
             </Suspense>
           }
@@ -146,7 +146,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/student/summary"
           element={
-            <Suspense fallback={<Loader message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
               <AnimatedPage><StudentSummary /></AnimatedPage>
             </Suspense>
           }

@@ -1,9 +1,9 @@
 import React from 'react';
 import { BookOpen, Trophy, Target, Lightbulb, FileText, BarChart3 } from 'lucide-react';
 
-const Loader = ({ message = "Getting things ready..." }) => {
+const Loader = ({ message = "Getting things ready...", fullScreen = false }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[75vh] w-full animate-in fade-in duration-700 overflow-hidden">
+    <div className={`flex flex-col items-center justify-center w-full animate-in fade-in duration-700 overflow-hidden ${fullScreen ? "fixed inset-0 z-[9999] bg-base-100/90 backdrop-blur-sm" : "flex-1 h-full min-h-[60vh]"}`}>
       
       {/* Container for the orbital system */}
       <div className="relative w-12 h-12 flex items-center justify-center mb-24 mt-8 scale-90 sm:scale-100">

@@ -93,15 +93,7 @@ const dummyCategories = [
   },
 ];
 
-const dummySavedQuizzes = dummyCategories.map((cat, index) => ({
-  _id: `dummy_saved_${index}`,
-  title: `${cat.name} Mastery Quiz`,
-  description: `A custom test covering essential ${cat.name} concepts.`,
-  icon: cat.icon,
-  questions: [], // Dummy doesn't have real questions
-  timeLimit: 10,
-  timerType: "overall"
-}));
+
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -145,7 +137,7 @@ const Categories = () => {
         if (savedData && savedData.length > 0) {
           setSavedQuizzes(savedData);
         } else {
-          setSavedQuizzes(dummySavedQuizzes);
+          setSavedQuizzes([]);
         }
       } catch (err) {
         console.error("Failed to load data:", err);
