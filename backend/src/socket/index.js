@@ -443,10 +443,14 @@ export const setupSocket = (io) => {
         return;
       }
 
-      const question = snapshot.questions.find((q) => q.id === questionId);
-      const correctHint = question.correctAnswer || question.correctOption;
-      if (!question || !correctHint) {
+      const question = snapshot.questions[questionIndex];
+      if (!question) {
         callback({ success: false, reason: "Question not found." });
+        return;
+      }
+      const correctHint = question.correctAnswer || question.correctOption;
+      if (!correctHint) {
+        callback({ success: false, reason: "Correct answer missing." });
         return;
       }
 

@@ -10,6 +10,7 @@ export const useClassroomSync = (
     onWildcardRequest = null,    // teacher: receives wildcard request
     onViolationUpdate = null,    // teacher: receives student violation update
     onSummaryReleased = null,    // student: summary released
+    onLeaderboardReleased = null, // student: leaderboard released
     onWildcardApproved = null,   // student: wildcard approved + snapshot
     onWildcardRejected = null,   // student: wildcard rejected
     onRecoverStudents = null,    // teacher: recover active students map
@@ -24,6 +25,7 @@ export const useClassroomSync = (
     onWildcardRequest,
     onViolationUpdate,
     onSummaryReleased,
+    onLeaderboardReleased,
     onWildcardApproved,
     onWildcardRejected,
     onRecoverStudents,
@@ -35,6 +37,7 @@ export const useClassroomSync = (
       onWildcardRequest,
       onViolationUpdate,
       onSummaryReleased,
+      onLeaderboardReleased,
       onWildcardApproved,
       onWildcardRejected,
       onRecoverStudents,
@@ -124,6 +127,10 @@ export const useClassroomSync = (
     if (role === "student") {
       socket.on("SUMMARY_RELEASED", (data) => {
         if (callbacksRef.current.onSummaryReleased) callbacksRef.current.onSummaryReleased(data);
+      });
+
+      socket.on("LEADERBOARD_RELEASED", (data) => {
+        if (callbacksRef.current.onLeaderboardReleased) callbacksRef.current.onLeaderboardReleased(data);
       });
 
       socket.on("student_wildcard_approved", (data) => {

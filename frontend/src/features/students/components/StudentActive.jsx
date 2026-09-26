@@ -48,9 +48,23 @@ const StudentActive = () => {
     setSummaryReleased(true);
   }, []);
 
+  const onLeaderboardReleasedCb = useCallback(() => {
+    // If socket isn't directly available in this scope, we can check result
+    const saved = localStorage.getItem(`student_session_${sessionCode}`);
+    const roll = saved ? JSON.parse(saved).roll : null;
+    if (roll) {
+      // Re-trigger the result check effect by some state, or just emit manually?
+      // It's cleaner to just update a local trigger state
+      setCheckResultTrigger(prev => prev + 1);
+    }
+  }, [sessionCode]);
+
+  const [checkResultTrigger, setCheckResultTrigger] = useState(0);
+
   const { projectorState, broadcastEvent, socket, requestLifeline, requestWildcard, checkStudentStatus } =
     useClassroomSync(sessionCode, "student", null, {
       onSummaryReleased: onSummaryReleasedCb,
+      onLeaderboardReleased: onLeaderboardReleasedCb,
       onWildcardApproved: (data) => {
         if (data?.roll && studentInfo?.roll && data.roll !== studentInfo.roll) return;
         
@@ -133,26 +147,13 @@ const StudentActive = () => {
   useEffect(() => {
     if (!socket || !studentInfo) return;
 
-    // Initial check in case it's already released
     socket.emit("check_result", { sessionCode, roll: studentInfo.roll }, (res) => {
       if (res?.success) {
         setPersonalResult(res.result);
         setSanitizedLeaderboard(res.leaderboard);
       }
     });
-
-    const handleRelease = () => {
-      socket.emit("check_result", { sessionCode, roll: studentInfo.roll }, (res) => {
-        if (res?.success) {
-          setPersonalResult(res.result);
-          setSanitizedLeaderboard(res.leaderboard);
-        }
-      });
-    };
-
-    socket.on("LEADERBOARD_RELEASED", handleRelease);
-    return () => socket.off("LEADERBOARD_RELEASED", handleRelease);
-  }, [socket, sessionCode, studentInfo]);
+  }, [socket, sessionCode, studentInfo, checkResultTrigger]);
 
   // ─── Anti-cheating restrictions ─────────────────────────────────
   const handleViolation = useCallback(
