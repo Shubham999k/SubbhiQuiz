@@ -116,7 +116,7 @@ const ChiragLifeline = ({ lifelinesRemaining = 2, onActivate, disabled = false, 
             filter: animState === "hint" ? "drop-shadow(0 0 14px gold)" : undefined,
           }}
         >
-          🪔
+          🧞‍♂️
         </div>
 
         {/* Smoke particles when jinni is out */}

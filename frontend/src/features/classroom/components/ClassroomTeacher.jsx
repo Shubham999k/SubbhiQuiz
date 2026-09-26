@@ -119,7 +119,7 @@ const ClassroomTeacher = () => {
     setWildcardRequests((prev) => {
       if (prev.find((r) => r.roll === request.roll)) return prev;
       setTimeout(() => {
-        toast.success(`Wildcard request from ${request.name} (${request.roll})`, { duration: 5000, icon: '🪔' });
+        toast.success(`Wildcard request from ${request.name} (${request.roll})`, { duration: 5000, icon: '🧞‍♂️' });
       }, 0);
       return [...prev, request];
     });
@@ -184,6 +184,13 @@ const ClassroomTeacher = () => {
   } = useClassroomSync(sessionCode, "teacher", handleReceiveEvent, {
     onWildcardRequest: handleWildcardRequest,
     onViolationUpdate: handleViolationUpdate,
+    onRecoverStudents: (students) => {
+      setJoinedStudents((prev) => {
+        const map = new Map(prev.map(s => [String(s.roll), s]));
+        students.forEach(s => map.set(String(s.roll), s));
+        return Array.from(map.values());
+      });
+    },
   });
 
   // ── Class response tallies ───────────────────────────────────────

@@ -14,7 +14,8 @@ const DEBOUNCE_MS = 800; // prevent visibility+blur from double-counting
  * @param {number}   options.currentQuestionIndex For logging which question
  *
  * @returns {object} { violations, warningLevel, isLocked, showWarning, dismissWarning,
- *                     showFullscreenWarning, fullscreenActive, requestFullscreen }
+ *                     showFullscreenWarning, fullscreenActive, requestFullscreen,
+ *                     unlockStudent, lockStudentLocally }
  */
 export function useQuizRestrictions({
   onViolation = null,
@@ -79,6 +80,15 @@ export function useQuizRestrictions({
     setIsLocked(false);
     setShowWarning(false);
   }, []);
+
+  const lockStudentLocally = useCallback(() => {
+    violationsRef.current = Math.max(violationsRef.current, maxViolations);
+    lockedRef.current = true;
+    setViolations(violationsRef.current);
+    setWarningLevel(violationsRef.current);
+    setIsLocked(true);
+    setShowWarning(false);
+  }, [maxViolations]);
 
   // ─── Fullscreen ──────────────────────────────────────────────
   const requestFullscreen = useCallback(() => {
@@ -247,5 +257,6 @@ export function useQuizRestrictions({
     fullscreenActive,
     requestFullscreen,
     unlockStudent,
+    lockStudentLocally,
   };
 }

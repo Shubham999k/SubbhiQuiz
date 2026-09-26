@@ -12,6 +12,7 @@ export const useClassroomSync = (
     onSummaryReleased = null,    // student: summary released
     onWildcardApproved = null,   // student: wildcard approved + snapshot
     onWildcardRejected = null,   // student: wildcard rejected
+    onRecoverStudents = null,    // teacher: recover active students map
   } = {}
 ) => {
   const socketRef = useRef(null);
@@ -25,6 +26,7 @@ export const useClassroomSync = (
     onSummaryReleased,
     onWildcardApproved,
     onWildcardRejected,
+    onRecoverStudents,
   });
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export const useClassroomSync = (
       onSummaryReleased,
       onWildcardApproved,
       onWildcardRejected,
+      onRecoverStudents,
     };
   });
 
@@ -89,6 +92,10 @@ export const useClassroomSync = (
 
       socket.on("student_violation_update", (data) => {
         if (callbacksRef.current.onViolationUpdate) callbacksRef.current.onViolationUpdate(data);
+      });
+      
+      socket.on("teacher_recover_students", (data) => {
+        if (callbacksRef.current.onRecoverStudents) callbacksRef.current.onRecoverStudents(data);
       });
     }
 
@@ -317,6 +324,20 @@ export const useClassroomSync = (
     [sessionCode]
   );
 
+  /** Student checks their current locked/rejected status on reconnect */
+  const checkStudentStatus = useCallback(
+    (roll) => {
+      return new Promise((resolve) => {
+        if (!socketRef.current?.connected) {
+          resolve({ success: false });
+          return;
+        }
+        socketRef.current.emit("check_student_status", { sessionCode, roll }, resolve);
+      });
+    },
+    [sessionCode]
+  );
+
   return {
     projectorState,
     broadcastState,
@@ -333,6 +354,7 @@ export const useClassroomSync = (
     checkLifelines,
     requestWildcard,
     checkSummary,
+    checkStudentStatus,
     socket: socketRef.current,
   };
 };

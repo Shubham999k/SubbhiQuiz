@@ -48,14 +48,14 @@ const StudentActive = () => {
     setSummaryReleased(true);
   }, []);
 
-  const { projectorState, broadcastEvent, socket, requestLifeline, requestWildcard } =
+  const { projectorState, broadcastEvent, socket, requestLifeline, requestWildcard, checkStudentStatus } =
     useClassroomSync(sessionCode, "student", null, {
       onSummaryReleased: onSummaryReleasedCb,
       onWildcardApproved: (data) => {
         if (data?.roll && studentInfo?.roll && data.roll !== studentInfo.roll) return;
         
         // Un-lock locally
-        unlockStudent();
+        if (typeof window.unlockStudentFn === "function") window.unlockStudentFn();
         setPleadStatus("idle");
         toast.success("Wildcard entry approved! You are back in the quiz.");
       },
@@ -100,13 +100,25 @@ const StudentActive = () => {
       }
     });
 
+    // Also check student lock/rejected status from server (server-authoritative)
+    checkStudentStatus(roll).then((res) => {
+      if (res?.success) {
+        if (res.locked) {
+          if (typeof window.lockStudentLocallyFn === "function") window.lockStudentLocallyFn();
+        }
+        if (res.rejected) {
+          setPleadStatus("rejected");
+        }
+      }
+    });
+
     // Also check if summary was already released
     socket.emit("check_summary", { sessionCode, roll }, (res) => {
       if (res?.summaryReleased) {
         setSummaryReleased(true);
       }
     });
-  }, [socket, sessionCode, studentInfo]);
+  }, [socket, sessionCode, studentInfo, checkStudentStatus]);
 
   // ─── Leaderboard / personal result ──────────────────────────────
   useEffect(() => {
@@ -161,12 +173,18 @@ const StudentActive = () => {
     showFullscreenWarning,
     requestFullscreen,
     unlockStudent,
+    lockStudentLocally,
   } = useQuizRestrictions({
     enabled: isQuizActive,
     onViolation: handleViolation,
     fullscreenRequired: projectorState?.fullscreenRequired ?? false,
     currentQuestionIndex: currentQIndex ?? 0,
   });
+
+  useEffect(() => {
+    window.unlockStudentFn = unlockStudent;
+    window.lockStudentLocallyFn = lockStudentLocally;
+  }, [unlockStudent, lockStudentLocally]);
 
   // ─── Plead for Wildcard Entry ────────────────────────────────────
   const handlePleadForWildcard = () => {
@@ -487,7 +505,7 @@ const StudentActive = () => {
                       onClick={handlePleadForWildcard}
                       className="px-8 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                     >
-                      ✨ Plead for Wildcard Entry
+                      🧞‍♂️ Plead for Wildcard Entry
                     </button>
                   )}
                   

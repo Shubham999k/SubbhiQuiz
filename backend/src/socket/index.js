@@ -34,6 +34,8 @@ function ensureSession(sessionCode) {
       quizSnapshot: null,
       studentSummaryData: null,
       latestState: null, // NEW: Cache latest state for reconnections
+      rejectedWildcards: new Set(),
+      activeStudentsMap: {},
     };
   }
   return activeSessions[sessionCode];
@@ -92,7 +94,30 @@ export const setupSocket = (io) => {
 
     // EXISTING: Students send events like STUDENT_JOIN or STUDENT_ANSWER
     socket.on("student_event", ({ sessionCode, event }) => {
+      if (event?.type === "STUDENT_JOIN" && event?.payload?.roll) {
+        const session = ensureSession(sessionCode);
+        session.activeStudentsMap[event.payload.roll] = event.payload;
+      }
       socket.to(sessionCode).emit("student_event", event);
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // NEW: Student checks their current locked/rejected status on reconnect
+    // ─────────────────────────────────────────────────────────────
+    socket.on("check_student_status", ({ sessionCode, roll }, callback) => {
+      if (typeof callback !== "function") return;
+      if (!sessionCode || !roll) {
+        callback({ success: false });
+        return;
+      }
+      const session = ensureSession(sessionCode);
+      const integrity = session.quizIntegrity[roll];
+      
+      callback({
+        success: true,
+        locked: integrity ? integrity.locked : false,
+        rejected: session.rejectedWildcards.has(roll),
+      });
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -102,6 +127,30 @@ export const setupSocket = (io) => {
       if (!sessionCode) return;
       const session = ensureSession(sessionCode);
       session.teacherSocketId = socket.id;
+
+      // Resend pending wildcard requests to reconnecting teacher
+      session.wildcardRequests.forEach((request) => {
+        socket.emit("teacher_wildcard_request", { sessionCode, request });
+      });
+
+      // Send active students to recover joined list if teacher refreshed
+      const students = Object.values(session.activeStudentsMap);
+      if (students.length > 0) {
+        socket.emit("teacher_recover_students", { students });
+      }
+
+      // Resend violations for locked students
+      Object.entries(session.quizIntegrity).forEach(([roll, data]) => {
+         if (data.locked || data.violationCount > 0) {
+           socket.emit("student_violation_update", {
+             roll,
+             violationCount: data.violationCount,
+             locked: data.locked,
+             latestViolation: data.violations[data.violations.length - 1]
+           });
+         }
+      });
+
       console.log(`Teacher registered for session ${sessionCode}: ${socket.id}`);
     });
 
@@ -136,6 +185,11 @@ export const setupSocket = (io) => {
 
       if (!session.wildcardEnabled) {
         socket.emit("student_wildcard_rejected", { reason: "Wildcard entry is not enabled." });
+        return;
+      }
+
+      if (session.rejectedWildcards.has(roll)) {
+        socket.emit("student_wildcard_rejected", { reason: "Your wildcard request was previously rejected by the teacher." });
         return;
       }
 
@@ -207,6 +261,7 @@ export const setupSocket = (io) => {
       const reqIdx = session.wildcardRequests.findIndex((r) => r.roll === roll);
       if (reqIdx === -1) return;
 
+      session.rejectedWildcards.add(roll);
       const [req] = session.wildcardRequests.splice(reqIdx, 1);
 
       io.to(sessionCode).emit("student_wildcard_rejected", {

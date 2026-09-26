@@ -61,7 +61,7 @@ const StudentJoin = () => {
     setWildcardRejectedReason(data?.reason || "Your request was rejected.");
   };
 
-  const { projectorState, broadcastEvent, requestWildcard } = useClassroomSync(
+  const { projectorState, broadcastEvent, requestWildcard, checkStudentStatus } = useClassroomSync(
     sessionCode,
     "student",
     null,
@@ -70,6 +70,17 @@ const StudentJoin = () => {
       onWildcardRejected: handleWildcardRejected,
     }
   );
+
+  // Check student status immediately to prevent bypass
+  useEffect(() => {
+    if (roll && checkStudentStatus) {
+      checkStudentStatus(roll).then((res) => {
+        if (res?.success && res.rejected) {
+          handleWildcardRejected({ reason: "Your wildcard request was previously rejected by the teacher." });
+        }
+      });
+    }
+  }, [roll, checkStudentStatus]);
 
   // ── Determine if quiz started & wildcard available ────────────
   useEffect(() => {
@@ -168,8 +179,8 @@ const StudentJoin = () => {
       {wildcardPending && (
         <div className="fixed inset-0 bg-base-200/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-base-100 p-10 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-purple-200/50">
-            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
-              🪔
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-bounce">
+              🧞‍♂️
             </div>
             <h3 className="text-2xl font-bold text-base-content mb-3">Wildcard Request Sent!</h3>
             <p className="text-base-content/60 text-sm mb-6">
@@ -281,7 +292,7 @@ const StudentJoin = () => {
               {/* Wildcard notice */}
               <div className="bg-purple-50 border border-purple-200 rounded-2xl p-5 mb-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="text-2xl">🪔</div>
+                  <div className="text-2xl animate-bounce">🧞‍♂️</div>
                   <div>
                     <h3 className="font-bold text-purple-900">Quiz Already Started</h3>
                     <p className="text-purple-700 text-xs mt-0.5">Wildcard Entry is available</p>
