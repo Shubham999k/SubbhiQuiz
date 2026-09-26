@@ -257,9 +257,13 @@ const StudentJoin = () => {
       )}
 
       {/* ── Marquee ─────────────────────────────────────────────────── */}
-      <DelayedMarquee className="bg-primary text-primary-content font-bold py-1.5 text-sm uppercase tracking-widest shadow-md sticky top-0 z-20">
-        🚨 Attention: Please fill in your details quickly to join the quiz! 🚨
-      </DelayedMarquee>
+      <div className="bg-primary text-primary-content font-bold py-1.5 px-4 text-xs sm:text-sm uppercase tracking-widest shadow-md sticky top-0 z-20 flex items-center justify-between gap-3 overflow-hidden">
+        <span className="shrink-0">🚨</span>
+        <DelayedMarquee className="flex-1 w-full min-w-0">
+          Attention: Please fill in your details quickly to join the quiz!
+        </DelayedMarquee>
+        <span className="shrink-0">🚨</span>
+      </div>
 
       {/* ── Header ────────────────────────────────────────────────── */}
       <header className="bg-base-100 p-2 shadow-sm flex items-center justify-between sticky top-[36px] z-10 border-b border-base-200/50">
