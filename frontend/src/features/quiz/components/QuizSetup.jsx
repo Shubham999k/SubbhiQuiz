@@ -245,7 +245,7 @@ const QuizSetup = () => {
         setOriginalStateStr(currentStateStr);
       }
       toast.success("Custom Quiz Saved Successfully!");
-      navigate('/practice');
+      navigate('/categories?tab=saved-quizzes');
     } catch (error) {
       const errMsg = error.message || "";
       if (errMsg.includes("already exists") || errMsg.includes("unique title")) {
@@ -446,36 +446,38 @@ const QuizSetup = () => {
           </AnimatedPage>
         </AnimatePresence>
 
-        <div className="pt-6 flex flex-row justify-end gap-3 mt-6 pb-12">
-          <button
-            type="button"
-            onClick={(e) => handleStart(e, "normal")}
-            disabled={isStarting || isStartingClassroom}
-            className="flex items-center justify-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 transition-colors"
-          >
-            {isStarting ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />Starting...</> : "Start Quiz Now"}
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => handleStart(e, "classroom")}
-            disabled={isStarting || isStartingClassroom}
-            className="flex items-center justify-center px-6 py-2.5 border-2 border-primary rounded-lg shadow-sm text-sm font-bold text-primary bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 transition-colors"
-          >
-            {isStartingClassroom ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" />Preparing Classroom...</> : "Start Classroom Mode"}
-          </button>
-          
-          {(quizMode === "custom" || quizMode === "json") && (
+        {quizMode !== "json" && (
+          <div className="pt-6 flex flex-row justify-end gap-3 mt-6 pb-12">
             <button
               type="button"
-              onClick={handleSaveCustomQuiz}
-              disabled={isSaving || isStarting || isStartingClassroom || !isDirty}
-              className={`flex items-center justify-center px-6 py-2.5 border border-base-300 rounded-lg shadow-sm text-sm font-bold text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${!isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={(e) => handleStart(e, "normal")}
+              disabled={isStarting || isStartingClassroom}
+              className="flex items-center justify-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 transition-colors"
             >
-              {isSaving ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-base-content" />Saving...</> : !isDirty ? "Saved" : "Save Quiz"}
+              {isStarting ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />Starting...</> : "Start Quiz Now"}
             </button>
-          )}
-        </div>
+
+            <button
+              type="button"
+              onClick={(e) => handleStart(e, "classroom")}
+              disabled={isStarting || isStartingClassroom}
+              className="flex items-center justify-center px-6 py-2.5 border-2 border-primary rounded-lg shadow-sm text-sm font-bold text-primary bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 transition-colors"
+            >
+              {isStartingClassroom ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" />Preparing Classroom...</> : "Start Classroom Mode"}
+            </button>
+            
+            {quizMode === "custom" && (
+              <button
+                type="button"
+                onClick={handleSaveCustomQuiz}
+                disabled={isSaving || isStarting || isStartingClassroom || !isDirty}
+                className={`flex items-center justify-center px-6 py-2.5 border border-base-300 rounded-lg shadow-sm text-sm font-bold text-base-content bg-base-100 hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${!isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isSaving ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-base-content" />Saving...</> : !isDirty ? "Saved" : "Save Quiz"}
+              </button>
+            )}
+          </div>
+        )}
       </form>
     </motion.div>
   );

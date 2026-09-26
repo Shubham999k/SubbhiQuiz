@@ -325,7 +325,7 @@ const Categories = () => {
                         <Icon className="w-6 h-6" />
                       </div>
                       <div className="ml-4 overflow-hidden flex-1">
-                        {quiz.title && quiz.title.length > 18 ? (
+                        {quiz.title && quiz.title.length > 15 ? (
                           <marquee 
                             scrollamount="3"
                             onMouseOver={(e) => e.target.stop()} 
