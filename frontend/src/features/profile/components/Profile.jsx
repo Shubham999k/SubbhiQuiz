@@ -5,7 +5,7 @@ import Cropper from "react-easy-crop";
 import toast from "react-hot-toast";
 import { 
   User, Mail, Calendar, Edit3, Save, CheckCircle,
-  BookOpen, Target, Trophy, Award, Camera, X
+  BookOpen, Target, Trophy, Award, Camera, X, GraduationCap
 } from "lucide-react";
 
 // Helper function to crop the image
@@ -218,9 +218,9 @@ const Profile = () => {
               />
             </div>
 
-            <h2 className="text-2xl font-extrabold text-base-content z-10 mt-3">{user?.name || "Student"}</h2>
-            <div className="flex items-center gap-1.5 text-sm text-base-content/70 mt-1 z-10">
-              <Mail size={14} /> {user?.email}
+            <h2 className="text-2xl font-extrabold text-base-content z-10 mt-3 w-full text-center truncate px-2">{user?.name || "Student"}</h2>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-success bg-success/10 px-3 py-1 rounded-full mt-2 z-10">
+              <GraduationCap size={14} /> Student
             </div>
           </div>
 
@@ -230,25 +230,41 @@ const Profile = () => {
               <Trophy className="text-warning" size={18} /> Your Stats
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200">
-                <BookOpen size={16} className="text-primary mb-2" />
-                <p className="text-xs font-medium text-base-content/60 mb-0.5">Taken</p>
-                <h4 className="text-lg font-bold text-base-content">{loadingStats ? "-" : totalQuizzes}</h4>
+              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+                <div className="p-2.5 bg-primary/10 text-primary rounded-lg shrink-0">
+                  <BookOpen size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Taken</p>
+                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : totalQuizzes}</h4>
+                </div>
               </div>
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200">
-                <Target size={16} className="text-secondary mb-2" />
-                <p className="text-xs font-medium text-base-content/60 mb-0.5">Average</p>
-                <h4 className="text-lg font-bold text-base-content">{loadingStats ? "-" : `${averageScore}%`}</h4>
+              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+                <div className="p-2.5 bg-warning/10 text-warning rounded-lg shrink-0">
+                  <Target size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Average</p>
+                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : `${averageScore}%`}</h4>
+                </div>
               </div>
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200">
-                <Trophy size={16} className="text-warning mb-2" />
-                <p className="text-xs font-medium text-base-content/60 mb-0.5">Best</p>
-                <h4 className="text-lg font-bold text-base-content">{loadingStats ? "-" : `${Math.round(bestScore)}%`}</h4>
+              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+                <div className="p-2.5 bg-warning/10 text-warning rounded-lg shrink-0">
+                  <Trophy size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Best</p>
+                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : `${Math.round(bestScore)}%`}</h4>
+                </div>
               </div>
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200">
-                <CheckCircle size={16} className="text-success mb-2" />
-                <p className="text-xs font-medium text-base-content/60 mb-0.5">Solved</p>
-                <h4 className="text-lg font-bold text-base-content">{loadingStats ? "-" : totalQuestionsSolved}</h4>
+              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+                <div className="p-2.5 bg-success/10 text-success rounded-lg shrink-0">
+                  <CheckCircle size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Solved</p>
+                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : totalQuestionsSolved}</h4>
+                </div>
               </div>
             </div>
           </div>
@@ -257,10 +273,16 @@ const Profile = () => {
         {/* Right Column: Profile Info Form */}
         <div className="lg:col-span-8 flex flex-col lg:min-h-0 pb-4 shrink-0">
           <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 flex flex-col lg:h-full lg:overflow-hidden">
-            <div className="p-5 border-b border-base-300 flex justify-between items-center bg-base-200/30 flex-shrink-0">
-              <h3 className="text-lg font-bold text-base-content flex items-center gap-2">
-                <User className="text-primary" size={20} /> Personal Information
-              </h3>
+            <div className="p-5 border-b border-base-300 flex justify-between items-center bg-base-200/30 flex-shrink-0 gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2.5 bg-primary/10 text-primary rounded-lg shrink-0">
+                  <User size={20} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-lg font-bold text-base-content truncate">Personal Information</h3>
+                  <p className="text-xs font-medium text-base-content/60 mt-0.5 hidden sm:block truncate">Your basic details and account information</p>
+                </div>
+              </div>
               <button
                 onClick={() => {
                   setIsEditing(!isEditing);
@@ -274,11 +296,14 @@ const Profile = () => {
             </div>
 
             <div className="p-6 md:p-8 flex-1 lg:overflow-y-auto">
-              <form onSubmit={handleSave} className="space-y-4 max-w-lg">
+              <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
                 <div>
-                  <label className="block text-sm font-semibold text-base-content/80 mb-2 pl-1">
-                    Full Name
-                  </label>
+                  <div className="mb-2 pl-1">
+                    <label className="block text-sm font-semibold text-base-content">
+                      Full Name
+                    </label>
+                    <p className="text-xs text-base-content/60 mt-0.5">This is your display name on the platform.</p>
+                  </div>
                   <div className="relative group">
                     <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors ${isEditing ? 'text-primary' : 'text-base-content/40'}`}>
                       <User className="h-5 w-5" />
@@ -294,9 +319,12 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-base-content/80 mb-2 pl-1">
-                    Email Address
-                  </label>
+                  <div className="mb-2 pl-1">
+                    <label className="block text-sm font-semibold text-base-content">
+                      Email Address
+                    </label>
+                    <p className="text-xs text-base-content/60 mt-0.5">This email is used for login and important notifications.</p>
+                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
                       <Mail className="h-5 w-5" />
@@ -308,13 +336,18 @@ const Profile = () => {
                       className="pl-12 block w-full rounded-xl border-2 border-transparent bg-base-200 text-base-content/50 sm:text-sm py-3 cursor-not-allowed"
                     />
                   </div>
-                  <p className="mt-1.5 text-xs text-base-content/50 pl-2">Email address cannot be changed.</p>
+                  <p className="mt-1.5 text-[11px] flex items-center gap-1 text-base-content/50 pl-2">
+                    <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px]">i</span> Email address cannot be changed.
+                  </p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-base-content/80 mb-2 pl-1">
-                    Member Since
-                  </label>
+                  <div className="mb-2 pl-1">
+                    <label className="block text-sm font-semibold text-base-content">
+                      Member Since
+                    </label>
+                    <p className="text-xs text-base-content/60 mt-0.5">The date you joined our platform.</p>
+                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
                       <Calendar className="h-5 w-5" />
