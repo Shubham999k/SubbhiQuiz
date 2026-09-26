@@ -243,7 +243,7 @@ export const api = {
   },
 
   getLeaderboard: async (filter = "weekly", category = "all") => {
-    const response = await fetch(`${API_URL}/leaderboard?filter=${filter}&category=${encodeURIComponent(category)}`, {
+    const response = await fetch(`${API_URL}/leaderboard?filter=${filter}&category=${encodeURIComponent(category)}&_t=${Date.now()}`, {
       headers: getHeaders(),
     });
 

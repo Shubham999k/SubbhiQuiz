@@ -17,6 +17,7 @@ const Leaderboard = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
+      if (!user) return;
       try {
         const cats = await api.getPlayedCategories();
         setCategories(cats || []);
@@ -25,10 +26,11 @@ const Leaderboard = () => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      if (!user) return;
       setLoading(true);
       try {
         const leaderboardData = await api.getLeaderboard(filter, selectedCategory);
@@ -40,7 +42,7 @@ const Leaderboard = () => {
       }
     };
     fetchLeaderboard();
-  }, [filter, selectedCategory]);
+  }, [filter, selectedCategory, user]);
 
   // Prepare base display data
   const baseData = useMemo(() => {

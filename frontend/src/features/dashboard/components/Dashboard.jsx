@@ -87,6 +87,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return; // Wait until user is fully populated from AuthContext
       try {
         const historyData = await api.getQuizHistory();
         setHistory(historyData);
@@ -97,7 +98,7 @@ const Dashboard = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   // Calculate stats
   const totalQuizzes = history.length;
