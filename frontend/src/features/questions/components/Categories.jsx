@@ -93,6 +93,16 @@ const dummyCategories = [
   },
 ];
 
+const dummySavedQuizzes = dummyCategories.map((cat, index) => ({
+  _id: `dummy_saved_${index}`,
+  title: `${cat.name} Mastery Quiz`,
+  description: `A custom test covering essential ${cat.name} concepts.`,
+  icon: cat.icon,
+  questions: [], // Dummy doesn't have real questions
+  timeLimit: 10,
+  timerType: "overall"
+}));
+
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [savedQuizzes, setSavedQuizzes] = useState([]);
@@ -132,10 +142,15 @@ const Categories = () => {
           setCategories(dummyCategories);
         }
         
-        setSavedQuizzes(savedData || []);
+        if (savedData && savedData.length > 0) {
+          setSavedQuizzes(savedData);
+        } else {
+          setSavedQuizzes(dummySavedQuizzes);
+        }
       } catch (err) {
         console.error("Failed to load data:", err);
         setCategories(dummyCategories);
+        setSavedQuizzes(dummySavedQuizzes);
       } finally {
         setLoading(false);
       }
@@ -176,7 +191,9 @@ const Categories = () => {
     if (deleteInput.toLowerCase() !== "delete") return;
     setIsDeleting(true);
     try {
-      await api.deleteCustomQuiz(quizToDelete._id);
+      if (!String(quizToDelete._id).startsWith("dummy_")) {
+        await api.deleteCustomQuiz(quizToDelete._id);
+      }
       setSavedQuizzes(prev => prev.filter(q => q._id !== quizToDelete._id));
       setQuizToDelete(null);
       setDeleteInput("");
@@ -254,10 +271,10 @@ const Categories = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-bold text-base-content">
-                      {category.name}
+                      {category.title || category.name || "Quizzes"}
                     </h3>
                     <p className="text-xs font-medium text-primary">
-                      {category.quizCount} Quizzes
+                      {category.quizCount || 10} Quizzes
                     </p>
                   </div>
                 </div>

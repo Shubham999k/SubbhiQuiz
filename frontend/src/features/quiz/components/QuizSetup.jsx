@@ -438,7 +438,7 @@ const QuizSetup = () => {
                 Select Topic
               </label>
               <Dropdown
-                options={categories.map((c) => ({ label: c.name, value: c.id }))}
+                options={categories.map((c) => ({ label: c.title || c.name, value: c.id }))}
                 value={selectedCategory}
                 onChange={(val) => setSelectedCategory(val)}
                 placeholder="Select a category"
