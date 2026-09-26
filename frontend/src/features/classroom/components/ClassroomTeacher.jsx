@@ -225,6 +225,7 @@ const ClassroomTeacher = () => {
         return {
           id: q.id,
           question: q.question,
+          options: q.options,
           ...(isCurrentAndRevealed ? { correctAnswer: q.correctAnswer || q.correctOption, explanation: q.explanation } : {}),
         };
       })
