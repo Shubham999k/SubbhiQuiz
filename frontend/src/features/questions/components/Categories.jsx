@@ -324,10 +324,21 @@ const Categories = () => {
                       <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                         <Icon className="w-6 h-6" />
                       </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-bold text-base-content line-clamp-1" title={quiz.title}>
-                          {quiz.title}
-                        </h3>
+                      <div className="ml-4 overflow-hidden flex-1">
+                        {quiz.title && quiz.title.length > 18 ? (
+                          <marquee 
+                            scrollamount="3"
+                            onMouseOver={(e) => e.target.stop()} 
+                            onMouseOut={(e) => e.target.start()}
+                            className="text-lg font-bold text-base-content leading-tight block w-full"
+                          >
+                            {quiz.title}
+                          </marquee>
+                        ) : (
+                          <h3 className="text-lg font-bold text-base-content line-clamp-1" title={quiz.title}>
+                            {quiz.title}
+                          </h3>
+                        )}
                         <p className="text-xs font-medium text-primary">
                           {quiz.questions?.length || 0} Questions
                         </p>

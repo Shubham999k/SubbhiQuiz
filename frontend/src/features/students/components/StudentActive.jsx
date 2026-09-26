@@ -64,6 +64,15 @@ const StudentActive = () => {
         
         setPleadStatus("rejected");
         toast.error(data.reason || "Wildcard entry rejected");
+      },
+      onViolationUpdate: (data) => {
+        if (data?.roll && studentInfo?.roll && String(data.roll) === String(studentInfo.roll)) {
+           if (data.locked) {
+             if (typeof window.lockStudentLocallyFn === "function") window.lockStudentLocallyFn();
+           } else {
+             if (typeof window.unlockStudentFn === "function") window.unlockStudentFn();
+           }
+        }
       }
     });
 
@@ -122,8 +131,9 @@ const StudentActive = () => {
 
   // ─── Leaderboard / personal result ──────────────────────────────
   useEffect(() => {
-    if (!socket || !studentInfo || !projectorState?.quizCompleted) return;
+    if (!socket || !studentInfo) return;
 
+    // Initial check in case it's already released
     socket.emit("check_result", { sessionCode, roll: studentInfo.roll }, (res) => {
       if (res?.success) {
         setPersonalResult(res.result);
@@ -142,7 +152,7 @@ const StudentActive = () => {
 
     socket.on("LEADERBOARD_RELEASED", handleRelease);
     return () => socket.off("LEADERBOARD_RELEASED", handleRelease);
-  }, [socket, sessionCode, studentInfo, projectorState?.quizCompleted]);
+  }, [socket, sessionCode, studentInfo]);
 
   // ─── Anti-cheating restrictions ─────────────────────────────────
   const handleViolation = useCallback(
@@ -576,7 +586,8 @@ const StudentActive = () => {
           {currentQuestion.options.map((option, idx) => {
             const label = String.fromCharCode(65 + idx);
             const isSelected = myAnswer === option;
-            const isCorrectAnswer = isAnswerRevealed && option === currentQuestion.correctAnswer;
+            const correctOption = currentQuestion.correctAnswer || currentQuestion.correctOption;
+            const isCorrectAnswer = isAnswerRevealed && option === correctOption;
             const isIncorrectSelected = isAnswerRevealed && isSelected && !isCorrectAnswer;
             const isHinted = hintOption === option && !isAnswerRevealed;
 

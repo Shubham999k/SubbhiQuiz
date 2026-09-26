@@ -164,7 +164,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 lg:overflow-hidden overflow-y-auto hide-scrollbar">
+    <div className="min-h-[calc(100vh-6rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10 px-4 lg:px-0">
       
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <div>
@@ -172,22 +172,22 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Grid Layout to fit in single page on LG, stacked on SM */}
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 flex-1 lg:overflow-hidden">
+      {/* Top Row: Avatar & Profile Info */}
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 flex-shrink-0 mb-4">
         
-        {/* Left Column: Avatar & Stats */}
-        <div className="lg:col-span-4 flex flex-col gap-4 lg:overflow-y-auto shrink-0">
+        {/* Left Column: Avatar */}
+        <div className="lg:col-span-4 flex flex-col shrink-0">
           
           {/* Avatar Card */}
-          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6 flex flex-col items-center relative overflow-hidden group">
+          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6 flex flex-col items-center justify-center relative overflow-hidden group h-full">
             {/* Abstract bg */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute -top-[50%] -right-[10%] w-[100%] h-[150%] bg-primary/10 rounded-full blur-3xl transform rotate-12 transition-transform duration-700 group-hover:scale-110"></div>
+              <div className="absolute -top-[50%] -right-[10%] w-[100%] h-[150%] bg-amber-500/10 rounded-full blur-3xl transform rotate-12 transition-transform duration-700 group-hover:scale-110"></div>
             </div>
 
             <div className="relative mb-4 z-10 group">
               <div 
-                className="w-32 h-32 rounded-xl bg-gradient-to-tr from-primary to-secondary p-1 shadow-lg relative group-hover:shadow-xl transition-all cursor-pointer"
+                className="w-32 h-32 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-600 p-1 shadow-lg relative group-hover:shadow-xl transition-all cursor-pointer"
                 onClick={() => setIsPreviewOpen(true)}
               >
                 <div className="w-full h-full rounded-xl bg-base-100 flex items-center justify-center overflow-hidden">
@@ -195,7 +195,7 @@ const Profile = () => {
                     <img src={user.avatar} alt="Profile" className="w-full h-full object-cover hover:scale-105 transition-transform" />
                   ) : (
                     <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary uppercase">
-                      {user?.name?.charAt(0) || "S"}
+                      {(name || user?.name || "S").charAt(0)}
                     </span>
                   )}
                 </div>
@@ -218,64 +218,19 @@ const Profile = () => {
               />
             </div>
 
-            <h2 className="text-2xl font-extrabold text-base-content z-10 mt-3 w-full text-center truncate px-2">{user?.name || "Student"}</h2>
-            <div className="flex items-center gap-1.5 text-xs font-medium text-success bg-success/10 px-3 py-1 rounded-full mt-2 z-10">
-              <GraduationCap size={14} /> Student
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-5">
-            <h3 className="text-lg font-bold text-base-content flex items-center gap-2 mb-4">
-              <Trophy className="text-warning" size={18} /> Your Stats
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
-                <div className="p-2.5 bg-primary/10 text-primary rounded-lg shrink-0">
-                  <BookOpen size={20} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Taken</p>
-                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : totalQuizzes}</h4>
-                </div>
-              </div>
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
-                <div className="p-2.5 bg-warning/10 text-warning rounded-lg shrink-0">
-                  <Target size={20} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Average</p>
-                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : `${averageScore}%`}</h4>
-                </div>
-              </div>
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
-                <div className="p-2.5 bg-warning/10 text-warning rounded-lg shrink-0">
-                  <Trophy size={20} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Best</p>
-                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : `${Math.round(bestScore)}%`}</h4>
-                </div>
-              </div>
-              <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
-                <div className="p-2.5 bg-success/10 text-success rounded-lg shrink-0">
-                  <CheckCircle size={20} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Solved</p>
-                  <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : totalQuestionsSolved}</h4>
-                </div>
-              </div>
+            <h2 className="text-xl md:text-2xl font-bold text-base-content z-10 mt-3 w-full text-center break-words px-2 shrink-0">{name || user?.name || "Student"}</h2>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500 bg-base-300 px-4 py-1.5 rounded-full mt-2 z-10">
+              <Award size={14} /> ADMIN
             </div>
           </div>
         </div>
 
         {/* Right Column: Profile Info Form */}
-        <div className="lg:col-span-8 flex flex-col lg:min-h-0 pb-4 shrink-0">
-          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 flex flex-col lg:h-full lg:overflow-hidden">
+        <div className="lg:col-span-8 flex flex-col shrink-0">
+          <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 flex flex-col h-full">
             <div className="p-5 border-b border-base-300 flex justify-between items-center bg-base-200/30 flex-shrink-0 gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2.5 bg-primary/10 text-primary rounded-lg shrink-0">
+                <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-lg shrink-0">
                   <User size={20} />
                 </div>
                 <div className="min-w-0">
@@ -288,36 +243,15 @@ const Profile = () => {
                   setIsEditing(!isEditing);
                   if (isEditing) setName(user?.name || ""); // Reset on cancel
                 }}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 text-sm font-medium ${isEditing ? 'bg-error/10 text-error hover:bg-error/20' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 text-sm font-bold ${isEditing ? 'bg-error/10 text-error hover:bg-error/20' : 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20'}`}
               >
                 {isEditing ? <CheckCircle size={16} /> : <Edit3 size={16} />}
                 {isEditing ? 'Cancel Edit' : 'Edit Profile'}
               </button>
             </div>
 
-            <div className="p-6 md:p-8 flex-1 lg:overflow-y-auto">
+            <div className="p-6 md:p-8 flex-1">
               <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
-                <div>
-                  <div className="mb-2 pl-1">
-                    <label className="block text-sm font-semibold text-base-content">
-                      Full Name
-                    </label>
-                    <p className="text-xs text-base-content/60 mt-0.5">This is your display name on the platform.</p>
-                  </div>
-                  <div className="relative group">
-                    <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors ${isEditing ? 'text-primary' : 'text-base-content/40'}`}>
-                      <User className="h-5 w-5" />
-                    </div>
-                    <input
-                      type="text"
-                      disabled={!isEditing}
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className={`pl-12 block w-full rounded-xl sm:text-sm border-2 py-3 transition-all ${isEditing ? 'border-primary focus:ring-2 focus:ring-primary/20 bg-base-100 text-base-content' : 'border-transparent bg-base-200 text-base-content/70 cursor-not-allowed'}`}
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <div className="mb-2 pl-1">
                     <label className="block text-sm font-semibold text-base-content">
@@ -378,6 +312,51 @@ const Profile = () => {
                   </div>
                 )}
               </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row: Stats Grid */}
+      <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-5 mt-4 shrink-0">
+        <h3 className="text-lg font-bold text-base-content flex items-center gap-2 mb-4">
+          <Trophy className="text-warning" size={18} /> Your Stats
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+            <div className="p-2.5 bg-error/10 text-error rounded-lg shrink-0">
+              <BookOpen size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Taken</p>
+              <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : totalQuizzes}</h4>
+            </div>
+          </div>
+          <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+            <div className="p-2.5 bg-warning/10 text-warning rounded-lg shrink-0">
+              <Target size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Average</p>
+              <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : `${averageScore}%`}</h4>
+            </div>
+          </div>
+          <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+            <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-lg shrink-0">
+              <Trophy size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Best</p>
+              <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : `${Math.round(bestScore)}%`}</h4>
+            </div>
+          </div>
+          <div className="bg-base-200/50 p-4 rounded-xl border border-base-200 flex items-center gap-3">
+            <div className="p-2.5 bg-success/10 text-success rounded-lg shrink-0">
+              <CheckCircle size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-base-content/60 mb-0.5 truncate">Solved</p>
+              <h4 className="text-lg font-bold text-base-content truncate">{loadingStats ? "-" : totalQuestionsSolved}</h4>
             </div>
           </div>
         </div>

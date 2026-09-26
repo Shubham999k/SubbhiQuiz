@@ -217,8 +217,7 @@ const ClassroomTeacher = () => {
         return {
           id: q.id,
           question: q.question,
-          options: q.options,
-          ...(isCurrentAndRevealed ? { correctAnswer: q.correctAnswer, explanation: q.explanation } : {}),
+          ...(isCurrentAndRevealed ? { correctAnswer: q.correctAnswer || q.correctOption, explanation: q.explanation } : {}),
         };
       })
       : [];
@@ -309,7 +308,8 @@ const ClassroomTeacher = () => {
     setStudentScores((prev) => {
       const next = { ...prev };
       Object.entries(studentAnswers).forEach(([roll, answerData]) => {
-        if (answerData.option === currentQuestion.correctAnswer) {
+        const correctOption = currentQuestion.correctAnswer || currentQuestion.correctOption;
+        if (answerData.option === correctOption) {
           next[roll] = (next[roll] || 0) + 100 + (answerData.timeRemaining || 0);
         }
       });
@@ -318,7 +318,8 @@ const ClassroomTeacher = () => {
     setStudentCorrectCount((prev) => {
       const next = { ...prev };
       Object.entries(studentAnswers).forEach(([roll, answerData]) => {
-        if (answerData.option === currentQuestion.correctAnswer) {
+        const correctOption = currentQuestion.correctAnswer || currentQuestion.correctOption;
+        if (answerData.option === correctOption) {
           next[roll] = (next[roll] || 0) + 1;
         }
       });
@@ -362,7 +363,7 @@ const ClassroomTeacher = () => {
         id: q.id,
         question: q.question,
         options: q.options,
-        correctAnswer: q.correctAnswer,
+        correctAnswer: q.correctAnswer || q.correctOption,
         explanation: q.explanation,
       })),
       cumulativeAnswers: cumulativeStudentAnswers,
@@ -1032,7 +1033,8 @@ const ClassroomTeacher = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                     {currentQuestion.options.map((option, idx) => {
                       const label = String.fromCharCode(65 + idx);
-                      const isCorrect = isAnswerRevealed && option === currentQuestion.correctAnswer;
+                      const correctOption = currentQuestion.correctAnswer || currentQuestion.correctOption;
+                      const isCorrect = isAnswerRevealed && option === correctOption;
 
                       let cardClass = "bg-base-100 border-base-200 text-base-content";
                       let circleClass = "border-base-200 text-base-content/50 font-bold";

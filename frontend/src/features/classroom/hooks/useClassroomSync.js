@@ -134,6 +134,10 @@ export const useClassroomSync = (
         if (callbacksRef.current.onWildcardRejected) callbacksRef.current.onWildcardRejected(data);
       });
 
+      socket.on("student_violation_update", (data) => {
+        if (callbacksRef.current.onViolationUpdate) callbacksRef.current.onViolationUpdate(data);
+      });
+
       socket.on("violation_recorded", (data) => {
         // Student can track server-confirmed violation count if needed
         socketRef.current._lastViolationData = data;

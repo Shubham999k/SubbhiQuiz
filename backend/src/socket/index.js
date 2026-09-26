@@ -421,7 +421,8 @@ export const setupSocket = (io) => {
       }
 
       const question = snapshot.questions.find((q) => q.id === questionId);
-      if (!question || !question.correctAnswer) {
+      const correctHint = question.correctAnswer || question.correctOption;
+      if (!question || !correctHint) {
         callback({ success: false, reason: "Question not found." });
         return;
       }
@@ -434,7 +435,7 @@ export const setupSocket = (io) => {
 
       callback({
         success: true,
-        hintOption: question.correctAnswer,
+        hintOption: correctHint,
         remaining: lifelines.remaining,
       });
     });
