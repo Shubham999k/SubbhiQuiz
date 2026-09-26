@@ -137,7 +137,7 @@ const Leaderboard = () => {
       </div>
 
       {/* Top 3 Podium (Decorated) */}
-      <div className="relative pt-18 pb-6 sm:pb-8 px-4 flex justify-center items-end sm:max-h-[60vh] gap-2 sm:gap-4 bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden group">
+      <div className="relative pt-6 sm:pt-18 pb-6 sm:pb-8 px-4 flex flex-col sm:flex-row justify-start sm:justify-center items-stretch sm:items-end sm:max-h-[60vh] gap-4 bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden group">
 
         {loading && (
           <div className="absolute inset-0 z-50 bg-base-100/60 backdrop-blur-sm flex items-center justify-center">
@@ -152,23 +152,23 @@ const Leaderboard = () => {
         </div>
 
         {/* Rank 2 (Silver) */}
-        <div className="flex flex-col items-center flex-1 max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-100">
-          <div className="relative mb-4 group-hover:-translate-y-2 transition-transform duration-500">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 p-1 shadow-lg">
+        <div className="flex flex-row sm:flex-col items-center sm:flex-1 w-full sm:max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-100 order-2 sm:order-1 bg-base-200/50 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0">
+          <div className="relative sm:mb-4 group-hover:-translate-y-2 transition-transform duration-500 shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 p-1 shadow-lg">
               <div className="w-full h-full rounded-full bg-base-100 flex items-center justify-center font-bold text-2xl text-slate-500 overflow-hidden">
                 {podiumData[1].avatar ? <img src={podiumData[1].avatar} alt="" className="w-full h-full object-cover" /> : podiumData[1].name.charAt(0)}
               </div>
             </div>
-            <div className="absolute -bottom-3 -right-3 bg-slate-300 rounded-full p-2 shadow-lg ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
+            <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 bg-slate-300 rounded-full p-2 shadow-lg ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
               <Medal className="w-5 h-5 text-slate-700 hidden sm:block" />
               <span className="font-black text-slate-700 sm:hidden">2</span>
             </div>
           </div>
-          <div className="text-center mb-3">
-            <p className="font-extrabold text-base-content truncate w-full px-2 text-lg">
+          <div className="text-left sm:text-center sm:mb-3 flex-1 min-w-0">
+            <p className="font-extrabold text-base-content truncate w-full sm:px-2 text-base sm:text-lg">
               {podiumData[1].name}
             </p>
-            <p className="text-sm font-bold text-primary flex items-center justify-center gap-1">
+            <p className="text-sm font-bold text-primary flex items-center justify-start sm:justify-center gap-1">
               <TrendingUp size={14} /> {podiumData[1].average}%
             </p>
           </div>
@@ -178,24 +178,24 @@ const Leaderboard = () => {
         </div>
 
         {/* Rank 1 (Gold) */}
-        <div className="flex flex-col items-center flex-1 max-w-[160px] z-20 -mt-4 sm:-mt-8 animate-in slide-in-from-bottom-12 duration-700">
-          <div className="relative mb-4 group-hover:-translate-y-4 transition-transform duration-500">
-            <div className="absolute -inset-4 bg-warning/20 rounded-full blur-xl animate-pulse"></div>
-            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 p-1.5 shadow-2xl relative">
-              <div className="w-full h-full rounded-full bg-base-100 flex items-center justify-center font-black text-4xl text-warning overflow-hidden">
+        <div className="flex flex-row sm:flex-col items-center sm:flex-1 w-full sm:max-w-[160px] z-20 sm:-mt-8 animate-in slide-in-from-bottom-12 duration-700 order-1 sm:order-2 bg-warning/10 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0 border border-warning/20 sm:border-none">
+          <div className="relative sm:mb-4 group-hover:-translate-y-4 transition-transform duration-500 shrink-0">
+            <div className="absolute -inset-4 bg-warning/20 rounded-full blur-xl animate-pulse hidden sm:block"></div>
+            <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 p-1 sm:p-1.5 shadow-xl sm:shadow-2xl relative">
+              <div className="w-full h-full rounded-full bg-base-100 flex items-center justify-center font-black text-2xl sm:text-4xl text-warning overflow-hidden">
                 {podiumData[0].avatar ? <img src={podiumData[0].avatar} alt="" className="w-full h-full object-cover" /> : podiumData[0].name.charAt(0)}
               </div>
             </div>
-            <div className="absolute -bottom-4 -right-2 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full p-2.5 shadow-xl ring-4 ring-base-100 flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto">
+            <div className="absolute -bottom-2 -right-2 sm:-bottom-4 sm:-right-2 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full p-2 sm:p-2.5 shadow-lg sm:shadow-xl ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
               <Trophy className="w-6 h-6 text-white hidden sm:block" />
-              <span className="font-black text-white text-lg sm:hidden">1</span>
+              <span className="font-black text-white text-sm sm:hidden">1</span>
             </div>
           </div>
-          <div className="text-center mb-4">
-            <p className="font-black text-base-content truncate w-full px-2 text-xl">
+          <div className="text-left sm:text-center sm:mb-4 flex-1 min-w-0">
+            <p className="font-black text-base-content truncate w-full sm:px-2 text-base sm:text-xl">
               {podiumData[0].name}
             </p>
-            <p className="text-base font-bold text-warning flex items-center justify-center gap-1">
+            <p className="text-sm sm:text-base font-bold text-warning flex items-center justify-start sm:justify-center gap-1">
               <Award size={16} /> {podiumData[0].average}%
             </p>
           </div>
@@ -205,23 +205,23 @@ const Leaderboard = () => {
         </div>
 
         {/* Rank 3 (Bronze) */}
-        <div className="flex flex-col items-center flex-1 max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-200">
-          <div className="relative mb-4 group-hover:-translate-y-2 transition-transform duration-500">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-300 to-red-400 p-1 shadow-lg">
+        <div className="flex flex-row sm:flex-col items-center sm:flex-1 w-full sm:max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-200 order-3 sm:order-3 bg-base-200/50 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0">
+          <div className="relative sm:mb-4 group-hover:-translate-y-2 transition-transform duration-500 shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-300 to-red-400 p-1 shadow-lg">
               <div className="w-full h-full rounded-full bg-base-100 flex items-center justify-center font-bold text-2xl text-orange-500 overflow-hidden">
                 {podiumData[2].avatar ? <img src={podiumData[2].avatar} alt="" className="w-full h-full object-cover" /> : podiumData[2].name.charAt(0)}
               </div>
             </div>
-            <div className="absolute -bottom-3 -right-3 bg-orange-400 rounded-full p-2 shadow-lg ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
+            <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 bg-orange-400 rounded-full p-2 shadow-lg ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
               <Medal className="w-5 h-5 text-white hidden sm:block" />
               <span className="font-black text-white sm:hidden">3</span>
             </div>
           </div>
-          <div className="text-center mb-3">
-            <p className="font-extrabold text-base-content truncate w-full px-2 text-lg">
+          <div className="text-left sm:text-center sm:mb-3 flex-1 min-w-0">
+            <p className="font-extrabold text-base-content truncate w-full sm:px-2 text-base sm:text-lg">
               {podiumData[2].name}
             </p>
-            <p className="text-sm font-bold text-primary flex items-center justify-center gap-1">
+            <p className="text-sm font-bold text-primary flex items-center justify-start sm:justify-center gap-1">
               <TrendingUp size={14} /> {podiumData[2].average}%
             </p>
           </div>
