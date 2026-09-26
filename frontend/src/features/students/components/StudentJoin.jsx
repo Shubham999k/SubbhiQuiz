@@ -274,28 +274,30 @@ const StudentJoin = () => {
         </div>
       )}
 
-      {/* ── Marquee ─────────────────────────────────────────────────── */}
-      <div className="bg-primary text-primary-content font-bold py-1.5 px-4 text-xs sm:text-sm uppercase tracking-widest shadow-md sticky top-0 z-20 flex items-center justify-between gap-3 overflow-hidden">
-        <span className="shrink-0">🚨</span>
-        <DelayedMarquee className="flex-1 w-full min-w-0">
-          Attention: Please fill in your details quickly to join the quiz!
-        </DelayedMarquee>
-        <span className="shrink-0">🚨</span>
-      </div>
+      <div className="sticky top-0 z-30 flex flex-col w-full shadow-sm">
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="bg-base-100 p-2 flex items-center justify-between border-b border-base-200/50">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 p-2 rounded-md text-primary">
+              <BookOpen size={20} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-base-content leading-tight">Quizzz-Zone</h1>
+              <p className="text-[10px] font-medium text-base-content/60 uppercase tracking-widest mt-0.5">Learn • Compete • Grow</p>
+            </div>
+          </div>
+          <ThemeSelector />
+        </header>
 
-      {/* ── Header ────────────────────────────────────────────────── */}
-      <header className="bg-base-100 p-2 shadow-sm flex items-center justify-between sticky top-[36px] z-10 border-b border-base-200/50">
-        <div className="flex items-center gap-2">
-          <div className="bg-primary/10 p-2 rounded-md text-primary">
-            <BookOpen size={20} strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-base-content leading-tight">Quizzz-Zone</h1>
-            <p className="text-[10px] font-medium text-base-content/60 uppercase tracking-widest mt-0.5">Learn • Compete • Grow</p>
-          </div>
+        {/* ── Marquee ─────────────────────────────────────────────────── */}
+        <div className="bg-primary text-primary-content font-bold py-1.5 px-4 text-xs sm:text-sm uppercase tracking-widest flex items-center justify-between gap-3 overflow-hidden">
+          <span className="shrink-0">🚨</span>
+          <DelayedMarquee className="flex-1 w-full min-w-0">
+            Attention: Please fill in your details quickly to join the quiz!
+          </DelayedMarquee>
+          <span className="shrink-0">🚨</span>
         </div>
-        <ThemeSelector />
-      </header>
+      </div>
 
       <main className="flex-1 flex flex-col items-center justify-start p-2 pt-4 max-w-[480px] mx-auto w-full gap-2">
 

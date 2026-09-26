@@ -89,6 +89,9 @@ export const setupSocket = (io) => {
         if (decoded.role === "student" && decoded.sessionCode !== sessionCode) {
           throw new Error("Student token does not match sessionCode");
         }
+        if (decoded.role !== "student") {
+          decoded.role = "teacher";
+        }
         socket.user = decoded; // Cache user context on socket
       } catch (err) {
         socket.emit("error", { message: "Unauthorized to join this room" });
