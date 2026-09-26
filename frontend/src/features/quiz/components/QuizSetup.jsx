@@ -300,7 +300,15 @@ const QuizSetup = () => {
   };
 
   const handleImportJson = (importedQuestions) => {
-    updateQuestionsHistory([...customQuestions, ...importedQuestions]);
+    let baseQuestions = customQuestions;
+    if (customQuestions.length === 1) {
+      const q = customQuestions[0];
+      const isEmpty = !q.question.trim() && q.options.every(o => !o.trim()) && !q.correctAnswer;
+      if (isEmpty) {
+        baseQuestions = [];
+      }
+    }
+    updateQuestionsHistory([...baseQuestions, ...importedQuestions]);
     setQuizMode("custom");
     toast.success(`Imported ${importedQuestions.length} questions successfully.`);
   };
