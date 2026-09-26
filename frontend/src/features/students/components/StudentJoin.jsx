@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useClassroomSync } from "../../../features/classroom/hooks/useClassroomSync";
 import ThemeSelector from "../../../components/common/ThemeSelector";
+import { api } from "../../../services/api";
 
 const StudentJoin = () => {
   const [searchParams] = useSearchParams();
@@ -61,7 +62,7 @@ const StudentJoin = () => {
     setWildcardRejectedReason(data?.reason || "Your request was rejected.");
   };
 
-  const { projectorState, broadcastEvent, requestWildcard, checkStudentStatus } = useClassroomSync(
+  const { projectorState, broadcastEvent, requestWildcard, checkStudentStatus, reauthenticateAndJoin } = useClassroomSync(
     sessionCode,
     "student",
     null,
@@ -118,7 +119,7 @@ const StudentJoin = () => {
   }, [projectorState, isWaitingForTeacher, name, roll, batch, sessionCode, navigate, broadcastEvent]);
 
   // ── Normal join handler ────────────────────────────────────────
-  const handleJoin = (e) => {
+  const handleJoin = async (e) => {
     e.preventDefault();
     if (!name.trim() || !roll.trim() || !batch.trim()) {
       setError("Please enter Name, Roll Number, and Batch.");
@@ -129,30 +130,42 @@ const StudentJoin = () => {
       return;
     }
 
-    localStorage.setItem(
-      `student_session_${sessionCode}`,
-      JSON.stringify({ name: name.trim(), roll: roll.trim(), batch: batch.trim() })
-    );
-    setIsWaitingForTeacher(true);
+    try {
+      const data = await api.studentJoinQuiz(sessionCode, name.trim(), roll.trim(), batch.trim());
+      localStorage.setItem(`student_token_${sessionCode}`, data.token);
+      localStorage.setItem(`student_session_${sessionCode}`, JSON.stringify(data.studentInfo));
+      
+      reauthenticateAndJoin(data.token);
+      setIsWaitingForTeacher(true);
 
-    if (projectorState) {
-      broadcastEvent("STUDENT_JOIN", {
-        name: name.trim(),
-        roll: roll.trim(),
-        batch: batch.trim(),
-      });
+      if (projectorState) {
+        broadcastEvent("STUDENT_JOIN", data.studentInfo);
+      }
+    } catch (err) {
+      setError(err.message || "Failed to join session.");
     }
   };
 
   // ── Wildcard request handler ───────────────────────────────────
-  const handleWildcardRequest = () => {
+  const handleWildcardRequest = async () => {
     if (!name.trim() || !roll.trim() || !batch.trim()) {
       setError("Please enter Name, Roll Number, and Batch before requesting wildcard entry.");
       return;
     }
     setError("");
     setWildcardPending(true);
-    requestWildcard(name.trim(), roll.trim(), batch.trim());
+    
+    try {
+      const data = await api.studentJoinQuiz(sessionCode, name.trim(), roll.trim(), batch.trim());
+      localStorage.setItem(`student_token_${sessionCode}`, data.token);
+      localStorage.setItem(`student_session_${sessionCode}`, JSON.stringify(data.studentInfo));
+      
+      reauthenticateAndJoin(data.token);
+      requestWildcard(name.trim(), roll.trim(), batch.trim());
+    } catch (err) {
+      setError(err.message || "Failed to request wildcard.");
+      setWildcardPending(false);
+    }
   };
 
   if (!sessionCode) {

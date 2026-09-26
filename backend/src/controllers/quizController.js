@@ -135,3 +135,69 @@ export const deleteCustomQuiz = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+import jwt from "jsonwebtoken";
+import { getActiveSession } from "../socket/index.js";
+
+// @desc    Student join session to get token
+// @route   POST /api/quiz/student-join
+// @access  Public
+export const studentJoinQuiz = async (req, res) => {
+  try {
+    const { sessionCode, name, roll, batch } = req.body;
+    if (!sessionCode || !name || !roll) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    
+    // We can optionally verify that the session is active
+    // const session = getActiveSession(sessionCode);
+    // if (!session) return res.status(404).json({ message: "Session not active" });
+
+    // Generate JWT for the student
+    const token = jwt.sign({ roll, name, sessionCode, role: "student" }, process.env.JWT_SECRET || "secret", { expiresIn: "12h" });
+    
+    res.json({ token, studentInfo: { name, roll, batch, sessionCode } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get session leaderboard for students
+// @route   GET /api/quiz/student-leaderboard
+// @access  Private (Student)
+export const getStudentLeaderboard = async (req, res) => {
+  try {
+    const { sessionCode, roll } = req.student;
+    
+    // Verify query param matches token to prevent probing, though we rely on token anyway
+    if (req.query.sessionCode && req.query.sessionCode !== sessionCode) {
+      return res.status(403).json({ message: "Unauthorized session access" });
+    }
+
+    const session = getActiveSession(sessionCode);
+    if (!session) {
+      return res.status(404).json({ message: "Quiz session not found or already ended." });
+    }
+
+    if (!session.resultsReleased) {
+      return res.status(403).json({ message: "Leaderboard not released yet." });
+    }
+
+    const personalResult = session.students[roll];
+    if (!personalResult) {
+      // If student is not in the session leaderboard, they shouldn't see it
+      return res.status(403).json({ message: "You did not participate in this session." });
+    }
+
+    res.json({
+      success: true,
+      result: {
+        ...personalResult,
+        totalQuestions: session.totalQuestions,
+      },
+      leaderboard: session.leaderboard,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

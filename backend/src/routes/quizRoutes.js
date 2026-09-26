@@ -1,11 +1,14 @@
 import express from "express";
-import { getCategories, getQuestions, saveCustomQuiz, getCustomQuizzes, deleteCustomQuiz } from "../controllers/quizController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { protect, protectStudent } from "../middlewares/authMiddleware.js";
+import { getCategories, getQuestions, saveCustomQuiz, getCustomQuizzes, deleteCustomQuiz, studentJoinQuiz, getStudentLeaderboard } from "../controllers/quizController.js";
 
 const router = express.Router();
 
 router.get("/categories", getCategories);
 router.get("/questions", getQuestions);
+
+router.post("/student-join", studentJoinQuiz);
+router.get("/student-leaderboard", protectStudent, getStudentLeaderboard);
 
 router.route("/custom")
   .post(protect, saveCustomQuiz)

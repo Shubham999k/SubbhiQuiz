@@ -127,6 +127,31 @@ export const api = {
     }
   },
 
+  // Student specific endpoints
+  studentJoinQuiz: async (sessionCode, name, roll, batch) => {
+    const response = await fetch(`${API_URL}/quiz/student-join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionCode, name, roll, batch }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Failed to join quiz");
+    return data; // { token, studentInfo }
+  },
+
+  getStudentLeaderboard: async (sessionCode) => {
+    const token = localStorage.getItem(`student_token_${sessionCode}`);
+    const response = await fetch(`${API_URL}/quiz/student-leaderboard?sessionCode=${sessionCode}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Failed to fetch student leaderboard");
+    return data;
+  },
+
   saveCustomQuiz: async (data) => {
     const response = await fetch(`${API_URL}/quiz/custom`, {
       method: "POST",

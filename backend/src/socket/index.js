@@ -11,8 +11,11 @@
 //     quizSnapshot,         // NEW — current state snapshot for wildcard joins (set by teacher)
 //     studentSummaryData,   // NEW — full summary data (set at release_results time)
 //   }
-// }
+import jwt from "jsonwebtoken";
+
 const activeSessions = {};
+
+export const getActiveSession = (sessionCode) => activeSessions[sessionCode];
 
 // Helper: ensure session exists in memory
 function ensureSession(sessionCode) {
@@ -67,14 +70,33 @@ function ensureLifelines(session, roll) {
 export const setupSocket = (io) => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
+    
+    // Emit current server version to client
+    socket.emit("app_version", process.env.APP_VERSION || "1.0.0");
 
     // ─────────────────────────────────────────────────────────────
     // EXISTING: Students/projector join a session room
     // ─────────────────────────────────────────────────────────────
     socket.on("join_session", (data) => {
       const sessionCode = typeof data === "string" ? data : data.sessionCode;
+      const token = typeof data === "object" ? data.token : null;
       if (!sessionCode) return;
+      
+      // Verify authorization
+      try {
+        if (!token) throw new Error("No token provided");
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        if (decoded.role === "student" && decoded.sessionCode !== sessionCode) {
+          throw new Error("Student token does not match sessionCode");
+        }
+        socket.user = decoded; // Cache user context on socket
+      } catch (err) {
+        socket.emit("error", { message: "Unauthorized to join this room" });
+        return; // Deny join
+      }
+
       socket.join(sessionCode);
+      socket.data.sessionCode = sessionCode; // Track room for later events
       
       // If a student refreshes, instantly send them the latest state
       const session = ensureSession(sessionCode);
@@ -82,11 +104,12 @@ export const setupSocket = (io) => {
         socket.emit("state_update", session.latestState);
       }
       
-      console.log(`User ${socket.id} joined session ${sessionCode}`);
+      console.log(`User ${socket.id} joined session ${sessionCode} as ${socket.user.role || 'teacher'}`);
     });
 
     // EXISTING: Teacher broadcasts full state to everyone in room
     socket.on("broadcast_state", ({ sessionCode, state }) => {
+      if (socket.user?.role === "student") return; // Students cannot broadcast state
       const session = ensureSession(sessionCode);
       session.latestState = state; // Cache it
       socket.to(sessionCode).emit("state_update", state);
@@ -94,10 +117,21 @@ export const setupSocket = (io) => {
 
     // EXISTING: Students send events like STUDENT_JOIN or STUDENT_ANSWER
     socket.on("student_event", ({ sessionCode, event }) => {
-      if (event?.type === "STUDENT_JOIN" && event?.payload?.roll) {
-        const session = ensureSession(sessionCode);
-        session.activeStudentsMap[event.payload.roll] = event.payload;
+      if (socket.data?.sessionCode !== sessionCode && socket.user?.role !== "teacher") return; // Verify boundary
+      
+      const session = ensureSession(sessionCode);
+      const roll = event?.payload?.roll;
+
+      if (roll) {
+        // Enforce locked/rejected status
+        if (session.rejectedWildcards.has(roll)) return; // Block rejected
+        if (session.quizIntegrity[roll]?.locked) return; // Block locked
+        
+        if (event.type === "STUDENT_JOIN") {
+          session.activeStudentsMap[roll] = event.payload;
+        }
       }
+      
       socket.to(sessionCode).emit("student_event", event);
     });
 
@@ -106,6 +140,10 @@ export const setupSocket = (io) => {
     // ─────────────────────────────────────────────────────────────
     socket.on("check_student_status", ({ sessionCode, roll }, callback) => {
       if (typeof callback !== "function") return;
+      if (socket.data?.sessionCode !== sessionCode && socket.user?.role !== "teacher") {
+        callback({ success: false, reason: "Unauthorized" });
+        return;
+      }
       if (!sessionCode || !roll) {
         callback({ success: false });
         return;
@@ -124,6 +162,7 @@ export const setupSocket = (io) => {
     // NEW: Teacher registers as teacher for this session (to receive targeted events)
     // ─────────────────────────────────────────────────────────────
     socket.on("teacher_register", ({ sessionCode }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode) return;
       const session = ensureSession(sessionCode);
       session.teacherSocketId = socket.id;
@@ -159,6 +198,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, snapshot: { questions, currentQuestionIndex, timeRemaining, quizStarted, currentQuiz } }
     // ─────────────────────────────────────────────────────────────
     socket.on("teacher_state_snapshot", ({ sessionCode, snapshot }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode || !snapshot) return;
       const session = ensureSession(sessionCode);
       session.quizSnapshot = snapshot;
@@ -169,6 +209,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, enabled: boolean }
     // ─────────────────────────────────────────────────────────────
     socket.on("teacher_set_wildcard", ({ sessionCode, enabled }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode) return;
       const session = ensureSession(sessionCode);
       session.wildcardEnabled = !!enabled;
@@ -180,6 +221,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, name, roll, batch }
     // ─────────────────────────────────────────────────────────────
     socket.on("wildcard_request", ({ sessionCode, name, roll, batch }) => {
+      if (socket.data?.sessionCode !== sessionCode) return;
       if (!sessionCode || !roll) return;
       const session = ensureSession(sessionCode);
 
@@ -223,6 +265,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, roll }
     // ─────────────────────────────────────────────────────────────
     socket.on("teacher_approve_wildcard", ({ sessionCode, roll }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode || !roll) return;
       const session = ensureSession(sessionCode);
 
@@ -255,6 +298,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, roll }
     // ─────────────────────────────────────────────────────────────
     socket.on("teacher_reject_wildcard", ({ sessionCode, roll }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode || !roll) return;
       const session = ensureSession(sessionCode);
 
@@ -277,6 +321,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, roll }
     // ─────────────────────────────────────────────────────────────
     socket.on("teacher_lock_student", ({ sessionCode, roll }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode || !roll) return;
       const session = ensureSession(sessionCode);
       const integrity = ensureIntegrity(session, roll);
@@ -302,6 +347,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, roll, eventType, questionIndex, metadata }
     // ─────────────────────────────────────────────────────────────
     socket.on("student_focus_violation", ({ sessionCode, roll, eventType, questionIndex, metadata }) => {
+      if (socket.data?.sessionCode !== sessionCode) return;
       if (!sessionCode || !roll || !eventType) return;
       const session = ensureSession(sessionCode);
       const integrity = ensureIntegrity(session, roll);
@@ -344,7 +390,10 @@ export const setupSocket = (io) => {
     // ─────────────────────────────────────────────────────────────
     socket.on("lifeline_request", ({ sessionCode, roll, questionId, questionIndex }, callback) => {
       if (typeof callback !== "function") return;
-
+      if (socket.data?.sessionCode !== sessionCode) {
+        callback({ success: false, reason: "Unauthorized" });
+        return;
+      }
       if (!sessionCode || !roll) {
         callback({ success: false, reason: "Invalid request." });
         return;
@@ -397,6 +446,10 @@ export const setupSocket = (io) => {
     // ─────────────────────────────────────────────────────────────
     socket.on("check_lifelines", ({ sessionCode, roll }, callback) => {
       if (typeof callback !== "function") return;
+      if (socket.data?.sessionCode !== sessionCode && socket.user?.role !== "teacher") {
+        callback({ remaining: 2 });
+        return;
+      }
       const session = activeSessions[sessionCode];
       if (!session) {
         callback({ remaining: 2 }); // default for new sessions
@@ -411,6 +464,7 @@ export const setupSocket = (io) => {
     // Extended to also store questions + participant answers for summary
     // ─────────────────────────────────────────────────────────────
     socket.on("release_results", ({ sessionCode, studentScores, joinedStudents, totalQuestions, questions, cumulativeAnswers }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode || !studentScores || !joinedStudents) return;
 
       const session = ensureSession(sessionCode);
@@ -472,6 +526,10 @@ export const setupSocket = (io) => {
     // EXISTING: Student requests their personal result
     // ─────────────────────────────────────────────────────────────
     socket.on("check_result", ({ sessionCode, roll }, callback) => {
+      if (socket.data?.sessionCode !== sessionCode && socket.user?.role !== "teacher") {
+        callback({ success: false, reason: "Unauthorized" });
+        return;
+      }
       const session = activeSessions[sessionCode];
       if (session && session.resultsReleased) {
         const personalResult = session.students[roll];
@@ -495,6 +553,7 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode }
     // ─────────────────────────────────────────────────────────────
     socket.on("release_summary", ({ sessionCode }) => {
+      if (socket.user?.role !== "teacher") return;
       if (!sessionCode) return;
       const session = ensureSession(sessionCode);
       session.summaryReleased = true;
@@ -513,6 +572,10 @@ export const setupSocket = (io) => {
     // ─────────────────────────────────────────────────────────────
     socket.on("check_summary", ({ sessionCode, roll }, callback) => {
       if (typeof callback !== "function") return;
+      if (socket.data?.sessionCode !== sessionCode && socket.user?.role !== "teacher") {
+        callback({ success: false, reason: "Unauthorized" });
+        return;
+      }
 
       const session = activeSessions[sessionCode];
       if (!session || !session.summaryReleased) {

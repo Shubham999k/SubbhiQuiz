@@ -58,17 +58,38 @@ export const useClassroomSync = (
         ? `${window.location.protocol}//${serverHostname}:5000`
         : "https://subbhiquiz.onrender.com");
 
+    const token = role === "student" 
+      ? localStorage.getItem(`student_token_${sessionCode}`) 
+      : localStorage.getItem("quiz_token");
+
     const socket = io(serverUrl, {
+      forceNew: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
+      auth: { token }
     });
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      socket.emit("join_session", sessionCode);
+      socket.emit("join_session", { sessionCode, token });
       // Teacher registers to receive targeted events
       if (role === "teacher") {
         socket.emit("teacher_register", { sessionCode });
+      }
+    });
+    
+    // NEW: App Version Check to forcefully reload stale clients
+    socket.on("app_version", (serverVersion) => {
+      const clientVersion = import.meta.env.VITE_APP_VERSION || "1.0.0";
+      if (serverVersion && serverVersion !== clientVersion) {
+        console.log("New version detected! Reloading...");
+        // Clear cached session data to avoid stale bugs
+        if (sessionCode) {
+           localStorage.removeItem(`student_session_${sessionCode}`);
+           localStorage.removeItem(`student_token_${sessionCode}`);
+           localStorage.removeItem(`leaderboard_${sessionCode}`);
+        }
+        setTimeout(() => window.location.reload(true), 2000);
       }
     });
 
@@ -338,6 +359,16 @@ export const useClassroomSync = (
     [sessionCode]
   );
 
+  const reauthenticateAndJoin = useCallback(
+    (token) => {
+      if (socketRef.current) {
+        socketRef.current.auth = { token };
+        socketRef.current.emit("join_session", { sessionCode, token });
+      }
+    },
+    [sessionCode]
+  );
+
   return {
     projectorState,
     broadcastState,
@@ -355,6 +386,7 @@ export const useClassroomSync = (
     requestWildcard,
     checkSummary,
     checkStudentStatus,
+    reauthenticateAndJoin,
     socket: socketRef.current,
   };
 };

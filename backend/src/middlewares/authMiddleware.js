@@ -31,3 +31,23 @@ export const protect = async (req, res, next) => {
 
   res.status(401).json({ message: "Not authorized, no token" });
 };
+
+export const protectStudent = async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+      if (decoded.role !== "student") {
+        return res.status(403).json({ message: "Not authorized as student" });
+      }
+      req.student = decoded; // { roll, name, sessionCode, role }
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(401).json({ message: "Not authorized, token failed" });
+    }
+    return;
+  }
+  res.status(401).json({ message: "Not authorized, no student token" });
+};
