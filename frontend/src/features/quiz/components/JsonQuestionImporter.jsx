@@ -201,14 +201,14 @@ const JsonQuestionImporter = ({ onImport }) => {
                       <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
                         {idx + 1}
                       </div>
-                      <p className="font-semibold text-base-content mt-0.5">{q.question}</p>
+                      <div className="font-semibold text-base-content mt-0.5 overflow-y-auto max-h-32 custom-scrollbar whitespace-pre-wrap flex-1">{q.question}</div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-2 ml-9 mb-3">
                       {['A', 'B', 'C', 'D'].map(opt => (
                         <div key={opt} className={`flex items-start gap-2 p-1.5 rounded ${q.correctOption === opt ? 'bg-success/10 text-success font-medium' : 'text-base-content/70'}`}>
                           <span className="font-bold shrink-0">{opt}.</span>
-                          <span className="truncate" title={q.options[opt]}>{q.options[opt]}</span>
+                          <div className="overflow-y-auto overflow-x-auto max-h-24 custom-scrollbar whitespace-pre-wrap flex-1 text-xs" title={q.options[opt]}>{q.options[opt]}</div>
                           {q.correctOption === opt && <span className="ml-auto shrink-0">✓</span>}
                         </div>
                       ))}
@@ -222,7 +222,7 @@ const JsonQuestionImporter = ({ onImport }) => {
 
                     <div className="ml-9 p-3 bg-base-200/50 rounded-lg border border-base-200 text-xs">
                       <span className="font-bold text-base-content/70 block mb-1">Explanation:</span>
-                      <span className="text-base-content/90">{q.explanation}</span>
+                      <div className="text-base-content/90 overflow-y-auto max-h-32 custom-scrollbar whitespace-pre-wrap">{q.explanation}</div>
                     </div>
                   </div>
                 ))}
