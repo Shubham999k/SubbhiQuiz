@@ -177,7 +177,14 @@ const QuizSetup = () => {
     }
 
     try {
-      if (quizMode === "custom" || quizMode === "json") {
+      if (quizMode === "json") {
+        toast.error("Please click 'Import Questions to Quiz' first before starting.");
+        setIsStarting(false);
+        setIsStartingClassroom(false);
+        return;
+      }
+
+      if (quizMode === "custom") {
         for (let i = 0; i < customQuestions.length; i++) {
           const q = customQuestions[i];
           if (!q.question.trim() || q.options.some((opt) => !opt.trim()) || !q.correctAnswer) {
@@ -209,6 +216,11 @@ const QuizSetup = () => {
   };
 
   const handleSaveCustomQuiz = async () => {
+    if (quizMode === "json") {
+      toast.error("Please click 'Import Questions to Quiz' first to load them into the builder.");
+      return;
+    }
+
     if (!customQuizTitle.trim()) {
       toast.error("Missing Title: Please provide a Quiz Title before saving.");
       return;
