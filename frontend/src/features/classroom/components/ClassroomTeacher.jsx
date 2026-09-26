@@ -116,6 +116,7 @@ const ClassroomTeacher = () => {
 
   // ── Socket callbacks ─────────────────────────────────────────────
   const handleWildcardRequest = useCallback((data) => {
+    console.log("Teacher received wildcard request:", data);
     const { request } = data;
     setWildcardRequests((prev) => {
       if (prev.find((r) => r.roll === request.roll)) return prev;

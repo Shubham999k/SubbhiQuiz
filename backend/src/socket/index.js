@@ -221,7 +221,8 @@ export const setupSocket = (io) => {
     // Payload: { sessionCode, name, roll, batch }
     // ─────────────────────────────────────────────────────────────
     socket.on("wildcard_request", ({ sessionCode, name, roll, batch }) => {
-      if (socket.data?.sessionCode !== sessionCode) return;
+      console.log(`Received wildcard_request from ${roll} for ${sessionCode}. socket.data.sessionCode:`, socket.data?.sessionCode);
+      // Removed strict sessionCode check to prevent race conditions during join
       if (!sessionCode || !roll) return;
       const session = ensureSession(sessionCode);
 
