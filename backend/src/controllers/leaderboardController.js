@@ -9,7 +9,7 @@ export const getLeaderboard = async (req, res) => {
     const filter = req.query.filter || "weekly"; // daily, weekly, monthly, all
     const category = req.query.category || "all";
 
-    let matchFilter = {};
+    let matchFilter = { userId: req.user._id };
     
     if (filter !== "all" && filter !== "all_time") {
       const date = new Date();
@@ -71,7 +71,7 @@ export const getLeaderboard = async (req, res) => {
 // @access  Private
 export const getPlayedCategories = async (req, res) => {
   try {
-    const categories = await QuizResult.distinct("category");
+    const categories = await QuizResult.distinct("category", { userId: req.user._id });
     res.json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });
