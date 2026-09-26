@@ -652,16 +652,18 @@ const StudentActive = () => {
         )}
       </main>
 
-      {/* ── Bottom bar with Chirag ─────────────────────────────────── */}
-      <div className="shrink-0 bg-base-100 border-t border-base-300 px-4 py-3 flex items-center justify-between relative z-10">
-        {/* Left: Chirag Lifeline */}
+      {/* ── Floating Chirag Lifeline ───────────────────────────────── */}
+      <div className="fixed bottom-[72px] left-6 z-50">
         <ChiragLifeline
           lifelinesRemaining={lifelinesRemaining}
           onActivate={handleLifelineActivate}
           disabled={!!myAnswer || isAnswerRevealed || isLocked || !isQuizActive}
           onHintReceived={handleHintReceived}
         />
+      </div>
 
+      {/* ── Bottom bar ─────────────────────────────────────────────── */}
+      <div className="shrink-0 bg-base-100 border-t border-base-300 px-4 py-3 flex items-center justify-end relative z-10">
         {/* Right: Status info */}
         <div className="text-right">
           <div className="text-xs text-base-content/50 font-mono">Session</div>
