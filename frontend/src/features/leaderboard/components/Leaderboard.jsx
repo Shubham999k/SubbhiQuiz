@@ -99,25 +99,45 @@ const Leaderboard = () => {
           </p>
         </div>
 
-        <div className="flex bg-base-200 p-1.5 gap-2 rounded-xl border border-base-300 shadow-sm">
-          {["daily", "weekly", "monthly", "all_time"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 ${filter === f
-                ? "bg-base-100 text-primary shadow-md scale-105"
-                : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
-                }`}
-            >
-              {f.replace("_", " ")}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row gap-2">
+          {/* Desktop Tabs */}
+          <div className="hidden sm:flex bg-base-200 p-1.5 gap-2 rounded-xl border border-base-300 shadow-sm">
+            {["daily", "weekly", "monthly", "all_time"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 ${filter === f
+                  ? "bg-base-100 text-primary shadow-md scale-105"
+                  : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
+                  }`}
+              >
+                {f.replace("_", " ")}
+              </button>
+            ))}
+          </div>
+          {/* Mobile Dropdown & Count */}
+          <div className="sm:hidden flex items-center justify-between gap-2 w-full bg-base-200 p-1.5 rounded-xl border border-base-300 shadow-sm">
+             <Dropdown
+                options={[
+                  { label: "Daily", value: "daily" },
+                  { label: "Weekly", value: "weekly" },
+                  { label: "Monthly", value: "monthly" },
+                  { label: "All Time", value: "all_time" }
+                ]}
+                value={filter}
+                onChange={(val) => setFilter(val)}
+                className="flex-1"
+             />
+             <div className="px-3 py-2 bg-base-100 rounded-lg flex items-center gap-1 shrink-0 shadow-sm border border-base-300">
+               <Users className="h-4 w-4 text-primary" />
+               <span className="font-bold text-sm text-base-content">{totalParticipants}</span>
+             </div>
+          </div>
         </div>
       </div>
 
       {/* Top 3 Podium (Decorated) */}
-      <div className="relative pt-18 pb-8 px-4 flex justify-center items-end max-h-[6
-      0vh] gap-3 sm:gap-4 bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden group">
+      <div className="relative pt-18 pb-6 sm:pb-8 px-4 flex justify-center items-end sm:max-h-[60vh] gap-2 sm:gap-4 bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden group">
 
         {loading && (
           <div className="absolute inset-0 z-50 bg-base-100/60 backdrop-blur-sm flex items-center justify-center">
@@ -139,8 +159,9 @@ const Leaderboard = () => {
                 {podiumData[1].avatar ? <img src={podiumData[1].avatar} alt="" className="w-full h-full object-cover" /> : podiumData[1].name.charAt(0)}
               </div>
             </div>
-            <div className="absolute -bottom-3 -right-3 bg-slate-300 rounded-full p-2 shadow-lg ring-4 ring-base-100">
-              <Medal className="w-5 h-5 text-slate-700" />
+            <div className="absolute -bottom-3 -right-3 bg-slate-300 rounded-full p-2 shadow-lg ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
+              <Medal className="w-5 h-5 text-slate-700 hidden sm:block" />
+              <span className="font-black text-slate-700 sm:hidden">2</span>
             </div>
           </div>
           <div className="text-center mb-3">
@@ -151,13 +172,13 @@ const Leaderboard = () => {
               <TrendingUp size={14} /> {podiumData[1].average}%
             </p>
           </div>
-          <div className="w-full bg-gradient-to-t from-slate-200/40 to-slate-100/10 h-32 rounded-t-2xl border-t border-l border-r border-slate-300/50 flex items-end justify-center pb-4 backdrop-blur-sm">
+          <div className="hidden sm:flex w-full bg-gradient-to-t from-slate-200/40 to-slate-100/10 h-32 rounded-t-2xl border-t border-l border-r border-slate-300/50 items-end justify-center pb-4 backdrop-blur-sm">
             <span className="text-5xl font-black text-slate-400/50">2</span>
           </div>
         </div>
 
         {/* Rank 1 (Gold) */}
-        <div className="flex flex-col items-center flex-1 max-w-[160px] z-20 -mt-8 animate-in slide-in-from-bottom-12 duration-700">
+        <div className="flex flex-col items-center flex-1 max-w-[160px] z-20 -mt-4 sm:-mt-8 animate-in slide-in-from-bottom-12 duration-700">
           <div className="relative mb-4 group-hover:-translate-y-4 transition-transform duration-500">
             <div className="absolute -inset-4 bg-warning/20 rounded-full blur-xl animate-pulse"></div>
             <div className="w-28 h-28 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 p-1.5 shadow-2xl relative">
@@ -165,8 +186,9 @@ const Leaderboard = () => {
                 {podiumData[0].avatar ? <img src={podiumData[0].avatar} alt="" className="w-full h-full object-cover" /> : podiumData[0].name.charAt(0)}
               </div>
             </div>
-            <div className="absolute -bottom-4 -right-2 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full p-2.5 shadow-xl ring-4 ring-base-100">
-              <Trophy className="w-6 h-6 text-white" />
+            <div className="absolute -bottom-4 -right-2 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full p-2.5 shadow-xl ring-4 ring-base-100 flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto">
+              <Trophy className="w-6 h-6 text-white hidden sm:block" />
+              <span className="font-black text-white text-lg sm:hidden">1</span>
             </div>
           </div>
           <div className="text-center mb-4">
@@ -177,7 +199,7 @@ const Leaderboard = () => {
               <Award size={16} /> {podiumData[0].average}%
             </p>
           </div>
-          <div className="w-full bg-gradient-to-t from-warning/30 to-warning/5 h-44 rounded-t-2xl border-t border-l border-r border-warning/30 flex items-end justify-center pb-6 backdrop-blur-sm shadow-[0_-10px_40px_-15px_rgba(252,211,77,0.3)]">
+          <div className="hidden sm:flex w-full bg-gradient-to-t from-warning/30 to-warning/5 h-44 rounded-t-2xl border-t border-l border-r border-warning/30 items-end justify-center pb-6 backdrop-blur-sm shadow-[0_-10px_40px_-15px_rgba(252,211,77,0.3)]">
             <span className="text-7xl font-black text-warning/40">1</span>
           </div>
         </div>
@@ -190,8 +212,9 @@ const Leaderboard = () => {
                 {podiumData[2].avatar ? <img src={podiumData[2].avatar} alt="" className="w-full h-full object-cover" /> : podiumData[2].name.charAt(0)}
               </div>
             </div>
-            <div className="absolute -bottom-3 -right-3 bg-orange-400 rounded-full p-2 shadow-lg ring-4 ring-base-100">
-              <Medal className="w-5 h-5 text-white" />
+            <div className="absolute -bottom-3 -right-3 bg-orange-400 rounded-full p-2 shadow-lg ring-4 ring-base-100 flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto">
+              <Medal className="w-5 h-5 text-white hidden sm:block" />
+              <span className="font-black text-white sm:hidden">3</span>
             </div>
           </div>
           <div className="text-center mb-3">
@@ -202,7 +225,7 @@ const Leaderboard = () => {
               <TrendingUp size={14} /> {podiumData[2].average}%
             </p>
           </div>
-          <div className="w-full bg-gradient-to-t from-orange-200/30 to-orange-100/5 h-24 rounded-t-2xl border-t border-l border-r border-orange-300/40 flex items-end justify-center pb-3 backdrop-blur-sm">
+          <div className="hidden sm:flex w-full bg-gradient-to-t from-orange-200/30 to-orange-100/5 h-24 rounded-t-2xl border-t border-l border-r border-orange-300/40 items-end justify-center pb-3 backdrop-blur-sm">
             <span className="text-4xl font-black text-orange-500/40">3</span>
           </div>
         </div>
