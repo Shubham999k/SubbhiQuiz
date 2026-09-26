@@ -18,13 +18,25 @@ import {
 import { useClassroomSync } from "../../../features/classroom/hooks/useClassroomSync";
 import ThemeSelector from "../../../components/common/ThemeSelector";
 import { api } from "../../../services/api";
+import { useAuth } from "../../../app/providers/AuthContext";
 
 const StudentJoin = () => {
   const [searchParams] = useSearchParams();
   const sessionCode = searchParams.get("session");
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
+  const { user } = useAuth();
+
+  const [name, setName] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`student_session_${sessionCode}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.name) return parsed.name;
+      }
+    } catch (e) {}
+    return user?.name || "";
+  });
   const [roll, setRoll] = useState(() => {
     try {
       const saved = localStorage.getItem(`student_session_${sessionCode}`);
@@ -33,7 +45,7 @@ const StudentJoin = () => {
         if (parsed.roll) return parsed.roll;
       }
     } catch (e) {}
-    return "";
+    return user?.email || "";
   });
   const [batch, setBatch] = useState("");
   const [error, setError] = useState("");

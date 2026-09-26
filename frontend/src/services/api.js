@@ -56,6 +56,20 @@ export const api = {
     return userStr ? JSON.parse(userStr) : null;
   },
 
+  getProfile: async () => {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to fetch profile");
+    }
+    // Sync local storage
+    localStorage.setItem("quiz_current_user", JSON.stringify(data));
+    return data;
+  },
+
   updateProfile: async (data) => {
     const response = await fetch(`${API_URL}/auth/profile`, {
       method: "PUT",

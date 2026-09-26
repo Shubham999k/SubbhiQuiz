@@ -59,6 +59,25 @@ const Profile = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Live sync profile data across devices when tab regains focus
+  useEffect(() => {
+    const fetchLatestProfile = async () => {
+      try {
+        const latestUser = await api.getProfile();
+        updateUser(latestUser);
+        setName(latestUser.name);
+      } catch (e) {
+        console.error("Failed to sync profile:", e);
+      }
+    };
+    
+    // Fetch immediately on mount just in case
+    fetchLatestProfile();
+
+    window.addEventListener("focus", fetchLatestProfile);
+    return () => window.removeEventListener("focus", fetchLatestProfile);
+  }, [updateUser]);
+
   // Close modals on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
