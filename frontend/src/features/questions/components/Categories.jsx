@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { api } from "../../../services/api";
 import { useQuiz } from "../../../app/providers/QuizContext";
@@ -93,7 +93,24 @@ const dummyCategories = [
   },
 ];
 
-
+const DelayedMarquee = ({ children, className }) => {
+  const marqueeRef = useRef(null);
+  useEffect(() => {
+    if (marqueeRef.current) {
+      marqueeRef.current.stop();
+      const timer = setTimeout(() => {
+        if (marqueeRef.current) marqueeRef.current.start();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  
+  return (
+    <marquee ref={marqueeRef} className={className} scrollamount="3" onMouseOver={(e) => e.target.stop()} onMouseOut={(e) => e.target.start()}>
+      {children}
+    </marquee>
+  );
+};
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -326,14 +343,9 @@ const Categories = () => {
                       </div>
                       <div className="ml-4 overflow-hidden flex-1">
                         {quiz.title && quiz.title.length > 15 ? (
-                          <marquee 
-                            scrollamount="3"
-                            onMouseOver={(e) => e.target.stop()} 
-                            onMouseOut={(e) => e.target.start()}
-                            className="text-lg font-bold text-base-content leading-tight block w-full"
-                          >
+                          <DelayedMarquee className="text-lg font-bold text-base-content leading-tight block w-full">
                             {quiz.title}
-                          </marquee>
+                          </DelayedMarquee>
                         ) : (
                           <h3 className="text-lg font-bold text-base-content line-clamp-1" title={quiz.title}>
                             {quiz.title}
