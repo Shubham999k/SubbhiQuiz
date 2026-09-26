@@ -244,6 +244,16 @@ export const useClassroomSync = (
     [role, sessionCode]
   );
 
+  /** Teacher forcefully unlocks a student */
+  const unlockStudent = useCallback(
+    (roll) => {
+      if (role === "teacher" && socketRef.current?.connected) {
+        socketRef.current.emit("teacher_unlock_student", { sessionCode, roll });
+      }
+    },
+    [role, sessionCode]
+  );
+
   /** Teacher releases the answer summary */
   const releaseSummary = useCallback(
     () => {
@@ -383,6 +393,7 @@ export const useClassroomSync = (
     approveWildcard,
     rejectWildcard,
     lockStudent,
+    unlockStudent,
     releaseSummary,
     reportViolation,
     requestLifeline,

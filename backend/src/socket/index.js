@@ -342,6 +342,28 @@ export const setupSocket = (io) => {
       console.log(`Teacher forcefully locked ${roll} in session ${sessionCode}`);
     });
 
+    // NEW: Teacher forcefully unlocks a student
+    socket.on("teacher_unlock_student", ({ sessionCode, roll }) => {
+      if (socket.user?.role !== "teacher") return;
+      if (!sessionCode || !roll) return;
+      const session = ensureSession(sessionCode);
+      const integrity = ensureIntegrity(session, roll);
+
+      integrity.locked = false;
+      integrity.violationCount = 0; // Reset violations on unlock
+
+      io.to(sessionCode).emit("student_violation_update", {
+        roll,
+        violationCount: 0,
+        locked: false,
+        latestViolation: {
+          eventType: "teacher_forced_unlock",
+          timestamp: new Date(),
+        },
+      });
+
+      console.log(`Teacher forcefully unlocked ${roll} in session ${sessionCode}`);
+    });
     // ─────────────────────────────────────────────────────────────
     // NEW: Student reports a focus/integrity violation
     // Payload: { sessionCode, roll, eventType, questionIndex, metadata }

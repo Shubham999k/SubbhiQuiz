@@ -27,6 +27,7 @@ import {
   UserPlus,
   Clock,
   MoreVertical,
+  EyeOff,
 } from "lucide-react";
 import { QRCodeSVG as QrCodeComponent } from "qrcode.react";
 import toast from "react-hot-toast";
@@ -139,14 +140,20 @@ const ClassroomTeacher = () => {
       if (event.type === "STUDENT_JOIN") {
         const { name, roll, batch } = event.payload;
         if (joinMode === "Manual Allow") {
-          setPendingRequests((prev) => {
-            if (!prev.find((s) => s.roll === roll)) {
-              setTimeout(() => {
-                toast.success(`Join request from ${name} (${roll})`, { duration: 5000, icon: '👋' });
-              }, 0);
-              return [...prev, { name, roll, batch: batch || "", timestamp: Date.now() }];
+          setJoinedStudents((currentJoined) => {
+            const isAlreadyJoined = currentJoined.some((s) => s.roll === roll);
+            if (!isAlreadyJoined) {
+              setPendingRequests((prev) => {
+                if (!prev.find((s) => s.roll === roll)) {
+                  setTimeout(() => {
+                    toast.success(`Join request from ${name} (${roll})`, { duration: 5000, icon: '👋' });
+                  }, 0);
+                  return [...prev, { name, roll, batch: batch || "", timestamp: Date.now() }];
+                }
+                return prev;
+              });
             }
-            return prev;
+            return currentJoined;
           });
         } else {
           setJoinedStudents((prev) => {
@@ -427,6 +434,18 @@ const ClassroomTeacher = () => {
     toast.error(`🔒 Student ${roll} has been locked.`);
   };
 
+  const handleUnlockStudent = (roll) => {
+    unlockStudent(roll);
+    setStudentViolations((prev) => {
+      const next = { ...prev };
+      if (next[roll]) {
+        next[roll] = { count: 0, locked: false };
+      }
+      return next;
+    });
+    toast.success(`✅ Student ${roll} has been unlocked.`);
+  };
+
   const handleRejectWildcard = (roll) => {
     rejectWildcard(roll);
     setWildcardRequests((prev) => prev.filter((r) => String(r.roll) !== String(roll)));
@@ -489,14 +508,18 @@ const ClassroomTeacher = () => {
   // ── Computed Stats ──────────────────────────────────────────────
   const pendingCount = pendingRequests.length;
   const removedCount = 0;
-  const focusViolationsCount = Object.keys(studentViolations).filter(roll => studentViolations[roll] && studentViolations[roll].count > 0).length;
+  const lockedCount = joinedStudents.filter(s => studentViolations[s.roll]?.locked).length;
+  const unfocusedCount = joinedStudents.filter(s => studentViolations[s.roll]?.count > 0 && !studentViolations[s.roll]?.locked).length;
+  const focusedCount = joinedStudents.length - unfocusedCount - lockedCount;
 
   const filteredStudents = joinedStudents.filter(s => {
     const vData = studentViolations[s.roll];
     const isUnfocused = vData && vData.count > 0;
+    const isLocked = vData && vData.locked;
 
-    if (studentFilter === "focused" && isUnfocused) return false;
-    if (studentFilter === "unfocused" && !isUnfocused) return false;
+    if (studentFilter === "locked" && !isLocked) return false;
+    if (studentFilter === "unfocused" && (!isUnfocused || isLocked)) return false;
+    if (studentFilter === "focused" && (isUnfocused || isLocked)) return false;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -699,13 +722,19 @@ const ClassroomTeacher = () => {
                   onClick={() => setViewAllTab("focused")}
                   className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${viewAllTab === "focused" ? "bg-base-100 text-green-600 shadow-sm" : "text-base-content/60 hover:text-green-600"}`}
                 >
-                  Focused <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">{joinedStudents.length - focusViolationsCount}</span>
+                  Focused <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">{focusedCount}</span>
                 </button>
                 <button
                   onClick={() => setViewAllTab("unfocused")}
                   className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${viewAllTab === "unfocused" ? "bg-base-100 text-error shadow-sm" : "text-base-content/60 hover:text-error"}`}
                 >
-                  Unfocused <span className="bg-error/10 text-error text-xs px-2 py-0.5 rounded-full">{focusViolationsCount}</span>
+                  Unfocused <span className="bg-error/10 text-error text-xs px-2 py-0.5 rounded-full">{unfocusedCount}</span>
+                </button>
+                <button
+                  onClick={() => setViewAllTab("locked")}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${viewAllTab === "locked" ? "bg-base-100 text-error shadow-sm" : "text-base-content/60 hover:text-error"}`}
+                >
+                  Locked <span className="bg-error/10 text-error text-xs px-2 py-0.5 rounded-full">{lockedCount}</span>
                 </button>
               </div>
 
@@ -736,8 +765,10 @@ const ClassroomTeacher = () => {
                 <tbody className="divide-y divide-base-200 bg-base-100">
                   {joinedStudents
                     .filter(s => {
-                      if (viewAllTab === "focused") return !studentViolations[s.roll]?.count;
-                      if (viewAllTab === "unfocused") return studentViolations[s.roll]?.count > 0;
+                      const v = studentViolations[s.roll];
+                      if (viewAllTab === "locked") return v?.locked;
+                      if (viewAllTab === "focused") return !v?.count && !v?.locked;
+                      if (viewAllTab === "unfocused") return v?.count > 0 && !v?.locked;
                       return true;
                     })
                     .filter(s => {
@@ -766,24 +797,19 @@ const ClassroomTeacher = () => {
                           </td>
                           <td className="py-4 pr-6">
                             <div className="flex items-center justify-center gap-3">
-                              {isUnfocused && vData.locked && (
-                                <div className="p-2 bg-error/10 text-error rounded-lg" title="Locked">
-                                  <Lock size={16} />
-                                </div>
-                              )}
-                              {(!isUnfocused || !vData?.locked) ? (
+                              {(vData?.locked) ? (
+                                <button 
+                                  onClick={() => handleUnlockStudent(student.roll)}
+                                  className="px-3 py-1.5 text-xs font-bold text-success bg-success/10 hover:bg-success/20 rounded-lg transition-colors border border-success/20 flex items-center gap-1.5"
+                                >
+                                  <Unlock size={12} /> Unlock
+                                </button>
+                              ) : (
                                 <button 
                                   onClick={() => handleLockStudent(student.roll)}
                                   className="px-3 py-1.5 text-xs font-bold text-error bg-error/10 hover:bg-error/20 rounded-lg transition-colors border border-error/20 flex items-center gap-1.5"
                                 >
                                   <Lock size={12} /> Lock
-                                </button>
-                              ) : (
-                                <button 
-                                  onClick={() => handleApproveWildcard(student.roll)}
-                                  className="px-3 py-1.5 text-xs font-bold text-success bg-success/10 hover:bg-success/20 rounded-lg transition-colors border border-success/20 flex items-center gap-1.5"
-                                >
-                                  <Unlock size={12} /> Unlock
                                 </button>
                               )}
                             </div>
@@ -852,10 +878,18 @@ const ClassroomTeacher = () => {
           </div>
           <div className="w-px h-8 bg-base-300 shrink-0 hidden md:block"></div>
           <div className="flex items-center gap-3 shrink-0">
-            <Lock size={24} className="text-green-500" />
+            <EyeOff size={24} className="text-amber-500" />
             <div>
-              <div className="font-black text-xl leading-none text-base-content">{focusViolationsCount}</div>
-              <div className="text-xs text-base-content/60 font-medium">Focus Violations</div>
+              <div className="font-black text-xl leading-none text-base-content">{unfocusedCount}</div>
+              <div className="text-xs text-base-content/60 font-medium">Unfocused</div>
+            </div>
+          </div>
+          <div className="w-px h-8 bg-base-300 shrink-0 hidden md:block"></div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Lock size={24} className="text-error" />
+            <div>
+              <div className="font-black text-xl leading-none text-base-content">{lockedCount}</div>
+              <div className="text-xs text-base-content/60 font-medium">Locked</div>
             </div>
           </div>
         </div>
@@ -1140,28 +1174,30 @@ const ClassroomTeacher = () => {
               </div>
 
               {/* Status Filters */}
-              <div className="flex gap-3 mb-5">
+              <div className="flex flex-col sm:flex-row bg-base-200 p-1 rounded-xl mb-5 w-full">
                 <button
-                  onClick={() => setStudentFilter(studentFilter === "focused" ? "all" : "focused")}
-                  className={`flex-1 flex items-center justify-between p-2 rounded-lg border-2 transition-colors ${studentFilter === "focused" ? "border-green-400 bg-green-50" : "border-green-100 bg-green-50/50 hover:bg-green-50"}`}
+                  onClick={() => setStudentFilter("all")}
+                  className={`flex-1 px-3 py-2 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 ${studentFilter === "all" || !studentFilter ? "bg-base-100 text-base-content shadow-sm" : "text-base-content/60 hover:text-base-content"}`}
                 >
-                  <div className="flex items-center gap-2 text-sm font-bold text-green-700">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div> Focused Students
-                  </div>
-                  <div className="bg-green-200 text-green-800 text-xs font-black px-2 py-0.5 rounded-full">
-                    {joinedStudents.length - focusViolationsCount}
-                  </div>
+                  All <span className="bg-base-300 text-base-content text-xs px-2 py-0.5 rounded-full">{joinedStudents.length}</span>
                 </button>
                 <button
-                  onClick={() => setStudentFilter(studentFilter === "unfocused" ? "all" : "unfocused")}
-                  className={`flex-1 flex items-center justify-between p-2 rounded-lg border-2 transition-colors ${studentFilter === "unfocused" ? "border-error bg-error/10" : "border-error/30 bg-error/10 hover:bg-error/20"}`}
+                  onClick={() => setStudentFilter("focused")}
+                  className={`flex-1 px-3 py-2 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 ${studentFilter === "focused" ? "bg-base-100 text-green-600 shadow-sm" : "text-base-content/60 hover:text-green-600"}`}
                 >
-                  <div className="flex items-center gap-2 text-sm font-bold text-error">
-                    <div className="w-2 h-2 rounded-full bg-error"></div> Unfocused
-                  </div>
-                  <div className="bg-error/20 text-error text-xs font-black px-2 py-0.5 rounded-full">
-                    {focusViolationsCount}
-                  </div>
+                  Focused <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">{focusedCount}</span>
+                </button>
+                <button
+                  onClick={() => setStudentFilter("unfocused")}
+                  className={`flex-1 px-3 py-2 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 ${studentFilter === "unfocused" ? "bg-base-100 text-error shadow-sm" : "text-base-content/60 hover:text-error"}`}
+                >
+                  Unfocused <span className="bg-error/10 text-error text-xs px-2 py-0.5 rounded-full">{unfocusedCount}</span>
+                </button>
+                <button
+                  onClick={() => setStudentFilter("locked")}
+                  className={`flex-1 px-3 py-2 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 ${studentFilter === "locked" ? "bg-base-100 text-error shadow-sm" : "text-base-content/60 hover:text-error"}`}
+                >
+                  Locked <span className="bg-error/10 text-error text-xs px-2 py-0.5 rounded-full">{lockedCount}</span>
                 </button>
               </div>
 
@@ -1233,7 +1269,7 @@ const ClassroomTeacher = () => {
                                   <>
                                     <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
                                     <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-base-100 rounded-xl shadow-lg border border-base-200 overflow-hidden flex flex-col">
-                                      {(!isUnfocused || !vData?.locked) && (
+                                      {(!vData?.locked) && (
                                         <button 
                                           onClick={() => {
                                             handleLockStudent(student.roll);
@@ -1244,10 +1280,10 @@ const ClassroomTeacher = () => {
                                           <Lock size={14} /> Lock Student
                                         </button>
                                       )}
-                                      {(isUnfocused && vData?.locked) && (
+                                      {(vData?.locked) && (
                                         <button 
                                           onClick={() => {
-                                            handleApproveWildcard(student.roll);
+                                            handleUnlockStudent(student.roll);
                                             setActiveDropdown(null);
                                           }}
                                           className="w-full text-left px-4 py-3 text-sm font-bold text-success hover:bg-base-200 flex items-center gap-2 transition-colors"
