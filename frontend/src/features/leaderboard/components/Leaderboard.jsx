@@ -301,11 +301,11 @@ const Leaderboard = () => {
           )}
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-base-200 text-base-content/80 text-sm border-b border-base-300 sticky top-0 z-30 shadow-md">
-                <th className="sticky left-0 z-40 bg-base-200 p-2 sm:py-2 sm:px-4 font-semibold w-10 sm:w-16 text-center whitespace-nowrap">#</th>
-                <th className="p-2 sm:py-2 sm:px-4 font-semibold whitespace-nowrap min-w-[120px] sm:min-w-[160px]">Student</th>
-                <th className="p-2 sm:py-2 sm:px-4 font-semibold text-center whitespace-nowrap hidden md:table-cell">Quizzes Taken</th>
-                <th className="p-2 sm:py-2 sm:px-4 font-semibold text-right whitespace-nowrap">Accuracy</th>
+              <tr className="bg-base-200 text-base-content/80 text-sm border-b border-base-300">
+                <th className="p-2 font-semibold w-10 sm:w-12 text-center whitespace-nowrap">#</th>
+                <th className="p-2 font-semibold whitespace-nowrap">Student</th>
+                <th className="p-2 font-semibold text-center whitespace-nowrap hidden md:table-cell">Quizzes</th>
+                <th className="p-2 font-semibold text-right whitespace-nowrap">Accuracy</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-base-200 relative">
@@ -327,35 +327,28 @@ const Leaderboard = () => {
                         }`}
                       style={{ animationFillMode: 'both', animationDelay: `${idx * 50}ms` }}
                     >
-                      {/* Rank - sticky */}
-                      <td className={`sticky left-0 z-10 p-2 sm:py-2 sm:px-4 text-center whitespace-nowrap ${student.isCurrentUser ? "bg-primary/5 group-hover:bg-primary/10" : "bg-base-100 group-hover:bg-base-200"}`}>
-                        <span className={`inline-block px-1 sm:px-2 py-1 rounded-md text-sm font-black ${student.isCurrentUser ? "bg-primary text-white" : "text-base-content/50 sm:bg-base-200"}`}>
+                      {/* Rank */}
+                      <td className="p-2 text-center whitespace-nowrap">
+                        <span className={`inline-block px-2 py-1 rounded-md text-xs sm:text-sm font-black ${student.isCurrentUser ? "bg-primary text-white" : "text-base-content/50 bg-transparent sm:bg-base-200"}`}>
                           {actualRank}
                         </span>
                       </td>
 
                       {/* Student Info */}
-                      <td className="p-2 sm:py-2 sm:px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className={`hidden sm:flex w-9 h-9 flex-shrink-0 rounded-xl items-center justify-center font-bold overflow-hidden shadow-sm ${student.isCurrentUser ? "bg-primary/20 text-primary" : "bg-base-300 text-base-content/70"}`}>
-                            {student.avatar ? (
-                              <img src={student.avatar} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              student.name.charAt(0).toUpperCase()
-                            )}
-                          </div>
+                      <td className="p-2 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
                           <div>
                             <div className="flex items-center gap-2">
                               <span className={`font-bold text-sm ${student.isCurrentUser ? "text-primary" : "text-base-content"}`}>
                                 {student.name}
                               </span>
                               {student.isCurrentUser && (
-                                <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-wider">
+                                <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[9px] font-black uppercase tracking-wider">
                                   You
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs text-base-content/50 md:hidden block">
+                            <span className="text-[10px] text-base-content/50 md:hidden block">
                               {student.quizzes} Quizzes
                             </span>
                           </div>
@@ -363,27 +356,17 @@ const Leaderboard = () => {
                       </td>
 
                       {/* Quizzes Taken */}
-                      <td className="p-2 sm:py-2 sm:px-4 text-center hidden md:table-cell whitespace-nowrap">
+                      <td className="p-2 text-center hidden md:table-cell whitespace-nowrap">
                         <span className="font-semibold text-base-content/70">{student.quizzes}</span>
                       </td>
 
                       {/* Accuracy */}
-                      <td className="p-2 sm:py-4 sm:px-6 text-right">
-                        <div className="flex flex-col items-end">
-                          <span className={`text-sm sm:text-lg font-black ${student.average >= 80 ? "text-success" :
-                            student.average >= 50 ? "text-warning" : "text-error"
-                            }`}>
-                            {student.average}%
-                          </span>
-                          <div className="hidden sm:block w-24 h-1.5 bg-base-300 rounded-full mt-1 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${student.average >= 80 ? "bg-success" :
-                                student.average >= 50 ? "bg-warning" : "bg-error"
-                                }`}
-                              style={{ width: `${student.average}%` }}
-                            ></div>
-                          </div>
-                        </div>
+                      <td className="p-2 text-right">
+                        <span className={`text-sm font-black ${student.average >= 80 ? "text-success" :
+                          student.average >= 50 ? "text-warning" : "text-error"
+                          }`}>
+                          {student.average}%
+                        </span>
                       </td>
                     </tr>
                   );

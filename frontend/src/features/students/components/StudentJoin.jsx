@@ -355,28 +355,28 @@ const StudentJoin = () => {
 
               {/* Details form */}
               {error && (
-                <div className="bg-error/10 text-error p-3.5 rounded-xl text-sm font-medium border border-error/20 text-center mb-4">
+                <div className="bg-error/10 text-error p-2 rounded-md text-xs font-medium border border-error/20 text-center mb-2">
                   {error}
                 </div>
               )}
-              <div className="space-y-4 mb-6">
+              <div className="flex flex-col gap-2 mb-3">
                 {[
                   { label: "Full Name", value: name, setter: setName, icon: User, placeholder: "Your name" },
                   { label: "Roll Number", value: roll, setter: setRoll, icon: CreditCard, placeholder: "e.g. 84431" },
                   { label: "Batch / Class", value: batch, setter: setBatch, icon: Building, placeholder: "e.g. 10th A" },
                 ].map(({ label, value, setter, icon: Icon, placeholder }) => (
                   <div key={label}>
-                    <label className="block text-[13px] font-bold text-base-content mb-1.5 ml-1">{label}</label>
+                    <label className="block text-xs font-bold text-base-content mb-1 ml-1">{label}</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
-                        <Icon size={18} />
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
+                        <Icon size={16} />
                       </div>
                       <input
                         type="text"
                         value={value}
                         onChange={(e) => setter(e.target.value)}
                         placeholder={placeholder}
-                        className="w-full pl-11 pr-4 py-3.5 bg-base-100 border border-base-300 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-purple-400 outline-none transition-all text-[15px] placeholder:text-base-content/30 shadow-sm"
+                        className="w-full pl-9 pr-3 py-2 bg-base-100 border border-base-300 rounded-md focus:ring-2 focus:ring-purple-300 focus:border-purple-400 outline-none transition-all text-sm placeholder:text-base-content/30 shadow-sm"
                         maxLength={50}
                       />
                     </div>
@@ -387,13 +387,13 @@ const StudentJoin = () => {
               <button
                 onClick={handleWildcardRequest}
                 disabled={!name.trim() || !roll.trim() || !batch.trim() || wildcardPending}
-                className={`w-full font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-[15px] ${
+                className={`w-full font-bold py-2 rounded-md transition-all flex items-center justify-center gap-2 text-sm ${
                   !name.trim() || !roll.trim() || !batch.trim() || wildcardPending
                     ? "bg-base-200 text-base-content/40 cursor-not-allowed"
-                    : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white shadow-lg shadow-purple-500/25 hover:-translate-y-0.5 active:translate-y-0"
+                    : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white shadow-md hover:-translate-y-0.5 active:translate-y-0"
                 }`}
               >
-                <Sparkles size={20} />
+                <Sparkles size={16} />
                 Request Wildcard Entry
               </button>
               <p className="text-center text-xs text-base-content/40 mt-4">
@@ -418,26 +418,26 @@ const StudentJoin = () => {
 
           /* ── Normal join form ───────────────────────────────────── */
           ) : (
-            <form onSubmit={handleJoin} className="space-y-4 relative z-10">
+            <form onSubmit={handleJoin} className="flex flex-col gap-2 relative z-10">
               {error && (
-                <div className="bg-error/10 text-error p-3.5 rounded-xl text-sm font-medium border border-error/20 text-center">
+                <div className="bg-error/10 text-error p-2 rounded-md text-xs font-medium border border-error/20 text-center">
                   {error}
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="flex flex-col gap-2">
                 <div>
-                  <label className="block text-[13px] font-bold text-base-content mb-1.5 ml-1">Full Name</label>
+                  <label className="block text-[13px] font-bold text-base-content mb-1 ml-1">Full Name</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
-                      <User size={18} />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
+                      <User size={16} />
                     </div>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Subbhi"
-                      className="w-full pl-11 pr-4 py-3.5 bg-base-100 border border-base-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-[15px] placeholder:text-base-content/30 shadow-sm"
+                      className="w-full pl-9 pr-3 py-2 bg-base-100 border border-base-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm placeholder:text-base-content/30 shadow-sm"
                       required
                       maxLength={50}
                     />
@@ -445,17 +445,17 @@ const StudentJoin = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-bold text-base-content mb-1.5 ml-1">Roll Number</label>
+                  <label className="block text-[13px] font-bold text-base-content mb-1 ml-1">Roll Number</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
-                      <CreditCard size={18} />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
+                      <CreditCard size={16} />
                     </div>
                     <input
                       type="text"
                       value={roll}
                       onChange={(e) => setRoll(e.target.value)}
                       placeholder="e.g. 84431"
-                      className="w-full pl-11 pr-4 py-3.5 bg-base-100 border border-base-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-[15px] placeholder:text-base-content/30 shadow-sm"
+                      className="w-full pl-9 pr-3 py-2 bg-base-100 border border-base-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm placeholder:text-base-content/30 shadow-sm"
                       required
                       maxLength={30}
                     />
@@ -463,17 +463,17 @@ const StudentJoin = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-bold text-base-content mb-1.5 ml-1">Batch / Class</label>
+                  <label className="block text-[13px] font-bold text-base-content mb-1 ml-1">Batch / Class</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
-                      <Building size={18} />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
+                      <Building size={16} />
                     </div>
                     <input
                       type="text"
                       value={batch}
                       onChange={(e) => setBatch(e.target.value)}
                       placeholder="e.g. 10th A"
-                      className="w-full pl-11 pr-4 py-3.5 bg-base-100 border border-base-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-[15px] placeholder:text-base-content/30 shadow-sm"
+                      className="w-full pl-9 pr-3 py-2 bg-base-100 border border-base-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm placeholder:text-base-content/30 shadow-sm"
                       required
                       maxLength={30}
                     />
@@ -481,14 +481,14 @@ const StudentJoin = () => {
                 </div>
               </div>
 
-              <div className="pt-3">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={!name.trim() || !roll.trim() || !batch.trim() || isWaitingForTeacher}
-                  className={`w-full font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-[15px] ${
+                  className={`w-full font-bold py-2 rounded-md transition-all flex items-center justify-center gap-2 text-sm ${
                     !name.trim() || !roll.trim() || !batch.trim() || isWaitingForTeacher
                       ? "bg-base-200 text-base-content/40 cursor-not-allowed"
-                      : "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0"
+                      : "bg-primary hover:bg-primary/90 text-white shadow-md hover:-translate-y-0.5 active:translate-y-0"
                   }`}
                 >
                   {isWaitingForTeacher ? (

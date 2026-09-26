@@ -435,9 +435,19 @@ const StudentActive = () => {
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = questions ? questions[currentQuestionIndex] : null;
 
   // ─── Active Quiz UI ───────────────────────────────────────────────
+  if (quizStarted && !currentQuestion) {
+    return (
+      <div className="min-h-screen bg-base-200 flex flex-col items-center justify-center p-4 text-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <h2 className="text-xl font-bold mb-2 text-base-content">Loading Question...</h2>
+        <p className="text-base-content/70">Please wait while the quiz data syncs.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="quiz-active-screen min-h-screen bg-base-200 flex flex-col relative">
 
@@ -583,7 +593,7 @@ const StudentActive = () => {
 
         {/* Options */}
         <div className="flex flex-col gap-2 flex-1">
-          {currentQuestion.options.map((option, idx) => {
+          {(currentQuestion.options || []).map((option, idx) => {
             const label = String.fromCharCode(65 + idx);
             const isSelected = myAnswer === option;
             const correctOption = currentQuestion.correctAnswer || currentQuestion.correctOption;
