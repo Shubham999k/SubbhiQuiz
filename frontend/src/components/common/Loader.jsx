@@ -73,9 +73,14 @@ const Loader = ({ message = "Loading...", fullScreen = false }) => {
         <h2 className="text-2xl font-bold tracking-tight text-base-content mb-2 flex items-center justify-center gap-1 drop-shadow-lg">
           Quizzz-<span className="text-primary drop-shadow-[0_0_8px_hsl(var(--p)/0.5)]">Zone</span>
         </h2>
-        <p className="text-sm font-medium text-primary animate-pulse tracking-wide uppercase mt-1">
-          {message}
-        </p>
+        <div className="flex items-center justify-center mt-2 text-primary text-lg font-bold tracking-widest uppercase drop-shadow-md">
+          <span>Loading</span>
+          <span className="inline-flex w-6 ml-0.5 text-left text-2xl leading-none">
+            <span className="animate-pulse" style={{ animationDelay: "0ms" }}>.</span>
+            <span className="animate-pulse" style={{ animationDelay: "200ms" }}>.</span>
+            <span className="animate-pulse" style={{ animationDelay: "400ms" }}>.</span>
+          </span>
+        </div>
       </div>
     </div>
   );
