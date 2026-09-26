@@ -132,7 +132,7 @@ const JsonQuestionImporter = ({ onImport }) => {
         </div>
         
         <textarea
-          className="w-full h-[500px] font-mono text-sm bg-[#1e1e1e] text-[#d4d4d4] p-4 rounded-xl border border-base-300 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-y"
+          className="w-full h-[500px] font-mono text-sm bg-base-200 text-base-content p-4 rounded-xl border border-base-300 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-y"
           value={jsonInput}
           onChange={(e) => setJsonInput(e.target.value)}
           placeholder="Paste your JSON array of questions here..."
