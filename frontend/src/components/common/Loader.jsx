@@ -1,7 +1,19 @@
 import React from 'react';
 import { BookOpen, Trophy, Target, Lightbulb, FileText, BarChart3 } from 'lucide-react';
 
-const Loader = ({ message = "Loading...", fullScreen = false }) => {
+const Loader = ({ message = "Loading", fullScreen = false }) => {
+  const isDefaultLoading = message.toLowerCase().trim().includes("loading");
+  const displayText = isDefaultLoading ? "LOADING" : message;
+  const [dots, setDots] = React.useState("");
+
+  React.useEffect(() => {
+    if (!isDefaultLoading) return;
+    const interval = setInterval(() => {
+      setDots(prev => (prev.length >= 3 ? "" : prev + "."));
+    }, 400);
+    return () => clearInterval(interval);
+  }, [isDefaultLoading]);
+
   return (
     <div className={`flex flex-col items-center justify-center w-full animate-in fade-in duration-700 overflow-hidden ${fullScreen ? "fixed inset-0 z-[9999] bg-base-100/90 backdrop-blur-sm" : "flex-1 h-full min-h-[60vh]"}`}>
       
@@ -73,13 +85,14 @@ const Loader = ({ message = "Loading...", fullScreen = false }) => {
         <h2 className="text-2xl font-bold tracking-tight text-base-content mb-2 flex items-center justify-center gap-1 drop-shadow-lg">
           Quizzz-<span className="text-primary drop-shadow-[0_0_8px_hsl(var(--p)/0.5)]">Zone</span>
         </h2>
-        <div className="flex items-center justify-center mt-2 text-primary text-lg font-bold tracking-widest uppercase drop-shadow-md">
-          <span>Loading</span>
-          <span className="inline-flex w-6 ml-0.5 text-left text-2xl leading-none">
-            <span className="animate-pulse" style={{ animationDelay: "0ms" }}>.</span>
-            <span className="animate-pulse" style={{ animationDelay: "200ms" }}>.</span>
-            <span className="animate-pulse" style={{ animationDelay: "400ms" }}>.</span>
-          </span>
+        <div className="text-sm font-bold text-primary tracking-wide uppercase mt-1 flex items-center justify-center">
+          {isDefaultLoading ? (
+            <span className="inline-block w-24 text-left">
+              {displayText}{dots}
+            </span>
+          ) : (
+            <span className="animate-pulse">{displayText}</span>
+          )}
         </div>
       </div>
     </div>
