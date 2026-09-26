@@ -20,6 +20,23 @@ import ThemeSelector from "../../../components/common/ThemeSelector";
 import { api } from "../../../services/api";
 import { useAuth } from "../../../app/providers/AuthContext";
 
+const DelayedMarquee = ({ children, className }) => {
+  const [speed, setSpeed] = useState(0);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSpeed(3);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  return (
+    <marquee className={className} scrollamount={speed} onMouseOver={(e) => e.target.stop()} onMouseOut={(e) => e.target.start()}>
+      {children}
+    </marquee>
+  );
+};
+
 const StudentJoin = () => {
   const [searchParams] = useSearchParams();
   const sessionCode = searchParams.get("session");
@@ -239,49 +256,53 @@ const StudentJoin = () => {
         </div>
       )}
 
+      {/* ── Marquee ─────────────────────────────────────────────────── */}
+      <DelayedMarquee className="bg-primary text-primary-content font-bold py-1.5 text-sm uppercase tracking-widest shadow-md sticky top-0 z-20">
+        🚨 Attention: Please fill in your details quickly to join the quiz! 🚨
+      </DelayedMarquee>
+
       {/* ── Header ────────────────────────────────────────────────── */}
-      <header className="bg-base-100 p-4 shadow-sm flex items-center justify-between sticky top-0 z-10 border-b border-base-200/50">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2.5 rounded-xl text-primary">
-            <BookOpen size={24} strokeWidth={2.5} />
+      <header className="bg-base-100 p-2 shadow-sm flex items-center justify-between sticky top-[36px] z-10 border-b border-base-200/50">
+        <div className="flex items-center gap-2">
+          <div className="bg-primary/10 p-2 rounded-md text-primary">
+            <BookOpen size={20} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-base-content leading-tight">Quizzz-Zone</h1>
-            <p className="text-[11px] font-medium text-base-content/60 uppercase tracking-widest mt-0.5">Learn • Compete • Grow</p>
+            <h1 className="text-lg font-bold tracking-tight text-base-content leading-tight">Quizzz-Zone</h1>
+            <p className="text-[10px] font-medium text-base-content/60 uppercase tracking-widest mt-0.5">Learn • Compete • Grow</p>
           </div>
         </div>
         <ThemeSelector />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 lg:p-8 pt-8 max-w-[480px] mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-start p-2 pt-4 max-w-[480px] mx-auto w-full gap-2">
 
         {/* Banner */}
-        <div className="w-full bg-success/10 border border-success/20 rounded-2xl p-4 mb-8 flex items-center gap-4 shadow-sm shadow-success/5">
-          <div className="bg-success/20 p-2.5 rounded-xl text-success flex-shrink-0">
-            <QrCode size={24} strokeWidth={2} />
+        <div className="w-full bg-success/10 border border-success/20 rounded-md p-2 flex items-center gap-2 shadow-sm shadow-success/5">
+          <div className="bg-success/20 p-2 rounded-md text-success flex-shrink-0">
+            <QrCode size={20} strokeWidth={2} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-success">You joined via classroom QR</p>
-            <p className="text-xs font-medium text-success/80 mt-0.5">You're almost there!</p>
+            <p className="text-xs font-bold text-success">You joined via classroom QR</p>
           </div>
           <div className="text-success flex-shrink-0">
-            <CheckCircle2 size={24} fill="currentColor" className="text-success/20 stroke-success" />
+            <CheckCircle2 size={20} fill="currentColor" className="text-success/20 stroke-success" />
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-base-100 p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-base-content/5 border border-base-200/50 w-full relative overflow-hidden">
+        <div className="bg-base-100 p-2 sm:p-4 rounded-md shadow-xl shadow-base-content/5 border border-base-200/50 w-full relative overflow-hidden flex flex-col gap-2">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="text-center mb-8 relative z-10">
-            <div className="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-5 text-base-content/40">
-              <UserCircle2 size={36} strokeWidth={1.5} />
+          <div className="text-center relative z-10">
+            <div className="w-12 h-12 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-2 text-base-content/40">
+              <UserCircle2 size={24} strokeWidth={1.5} />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-base-content mb-2 tracking-tight">Join Classroom</h2>
-            <p className="text-base-content/60 text-sm sm:text-base">Enter your details to join the live quiz.</p>
+            <h2 className="text-xl font-bold text-base-content tracking-tight mb-1">Join Classroom</h2>
+            <p className="text-base-content/60 text-xs">Enter your details to join the live quiz.</p>
 
             {projectorState && !isSessionEnded && projectorState.currentQuiz && (
-              <p className="mt-4 text-primary text-xs font-bold uppercase tracking-wider bg-primary/10 inline-block px-4 py-1.5 rounded-full border border-primary/10">
+              <p className="mt-2 text-primary text-[10px] font-bold uppercase tracking-wider bg-primary/10 inline-block px-2 py-1 rounded-full border border-primary/10">
                 {projectorState.currentQuiz?.category} Quiz
               </p>
             )}

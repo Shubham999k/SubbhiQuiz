@@ -573,16 +573,16 @@ const StudentActive = () => {
       )}
 
       {/* ── Main content ──────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col p-4 overflow-y-auto relative z-10">
+      <main className="flex-1 flex flex-col p-2 overflow-y-auto relative z-10">
         {/* Question card */}
-        <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6 mb-6">
-          <h2 className="text-xl font-bold text-base-content leading-snug">
+        <div className="bg-base-100 rounded-md shadow-sm border border-base-300 p-3 mb-2">
+          <h2 className="text-lg font-bold text-base-content leading-snug">
             {currentQuestion.question}
           </h2>
         </div>
 
         {/* Options */}
-        <div className="flex flex-col gap-3 flex-1">
+        <div className="flex flex-col gap-2 flex-1">
           {currentQuestion.options.map((option, idx) => {
             const label = String.fromCharCode(65 + idx);
             const isSelected = myAnswer === option;
@@ -615,9 +615,9 @@ const StudentActive = () => {
                 key={idx}
                 onClick={() => handleSelectOption(option)}
                 disabled={isAnswerRevealed || myAnswer !== null || isLocked}
-                className={`w-full p-4 rounded-xl border-2 text-left flex items-center gap-4 transition-all ${btnClass}`}
+                className={`w-full p-2 rounded-md border-2 text-left flex items-center gap-2 transition-all ${btnClass}`}
               >
-                <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold shrink-0 ${labelClass}`}>
+                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold shrink-0 text-sm ${labelClass}`}>
                   {isCorrectAnswer ? <CheckCircle2 size={20} /> : isIncorrectSelected ? <XCircle size={20} /> : isHinted ? "✨" : label}
                 </div>
                 <span className="font-medium text-lg flex-1">{option}</span>
@@ -634,7 +634,7 @@ const StudentActive = () => {
         )}
 
         {isAnswerRevealed && currentQuestion.explanation && (
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
+          <div className="mt-2 bg-blue-50 border border-blue-200 rounded-md p-2 text-xs">
             <h4 className="font-bold text-blue-800 mb-1">Explanation</h4>
             <p className="text-blue-900 whitespace-pre-line">{currentQuestion.explanation}</p>
           </div>
