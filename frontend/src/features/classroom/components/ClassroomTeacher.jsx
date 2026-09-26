@@ -924,20 +924,20 @@ const ClassroomTeacher = () => {
 
       {/* ── 4. Main Content (Two Columns) ─────────────────────────────── */}
       {quizCompleted ? (
-        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col p-8">
-          <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+        <div className="flex-1 bg-base-100 rounded-2xl shadow-sm border border-base-200 flex flex-col p-8">
+          <div className="flex justify-between items-center mb-8 border-b border-base-200 pb-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Leaderboard Management</h2>
-              <p className="text-gray-500 mt-1 font-medium">Submissions: {joinedStudents.length}</p>
+              <h2 className="text-xl font-bold text-base-content">Leaderboard Management</h2>
+              <p className="text-base-content/60 mt-1 font-medium">Submissions: {joinedStudents.length}</p>
             </div>
-            <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 ${resultsReleased ? "bg-green-50 text-green-700 border border-green-200" : "bg-amber-50 text-amber-600 border border-amber-200"}`}>
+            <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 ${resultsReleased ? "bg-success/10 text-success border border-success/20" : "bg-warning/10 text-warning border border-warning/20"}`}>
               {resultsReleased ? <><Unlock size={18} /> Results: Released</> : <><Lock size={18} /> Results: Hidden</>}
             </div>
           </div>
 
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider font-bold">
+              <thead className="bg-base-200 text-base-content/70 uppercase text-xs tracking-wider font-bold">
                 <tr>
                   <th className="p-4 rounded-tl-lg">Student</th>
                   <th className="p-4">Roll No</th>
@@ -947,30 +947,30 @@ const ClassroomTeacher = () => {
                   <th className="p-4 rounded-tr-lg" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-base-200/50">
                 {[...joinedStudents]
                   .sort((a, b) => (studentScores[b.roll] || 0) - (studentScores[a.roll] || 0))
                   .map((student, index) => {
                     const vData = studentViolations[student.roll];
                     return (
-                      <tr key={student.roll} className="hover:bg-gray-50 transition-colors">
+                      <tr key={student.roll} className="hover:bg-base-200/50 transition-colors">
                         <td className="p-4 flex items-center gap-3">
-                          <span className="font-bold text-gray-400 w-6">#{index + 1}</span>
+                          <span className="font-bold text-base-content/40 w-6">#{index + 1}</span>
                           <div>
-                            <span className="font-bold text-gray-800">{student.name}</span>
-                            {student.isWildcard && <span className="ml-2 text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">WC</span>}
+                            <span className="font-bold text-base-content">{student.name}</span>
+                            {student.isWildcard && <span className="ml-2 text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider border border-purple-500/30">WC</span>}
                           </div>
                         </td>
-                        <td className="p-4 text-gray-500 font-mono text-sm">{student.roll}</td>
-                        <td className="p-4 text-center font-bold text-indigo-600 text-lg">{studentScores[student.roll] || 0}</td>
-                        <td className="p-4 text-center text-gray-600 font-medium">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
+                        <td className="p-4 text-base-content/60 font-mono text-sm">{student.roll}</td>
+                        <td className="p-4 text-center font-bold text-primary text-lg">{studentScores[student.roll] || 0}</td>
+                        <td className="p-4 text-center text-base-content/70 font-medium">{studentCorrectCount[student.roll] || 0} / {questions.length}</td>
                         <td className="p-4 text-center">
                           {vData ? (
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${vData.locked ? "bg-red-100 text-red-700" : vData.count >= 2 ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${vData.locked ? "bg-error/10 text-error border-error/20" : vData.count >= 2 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20"}`}>
                               {vData.locked ? "🔒 Locked" : `⚠️ ${vData.count}`}
                             </span>
                           ) : (
-                            <span className="text-gray-300">—</span>
+                            <span className="text-base-content/20">—</span>
                           )}
                         </td>
                         <td className="p-4" />
@@ -981,22 +981,22 @@ const ClassroomTeacher = () => {
             </table>
           </div>
 
-          <div className="mt-8 flex flex-wrap justify-center border-t border-gray-100 pt-6 gap-4">
+          <div className="mt-8 flex flex-wrap justify-center border-t border-base-200 pt-6 gap-4">
             {!resultsReleased ? (
-              <button onClick={handleReleaseResults} className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow transition-colors flex items-center gap-2">
+              <button onClick={handleReleaseResults} className="px-8 py-3.5 bg-primary hover:opacity-90 text-primary-content rounded-xl font-bold text-lg shadow transition-colors flex items-center gap-2">
                 <Unlock size={20} /> Release Ranks
               </button>
             ) : (
-              <button disabled className="px-8 py-3.5 bg-green-50 text-green-700 border border-green-200 rounded-xl font-bold text-lg cursor-not-allowed flex items-center gap-2">
+              <button disabled className="px-8 py-3.5 bg-success/10 text-success border border-success/20 rounded-xl font-bold text-lg cursor-not-allowed flex items-center gap-2">
                 <CheckCircle2 size={20} /> Ranks Released
               </button>
             )}
             {!summaryReleased ? (
-              <button onClick={handleReleaseSummary} className="px-8 py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-lg shadow transition-colors flex items-center gap-2">
+              <button onClick={handleReleaseSummary} className="px-8 py-3.5 bg-secondary hover:opacity-90 text-secondary-content rounded-xl font-bold text-lg shadow transition-colors flex items-center gap-2">
                 <BookMarked size={20} /> Release Answer Summary
               </button>
             ) : (
-              <button disabled className="px-8 py-3.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl font-bold text-lg cursor-not-allowed flex items-center gap-2">
+              <button disabled className="px-8 py-3.5 bg-warning/10 text-warning border border-warning/20 rounded-xl font-bold text-lg cursor-not-allowed flex items-center gap-2">
                 <CheckCircle2 size={20} /> Summary Released
               </button>
             )}
