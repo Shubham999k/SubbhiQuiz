@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookOpen, Trophy, Target, Lightbulb, FileText, BarChart3 } from 'lucide-react';
 
-const Loader = ({ message = "Getting things ready...", fullScreen = false }) => {
+const Loader = ({ message = "Loading...", fullScreen = false }) => {
   return (
     <div className={`flex flex-col items-center justify-center w-full animate-in fade-in duration-700 overflow-hidden ${fullScreen ? "fixed inset-0 z-[9999] bg-base-100/90 backdrop-blur-sm" : "flex-1 h-full min-h-[60vh]"}`}>
       
@@ -73,7 +73,7 @@ const Loader = ({ message = "Getting things ready...", fullScreen = false }) => 
         <h2 className="text-2xl font-bold tracking-tight text-base-content mb-2 flex items-center justify-center gap-1 drop-shadow-lg">
           Quizzz-<span className="text-primary drop-shadow-[0_0_8px_hsl(var(--p)/0.5)]">Zone</span>
         </h2>
-        <p className="text-sm font-medium text-base-content/70 animate-pulse tracking-wide uppercase">
+        <p className="text-sm font-medium text-primary animate-pulse tracking-wide uppercase mt-1">
           {message}
         </p>
       </div>

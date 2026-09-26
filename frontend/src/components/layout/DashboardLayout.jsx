@@ -380,7 +380,7 @@ const DashboardLayout = () => {
 
         <main className="flex-1 overflow-y-auto bg-base-200">
           <div className="py-4 px-4 h-full">
-            <React.Suspense fallback={<Loader message="Loading page..." />}>
+            <React.Suspense fallback={<Loader />}>
               <Outlet />
             </React.Suspense>
           </div>

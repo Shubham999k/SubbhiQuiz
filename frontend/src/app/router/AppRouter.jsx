@@ -64,7 +64,7 @@ const AnimatedRoutes = () => {
         {/* Protected Dashboard Routes — lazily loaded */}
         <Route
           element={
-            <Suspense fallback={<Loader fullScreen={true} message="Loading..." />}>
+            <Suspense fallback={<Loader fullScreen={true} message="!! WELCOMES YOU !!" />}>
               <ProtectedRoute>
                 <DashboardLayout />
               </ProtectedRoute>
