@@ -152,7 +152,7 @@ const QuizActive = () => {
         <div className="lg:w-2/3 flex flex-col">
           <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex-grow">
             <h3 className="text-xl font-medium text-base-content mb-6 whitespace-pre-line">
-              {currentQuestion.question}
+              {currentQuestion.question || currentQuestion.text || currentQuestion.description || "Question text not available"}
             </h3>
 
             <div className="space-y-3">
