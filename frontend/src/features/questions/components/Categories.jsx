@@ -315,7 +315,7 @@ const Categories = () => {
                     key={quiz._id}
                     className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex flex-col hover:shadow-md transition-shadow group relative"
                   >
-                    <div className="absolute top-0 right-0 p-3 pl-8 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-base-100 via-base-100 to-transparent z-10 rounded-tr-xl">
+                    <div className="absolute top-0 right-0 p-3 pl-8 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-base-100 via-base-100 to-transparent z-10 rounded-tr-xl">
                       <button
                         onClick={() => navigate('/quiz/setup', { state: { customQuiz: quiz } })}
                         className="p-1.5 bg-base-100 text-primary hover:bg-primary hover:text-white rounded-md shadow-sm transition-colors"
