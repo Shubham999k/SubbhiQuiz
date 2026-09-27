@@ -843,37 +843,44 @@ const StudentActive = () => {
             );
           })}
         </div>
-
-        {myAnswer && !isAnswerRevealed && (
-          <div className="mt-6 text-center text-primary font-medium animate-pulse">
-            Answer submitted. Waiting for results...
-          </div>
-        )}
-
-        {isAnswerRevealed && currentQuestion.explanation && (
-          <div className="mt-2 bg-blue-50 border border-blue-200 rounded-md p-2 text-xs">
-            <h4 className="font-bold text-blue-800 mb-1">Explanation</h4>
-            <p className="text-blue-900 whitespace-pre-line">{currentQuestion.explanation}</p>
-          </div>
-        )}
       </main>
 
-      {/* ── Floating Chirag Lifeline ───────────────────────────────── */}
-      <div className="fixed bottom-[72px] left-6 z-50">
-        <ChiragLifeline
-          lifelinesRemaining={lifelinesRemaining}
-          onActivate={handleLifelineActivate}
-          disabled={!!myAnswer || isAnswerRevealed || isLocked || !isQuizActive}
-          onHintReceived={handleHintReceived}
-        />
-      </div>
+      {/* ── Bottom bar — Chirag lives here, no overlap ─────────────── */}
+      <div className="shrink-0 bg-base-100 border-t border-base-300 relative z-10">
 
-      {/* ── Bottom bar ─────────────────────────────────────────────── */}
-      <div className="shrink-0 bg-base-100 border-t border-base-300 px-4 py-3 flex items-center justify-end relative z-10">
-        {/* Right: Status info */}
-        <div className="text-right">
-          <div className="text-xs text-base-content/50 font-mono">Session</div>
-          <div className="text-xs font-bold text-base-content/70">{sessionCode}</div>
+        {/* Chirag anchored to top-left of bar, pops above it */}
+        <div className="absolute -top-12 left-3 z-50">
+          <ChiragLifeline
+            lifelinesRemaining={lifelinesRemaining}
+            onActivate={handleLifelineActivate}
+            disabled={!!myAnswer || isAnswerRevealed || isLocked || !isQuizActive}
+            onHintReceived={handleHintReceived}
+          />
+        </div>
+
+        {/* "Answer submitted" — pl-16 keeps it right of Chirag */}
+        {myAnswer && !isAnswerRevealed && (
+          <div className="pl-16 pr-4 pt-2 pb-0 text-primary text-xs font-semibold animate-pulse flex items-center gap-1">
+            <CheckCircle2 size={13} /> Answer submitted. Waiting for results...
+          </div>
+        )}
+
+        {/* Explanation — pl-16 keeps it right of Chirag */}
+        {isAnswerRevealed && currentQuestion.explanation && (
+          <div className="pl-16 pr-3 pt-2 pb-0">
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-xs">
+              <h4 className="font-bold text-blue-800 mb-0.5">Explanation</h4>
+              <p className="text-blue-900 whitespace-pre-line leading-snug">{currentQuestion.explanation}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Session info */}
+        <div className="px-4 py-2 flex items-center justify-end">
+          <div className="text-right">
+            <div className="text-xs text-base-content/50 font-mono">Session</div>
+            <div className="text-xs font-bold text-base-content/70">{sessionCode}</div>
+          </div>
         </div>
       </div>
     </div>
