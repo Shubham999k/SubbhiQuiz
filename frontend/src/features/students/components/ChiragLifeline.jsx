@@ -58,6 +58,13 @@ const ChiragLifeline = ({ lifelinesRemaining = 2, onActivate, disabled = false, 
         `}
         aria-label={`Chirag lifeline — ${lifelinesRemaining} remaining`}
       >
+        {/* Count badge absolute top-right */}
+        <div
+          className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-md z-30 transition-all duration-300 border border-white
+            ${isEmpty ? "bg-gray-400 text-white" : "bg-green-500 text-white"}`}
+        >
+          {lifelinesRemaining}
+        </div>
         {/* Jinni smoke / character */}
         <div
           className={`absolute transition-all duration-700 pointer-events-none z-10 flex flex-col items-center justify-center
@@ -129,19 +136,7 @@ const ChiragLifeline = ({ lifelinesRemaining = 2, onActivate, disabled = false, 
         </div>
       </button>
 
-      {/* Count badge */}
-      <div
-        className={`text-xs font-bold px-2 py-0.5 rounded-full transition-all duration-300
-          ${isEmpty
-            ? "bg-base-200 text-base-content/40"
-            : lifelinesRemaining === 1
-              ? "bg-amber-100 text-amber-700 border border-amber-300"
-              : "bg-purple-100 text-purple-700 border border-purple-300"
-          }
-        `}
-      >
-        {isEmpty ? "×0" : lifelinesRemaining === 1 ? "×1" : "×2"}
-      </div>
+      {/* Removed old count badge */}
 
       {/* Label */}
       <span className={`text-[10px] font-bold uppercase tracking-wider ${isEmpty ? "text-base-content/30" : "text-base-content/60"}`}>

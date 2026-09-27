@@ -743,7 +743,7 @@ const StudentActive = () => {
   }
 
   return (
-    <div className="quiz-active-screen min-h-screen bg-base-200 flex flex-col relative">
+    <div className="quiz-active-screen h-[100dvh] overflow-hidden bg-base-200 flex flex-col relative">
 
       {/* ── Watermark ─────────────────────────────────────────────── */}
       <div
