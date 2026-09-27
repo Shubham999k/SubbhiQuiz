@@ -170,7 +170,7 @@ const Dashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Quick Actions */}
-            <div className="lg:col-span-1 bg-base-100 rounded-xl shadow-sm border border-base-300 p-6">
+            <div className="lg:col-span-1 bg-base-100 rounded-xl shadow-sm border border-base-300 p-2 sm:p-6">
               <h2 className="text-lg font-bold text-base-content mb-4 border-b border-base-300 pb-4">
                 Quick Actions
               </h2>
@@ -242,7 +242,7 @@ const Dashboard = () => {
             </div>
 
             {/* Recent Attempts */}
-            <div className="lg:col-span-2 bg-base-100 rounded-xl shadow-sm border border-base-300 p-6">
+            <div className="lg:col-span-2 bg-base-100 rounded-xl shadow-sm border border-base-300 p-2 sm:p-6">
               <div className="flex items-center justify-between mb-4 border-b border-base-300 pb-4">
                 <h2 className="text-lg font-bold text-base-content">
                   Recent Attempts
@@ -321,7 +321,7 @@ const Dashboard = () => {
                             </span>
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-base-content/70">
-                            {new Date(attempt.date).toLocaleDateString()}
+                            {new Date(attempt.createdAt || attempt.date).toLocaleDateString()}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <Link

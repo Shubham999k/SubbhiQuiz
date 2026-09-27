@@ -12,8 +12,8 @@ export const getHistory = async (req, res) => {
     // for read-only endpoints.
     const history = await QuizResult
       .find({ userId: req.user._id })
-      .select("category difficulty score totalQuestions accuracy timeTaken date categoryId")
-      .sort({ date: -1 })
+      .select("category difficulty score totalQuestions accuracy timeTaken date createdAt categoryId")
+      .sort({ createdAt: -1 })
       .lean();
     res.json(history);
   } catch (error) {

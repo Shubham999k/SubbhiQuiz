@@ -33,7 +33,7 @@ const History = () => {
     if (filter !== "all_time") {
       const now = new Date();
       filtered = history.filter((attempt) => {
-        const attemptDate = new Date(attempt.date);
+        const attemptDate = new Date(attempt.createdAt || attempt.date);
         const diffTime = Math.abs(now - attemptDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -176,7 +176,7 @@ const History = () => {
                       </div>
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap text-sm text-base-content/70">
-                      {new Date(attempt.date).toLocaleDateString(undefined, {
+                      {new Date(attempt.createdAt || attempt.date).toLocaleDateString(undefined, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",

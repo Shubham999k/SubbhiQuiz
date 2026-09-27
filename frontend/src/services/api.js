@@ -224,7 +224,7 @@ export const api = {
   },
 
   getQuizHistory: async () => {
-    const response = await fetch(`${API_URL}/history`, {
+    const response = await fetch(`${API_URL}/history?_t=${Date.now()}`, {
       headers: getHeaders(),
     });
 
@@ -241,7 +241,7 @@ export const api = {
   },
 
   getQuizHistoryById: async (id) => {
-    const response = await fetch(`${API_URL}/history/${id}`, {
+    const response = await fetch(`${API_URL}/history/${id}?_t=${Date.now()}`, {
       headers: getHeaders(),
     });
 
