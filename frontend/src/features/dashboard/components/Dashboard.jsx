@@ -248,6 +248,24 @@ const Dashboard = () => {
                   />
                 </Link>
 
+                <Link
+                  to="/leaderboard"
+                  className="flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-purple-500 hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-all group"
+                >
+                  <div className="flex items-center">
+                    <div className="bg-purple-500/20 p-2 rounded-md mr-3 text-purple-500">
+                      <Trophy className="w-5 h-5" />
+                    </div>
+                    <span className="font-medium text-base-content group-hover:text-purple-500 transition-colors">
+                      Global Leaderboard
+                    </span>
+                  </div>
+                  <ArrowRight
+                    size={20}
+                    className="text-base-content/30 group-hover:text-purple-500 transition-colors"
+                  />
+                </Link>
+
                 <button
                   onClick={() => setIsScannerOpen(true)}
                   className="w-full flex items-center justify-between p-4 rounded-lg border border-base-300 hover:border-success hover:bg-gray-50 dark:hover:bg-[#1e1e1e] transition-all group text-left"
@@ -275,7 +293,7 @@ const Dashboard = () => {
 
             {/* Recent Attempts */}
             <div className="lg:col-span-2 bg-base-100 rounded-xl shadow-lg border border-base-300 p-2 sm:p-6">
-              <div className="flex items-center justify-between border-b border-base-300">
+              <div className="flex items-center justify-between border-b border-base-300 mb-4 pb-4">
                 <h2 className="text-lg font-bold text-base-content">
                   Recent Attempts
                 </h2>
@@ -323,7 +341,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-base-300">
-                      {history.slice(0, 4).map((attempt, index) => (
+                      {history.slice(0, 7).map((attempt, index) => (
                         <tr
                           key={attempt._id || index}
                           className="group hover:bg-base-200 cursor-pointer"
