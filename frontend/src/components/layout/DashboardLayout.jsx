@@ -97,6 +97,9 @@ const DashboardLayout = () => {
   const showActiveSessionNotification = activeSession && !isInsideClassroom;
 
   const handleEndSession = () => {
+    if (activeSession?.sessionCode) {
+      localStorage.removeItem(`teacher_session_${activeSession.sessionCode}`);
+    }
     localStorage.removeItem("active_teacher_session");
     setActiveSession(null);
     setShowEndSessionConfirm(false);

@@ -39,34 +39,94 @@ const ClassroomTeacher = () => {
   const sessionCode = searchParams.get("session") || quizId.toUpperCase();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    if (sessionCode) {
-      localStorage.setItem("active_teacher_session", JSON.stringify({ sessionCode, quizId }));
+  const savedSession = React.useMemo(() => {
+    try {
+      const data = localStorage.getItem(`teacher_session_${sessionCode}`);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
     }
-  }, [sessionCode, quizId]);
+  }, [sessionCode]);
 
-  const { currentQuiz, questions, submitQuiz, setAnswer } = useQuiz();
+  const { currentQuiz, questions: contextQuestions, submitQuiz, setAnswer } = useQuiz();
+
+  const [questions, setQuestionsState] = useState(() => {
+    if (contextQuestions && contextQuestions.length > 0) return contextQuestions;
+    if (savedSession?.questions && savedSession.questions.length > 0) return savedSession.questions;
+    return [];
+  });
+
+  const [activeQuizMeta, setActiveQuizMeta] = useState(() => {
+    if (currentQuiz) return currentQuiz;
+    if (savedSession?.currentQuiz) return savedSession.currentQuiz;
+    return null;
+  });
+
+  useEffect(() => {
+    if (contextQuestions && contextQuestions.length > 0) {
+      setQuestionsState(contextQuestions);
+    }
+  }, [contextQuestions]);
+
+  useEffect(() => {
+    if (currentQuiz) {
+      setActiveQuizMeta(currentQuiz);
+    }
+  }, [currentQuiz]);
 
   // ── Core quiz state ──────────────────────────────────────────────
   const [confirmModal, setConfirmModal] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    return savedSession?.currentQuestionIndex ?? 0;
+  });
   const [selectedOption, setSelectedOption] = useState(null);
-  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(currentQuiz?.isCustom ? currentQuiz.timeLimit : 60);
-  const [isTimerPaused, setIsTimerPaused] = useState(true);
-  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [isAnswerRevealed, setIsAnswerRevealed] = useState(() => {
+    return savedSession?.isAnswerRevealed ?? false;
+  });
+  const [timeRemaining, setTimeRemaining] = useState(() => {
+    if (savedSession?.timeRemaining !== undefined) {
+      if (!savedSession.isTimerPaused && savedSession.lastSavedTime) {
+        const elapsed = Math.floor((Date.now() - savedSession.lastSavedTime) / 1000);
+        return Math.max(0, savedSession.timeRemaining - elapsed);
+      }
+      return savedSession.timeRemaining;
+    }
+    return (currentQuiz?.isCustom ? currentQuiz.timeLimit : 60);
+  });
+  const [isTimerPaused, setIsTimerPaused] = useState(() => {
+    return savedSession?.isTimerPaused ?? true;
+  });
+  const [quizCompleted, setQuizCompleted] = useState(() => {
+    return savedSession?.quizCompleted ?? false;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(() => {
+    return savedSession?.quizStarted ?? false;
+  });
   const [showQR, setShowQR] = useState(false);
-  const [qrShownOnce, setQrShownOnce] = useState(false);
+  const [qrShownOnce, setQrShownOnce] = useState(() => {
+    return savedSession?.qrShownOnce ?? (savedSession?.quizStarted ?? false);
+  });
 
   // ── Student tracking ─────────────────────────────────────────────
-  const [joinedStudents, setJoinedStudents] = useState([]);
-  const [studentAnswers, setStudentAnswers] = useState({});
-  const [cumulativeStudentAnswers, setCumulativeStudentAnswers] = useState({});
-  const [studentScores, setStudentScores] = useState({});
-  const [studentCorrectCount, setStudentCorrectCount] = useState({});
-  const [resultsReleased, setResultsReleased] = useState(false);
+  const [joinedStudents, setJoinedStudents] = useState(() => {
+    return savedSession?.joinedStudents ?? [];
+  });
+  const [studentAnswers, setStudentAnswers] = useState(() => {
+    return savedSession?.studentAnswers ?? {};
+  });
+  const [cumulativeStudentAnswers, setCumulativeStudentAnswers] = useState(() => {
+    return savedSession?.cumulativeStudentAnswers ?? {};
+  });
+  const [studentScores, setStudentScores] = useState(() => {
+    return savedSession?.studentScores ?? {};
+  });
+  const [studentCorrectCount, setStudentCorrectCount] = useState(() => {
+    return savedSession?.studentCorrectCount ?? {};
+  });
+  const [resultsReleased, setResultsReleased] = useState(() => {
+    return savedSession?.resultsReleased ?? false;
+  });
 
   const quizCompletedRef = useRef(quizCompleted);
   useEffect(() => {
@@ -82,7 +142,9 @@ const ClassroomTeacher = () => {
   }, []);
 
   // ── NEW: Wildcard state ──────────────────────────────────────────
-  const [wildcardEnabled, setWildcardEnabledState] = useState(false);
+  const [wildcardEnabled, setWildcardEnabledState] = useState(() => {
+    return savedSession?.wildcardEnabled ?? false;
+  });
   const [wildcardRequests, setWildcardRequests] = useState([]);
   const [showWildcardPanel, setShowWildcardPanel] = useState(false);
 
@@ -91,8 +153,53 @@ const ClassroomTeacher = () => {
   const [showPendingPanel, setShowPendingPanel] = useState(false);
 
   // ── NEW: Integrity / violations state ────────────────────────────
-  const [studentViolations, setStudentViolations] = useState({}); // { roll: { count, locked, latest } }
+  const [studentViolations, setStudentViolations] = useState(() => {
+    return savedSession?.studentViolations ?? {};
+  });
   const [activeDropdown, setActiveDropdown] = useState(null);
+
+  // ── Save session state to localStorage so background / tab switch keeps everything ──
+  useEffect(() => {
+    if (!sessionCode) return;
+    const sessionData = {
+      sessionCode,
+      quizId,
+      quizStarted,
+      currentQuestionIndex,
+      timeRemaining,
+      isTimerPaused,
+      isAnswerRevealed,
+      quizCompleted,
+      resultsReleased,
+      qrShownOnce,
+      wildcardEnabled,
+      studentViolations,
+      studentScores,
+      studentCorrectCount,
+      studentAnswers,
+      cumulativeStudentAnswers,
+      joinedStudents,
+      questions,
+      currentQuiz: activeQuizMeta,
+      lastSavedTime: Date.now(),
+    };
+    try {
+      localStorage.setItem(`teacher_session_${sessionCode}`, JSON.stringify(sessionData));
+      localStorage.setItem("active_teacher_session", JSON.stringify({
+        sessionCode,
+        quizId,
+        quizTitle: activeQuizMeta?.category || quizId,
+        quizStarted,
+      }));
+    } catch (e) {
+      console.error("Failed to save teacher session to localStorage", e);
+    }
+  }, [
+    sessionCode, quizId, quizStarted, currentQuestionIndex, timeRemaining,
+    isTimerPaused, isAnswerRevealed, quizCompleted, resultsReleased, qrShownOnce,
+    wildcardEnabled, studentViolations, studentScores, studentCorrectCount,
+    studentAnswers, cumulativeStudentAnswers, joinedStudents, questions, activeQuizMeta
+  ]);
 
   // ── NEW: Summary release state ───────────────────────────────────
   const [summaryReleased, setSummaryReleased] = useState(false);
@@ -201,6 +308,22 @@ const ClassroomTeacher = () => {
         return Array.from(map.values());
       });
     },
+    onRecoverSession: (data) => {
+      if (data?.snapshot) {
+        const snap = data.snapshot;
+        if (snap.quizStarted) setQuizStarted(true);
+        if (typeof snap.currentQuestionIndex === "number") setCurrentQuestionIndex(snap.currentQuestionIndex);
+        if (snap.questions?.length && (!questions || questions.length === 0)) {
+          setQuestionsState(snap.questions);
+        }
+        if (snap.currentQuiz && !activeQuizMeta) {
+          setActiveQuizMeta(snap.currentQuiz);
+        }
+      }
+      if (data?.wildcardEnabled !== undefined) {
+        setWildcardEnabledState(data.wildcardEnabled);
+      }
+    },
   });
 
   // ── Class response tallies ───────────────────────────────────────
@@ -235,7 +358,7 @@ const ClassroomTeacher = () => {
 
     broadcastState({
       questions: safeQuestions,
-      currentQuiz,
+      currentQuiz: activeQuizMeta || currentQuiz,
       currentQuestionIndex,
       selectedOption,
       isAnswerRevealed,
@@ -253,7 +376,7 @@ const ClassroomTeacher = () => {
       wildcardEnabled,
     });
   }, [
-    questions, currentQuiz, currentQuestionIndex, selectedOption, isAnswerRevealed,
+    questions, currentQuiz, activeQuizMeta, currentQuestionIndex, selectedOption, isAnswerRevealed,
     classResponses, timeRemaining, isTimerPaused, quizCompleted, resultsReleased,
     sessionCode, showQR, quizStarted, joinedStudents.length, studentScores, joinedStudents,
     wildcardEnabled, broadcastState,
@@ -267,9 +390,9 @@ const ClassroomTeacher = () => {
       currentQuestionIndex,
       timeRemaining,
       quizStarted,
-      currentQuiz,
+      currentQuiz: activeQuizMeta || currentQuiz,
     });
-  }, [quizStarted, currentQuestionIndex, questions, timeRemaining, currentQuiz, saveStateSnapshot]);
+  }, [quizStarted, currentQuestionIndex, questions, timeRemaining, currentQuiz, activeQuizMeta, saveStateSnapshot]);
 
   // ── Timer logic ──────────────────────────────────────────────────
   useEffect(() => {
@@ -286,8 +409,9 @@ const ClassroomTeacher = () => {
 
   // ── Nav guard ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!questions || questions.length === 0) navigate("/dashboard");
-  }, [questions, navigate]);
+    const hasQuestions = (questions && questions.length > 0) || (savedSession?.questions && savedSession.questions.length > 0);
+    if (!hasQuestions) navigate("/dashboard");
+  }, [questions, navigate, savedSession]);
 
   // ── Keyboard shortcuts ───────────────────────────────────────────
   const resetQuestionState = useCallback(() => {
@@ -353,6 +477,9 @@ const ClassroomTeacher = () => {
     setIsTimerPaused(true);
     setConfirmModal(null);
     localStorage.removeItem("active_teacher_session");
+    if (sessionCode) {
+      localStorage.removeItem(`teacher_session_${sessionCode}`);
+    }
   };
 
   const handleReleaseResults = async () => {
@@ -438,7 +565,7 @@ const ClassroomTeacher = () => {
     const newVal = !wildcardEnabled;
     setWildcardEnabledState(newVal);
     setWildcardEnabled(newVal);
-    toast(newVal ? "🪔 Wildcard entry enabled" : "Wildcard entry disabled", { duration: 2000 });
+    toast(newVal ? "🌟 Wildcard entry enabled" : "Wildcard entry disabled", { duration: 2000 });
   };
 
   const handleApproveWildcard = (roll) => {
@@ -478,13 +605,10 @@ const ClassroomTeacher = () => {
 
   const handleUnlockStudent = (roll) => {
     unlockStudent(roll);
-    setStudentViolations((prev) => {
-      const next = { ...prev };
-      if (next[roll]) {
-        next[roll] = { count: 0, locked: false };
-      }
-      return next;
-    });
+    setStudentViolations((prev) => ({
+      ...prev,
+      [roll]: { count: 0, locked: false }
+    }));
     toast.success(`✅ Student ${roll} has been unlocked.`);
   };
 
@@ -1296,58 +1420,31 @@ const ClassroomTeacher = () => {
                               </div>
                             )}
                           </td>
-                          <td className="py-3">
-                            <div className="flex items-center justify-center gap-2">
-                              {isUnfocused && vData.locked ? (
-                                <div className="p-1.5 bg-error/10 text-error rounded-lg">
-                                  <Lock size={14} />
-                                </div>
-                              ) : (
-                                <div className="p-1.5 opacity-0 text-base-content/50"><Lock size={14} /></div>
-                              )}
-                              <div className="relative">
+                          <td className="py-3 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {vData?.locked ? (
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setActiveDropdown(activeDropdown === student.roll ? null : student.roll);
+                                    handleUnlockStudent(student.roll);
                                   }}
-                                  className="p-1.5 text-base-content/50 hover:text-base-content hover:bg-base-300 rounded-lg transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center"
+                                  className="px-2.5 py-1 text-xs font-bold text-success bg-success/15 hover:bg-success/25 rounded-lg transition-colors border border-success/30 flex items-center gap-1 cursor-pointer shadow-xs"
+                                  title="Unlock Student"
                                 >
-                                  <MoreVertical size={16} />
+                                  <Unlock size={12} /> Unlock
                                 </button>
-                                
-                                {activeDropdown === student.roll && (
-                                  <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
-                                    <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-base-100 rounded-xl shadow-lg border border-base-200 overflow-hidden flex flex-col">
-                                      {(!vData?.locked) && (
-                                        <button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleLockStudent(student.roll);
-                                            setActiveDropdown(null);
-                                          }}
-                                          className="w-full text-left px-4 py-3 text-sm font-bold text-error hover:bg-base-200 flex items-center gap-2 transition-colors"
-                                        >
-                                          <Lock size={14} /> Lock Student
-                                        </button>
-                                      )}
-                                      {(vData?.locked) && (
-                                        <button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleUnlockStudent(student.roll);
-                                            setActiveDropdown(null);
-                                          }}
-                                          className="w-full text-left px-4 py-3 text-sm font-bold text-success hover:bg-base-200 flex items-center gap-2 transition-colors"
-                                        >
-                                          <Unlock size={14} /> Unlock Student
-                                        </button>
-                                      )}
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                              ) : (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleLockStudent(student.roll);
+                                  }}
+                                  className="px-2.5 py-1 text-xs font-bold text-error bg-error/15 hover:bg-error/25 rounded-lg transition-colors border border-error/30 flex items-center gap-1 cursor-pointer shadow-xs"
+                                  title="Lock Student"
+                                >
+                                  <Lock size={12} /> Lock
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

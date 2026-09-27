@@ -116,6 +116,14 @@ const StudentJoin = () => {
     {
       onWildcardApproved: handleWildcardApproved,
       onWildcardRejected: handleWildcardRejected,
+      onViolationUpdate: (data) => {
+        if (data?.roll && roll && String(data.roll) === String(roll.trim())) {
+          if (!data.locked && data.violationCount === 0) {
+            setWildcardRejected(false);
+            setWildcardRejectedReason("");
+          }
+        }
+      },
     }
   );
 

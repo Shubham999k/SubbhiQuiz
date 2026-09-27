@@ -14,6 +14,7 @@ import {
   BookMarked,
   Clock,
   Sparkles,
+  Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useClassroomSync } from "../../../features/classroom/hooks/useClassroomSync";
@@ -69,15 +70,15 @@ const StudentActive = () => {
       onSummaryReleased: onSummaryReleasedCb,
       onLeaderboardReleased: onLeaderboardReleasedCb,
       onWildcardApproved: (data) => {
-        if (data?.roll && studentInfo?.roll && data.roll !== studentInfo.roll) return;
+        if (data?.roll && studentInfo?.roll && String(data.roll) !== String(studentInfo.roll)) return;
         
         // Un-lock locally
         if (typeof window.unlockStudentFn === "function") window.unlockStudentFn();
         setPleadStatus("idle");
-        toast.success("Wildcard entry approved! You are back in the quiz.");
+        toast.success("🎉 Wildcard entry approved! You are back in the quiz.");
       },
       onWildcardRejected: (data) => {
-        if (data?.roll && studentInfo?.roll && data.roll !== studentInfo.roll) return;
+        if (data?.roll && studentInfo?.roll && String(data.roll) !== String(studentInfo.roll)) return;
         
         setPleadStatus("rejected");
         toast.error(data.reason || "Wildcard entry rejected");
@@ -86,8 +87,11 @@ const StudentActive = () => {
         if (data?.roll && studentInfo?.roll && String(data.roll) === String(studentInfo.roll)) {
            if (data.locked) {
              if (typeof window.lockStudentLocallyFn === "function") window.lockStudentLocallyFn();
-           } else {
+           } else if (data.violationCount === 0) {
+             // Only unlock if teacher explicitly unlocked or reset violations!
              if (typeof window.unlockStudentFn === "function") window.unlockStudentFn();
+             setPleadStatus("idle");
+             toast.success("✅ You have been unlocked by your teacher! You can continue.");
            }
         }
       }
@@ -718,94 +722,126 @@ const StudentActive = () => {
         SubbhiQuiz • {studentInfo.name} • {studentInfo.roll} • {sessionCode}
       </div>
 
-      {/* ── Violation Warning Modal ────────────────────────────────── */}
-      {showWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-base-100 rounded-2xl shadow-2xl max-w-sm w-full border-2 border-warning/40 overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className={`p-5 ${warningLevel >= 3 ? "bg-error" : warningLevel === 2 ? "bg-warning" : "bg-amber-400"}`}>
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="w-7 h-7 text-white flex-shrink-0" />
-                <h3 className="text-white font-bold text-lg">
-                  {isLocked
-                    ? "Quiz Locked"
-                    : warningLevel >= 2
-                      ? "⚠️ Second Warning"
-                      : "⚠️ Quiz Focus Lost"}
+      {/* ── Persistent Violation Warning Modal (Warning 1 & 2) ────────────────── */}
+      {showWarning && !isLocked && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="bg-base-100 rounded-3xl shadow-2xl max-w-md w-full border-2 border-warning overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className={`p-5 ${warningLevel >= 2 ? "bg-amber-600" : "bg-amber-500"} text-white flex items-center gap-3`}>
+              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-extrabold text-xl leading-tight">
+                  {warningLevel >= 2 ? "⚠️ Second Warning!" : "⚠️ Quiz Warning!"}
                 </h3>
+                <p className="text-white/90 text-xs font-bold mt-0.5">
+                  Warning {warningLevel} of 3
+                </p>
               </div>
             </div>
+            
             <div className="p-6 text-center">
-              <p className="text-base-content font-medium mb-2">
-                {isLocked
-                  ? "You have exceeded the maximum number of focus violations. Your quiz participation has been flagged."
-                  : warningLevel >= 2
-                    ? "Leaving the quiz screen again may result in your quiz being flagged by the teacher."
-                    : "Please stay on the quiz screen."}
-              </p>
-              {!isLocked && (
-                <p className="text-sm text-base-content/60 mb-4">
-                  Warning {warningLevel} of {3}
+              <div className="bg-warning/10 border border-warning/30 rounded-2xl p-4 mb-5 text-left">
+                <p className="text-base-content text-sm leading-relaxed font-medium">
+                  {warningLevel >= 2
+                    ? "Attention! You switched away from the quiz or violated focus guidelines. If you leave the screen one more time (3rd violation), you will be locked out of the quiz."
+                    : "You switched tabs, minimized the window, or lost screen focus. Please remain strictly on this screen to take your quiz."}
                 </p>
-              )}
-              {!isLocked ? (
-                <button
-                  onClick={dismissWarning}
-                  className="px-8 py-3 bg-primary text-white rounded-xl font-bold hover:opacity-80 transition-colors"
-                >
-                  I Understand — Stay on Quiz
-                </button>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <p className="text-error text-sm font-bold">
-                    Your teacher has been notified.
-                  </p>
-                  
-                  {projectorState?.wildcardEnabled && pleadStatus === "idle" && (
-                    <button
-                      onClick={handlePleadForWildcard}
-                      className="px-8 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      🧞‍♂️ Plead for Wildcard Entry
-                    </button>
-                  )}
-                  
-                  {pleadStatus === "pending" && (
-                    <div className="p-3 bg-base-200 rounded-xl text-sm font-bold text-base-content/70 flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      Waiting for teacher's approval...
-                    </div>
-                  )}
+              </div>
 
-                  {pleadStatus === "rejected" && (
-                    <div className="p-3 bg-error/10 border border-error/20 rounded-xl text-error text-sm font-bold">
-                      Your wildcard request was rejected.
-                    </div>
-                  )}
-                </div>
-              )}
+              <p className="text-xs text-base-content/60 mb-5 font-semibold">
+                You must click below to confirm and return to your questions.
+              </p>
+
+              <button
+                onClick={dismissWarning}
+                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 text-base flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <CheckCircle2 size={18} />
+                I Understand — Stay on Quiz
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Wildcard Entry Popup for Locked Students ────────────────── */}
-      {isLocked && projectorState?.wildcardEnabled && pleadStatus === "idle" && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-base-100 rounded-3xl shadow-2xl max-w-sm w-full border border-purple-200/50 p-8 text-center animate-in zoom-in duration-300">
-            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-bounce">
-              🧞‍♂️
+      {/* ── Persistent Locked Screen Popup ────────────────── */}
+      {isLocked && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="bg-base-100 rounded-3xl shadow-2xl max-w-md w-full border-2 border-error/50 overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-error text-error-content p-6 text-center relative">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-black text-white tracking-wide">You are Locked</h2>
+              <p className="text-white/80 text-xs font-semibold mt-1">
+                Student: {studentInfo?.name} • Roll: {studentInfo?.roll}
+              </p>
             </div>
-            <h3 className="text-2xl font-bold text-base-content mb-3">Wildcard Entry Available!</h3>
-            <p className="text-base-content/60 text-sm mb-6">
-              Your teacher has opened wildcard entries. You can plead to re-enter the quiz.
-            </p>
-            <button
-              onClick={handlePleadForWildcard}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Sparkles size={18} />
-              Plead for Wildcard Entry
-            </button>
+
+            {/* Body */}
+            <div className="p-6 text-center">
+              <div className="bg-error/10 border border-error/20 rounded-2xl p-4 mb-5 text-left">
+                <p className="text-base-content text-sm font-medium leading-relaxed">
+                  You have been locked out of the quiz due to multiple integrity violations or teacher action.
+                </p>
+                <p className="text-error font-bold text-xs mt-2">
+                  You cannot proceed until you are unlocked by your teacher or your wildcard entry request is approved.
+                </p>
+              </div>
+
+              {/* Wildcard Section */}
+              {projectorState?.wildcardEnabled ? (
+                <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-300 dark:border-purple-800 rounded-2xl p-5 mb-3">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl animate-bounce">
+                    🧞‍♂️
+                  </div>
+                  <h4 className="font-bold text-base-content text-base mb-1">Wildcard Entry Available!</h4>
+                  <p className="text-xs text-base-content/70 mb-4 leading-relaxed">
+                    Your teacher has opened wildcard entries. You can plead to re-enter the quiz.
+                  </p>
+
+                  {pleadStatus === "idle" && (
+                    <button
+                      onClick={handlePleadForWildcard}
+                      className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Sparkles size={16} /> Plead for Wildcard Entry
+                    </button>
+                  )}
+
+                  {pleadStatus === "pending" && (
+                    <div className="p-3 bg-purple-100/80 dark:bg-purple-900/50 rounded-xl text-purple-700 dark:text-purple-300 text-xs font-bold flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                      Request sent! Waiting for teacher approval...
+                    </div>
+                  )}
+
+                  {pleadStatus === "rejected" && (
+                    <div className="space-y-3">
+                      <div className="p-3 bg-error/10 border border-error/20 rounded-xl text-error text-xs font-bold">
+                        ❌ Your wildcard request was rejected. You remain locked.
+                      </div>
+                      <button
+                        onClick={handlePleadForWildcard}
+                        className="text-xs text-purple-600 hover:underline font-bold cursor-pointer"
+                      >
+                        Try Pleading Again
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-base-200 rounded-2xl p-5 mb-3 text-center border border-base-300">
+                  <Clock className="w-6 h-6 text-base-content/40 mx-auto mb-2 animate-pulse" />
+                  <p className="text-sm font-bold text-base-content/80">Wildcard entry is currently disabled</p>
+                  <p className="text-xs text-base-content/60 mt-1">
+                    Please inform your teacher to unlock your roll number ({studentInfo?.roll}) or open wildcard entry.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

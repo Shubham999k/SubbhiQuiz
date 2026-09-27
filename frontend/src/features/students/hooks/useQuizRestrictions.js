@@ -55,11 +55,13 @@ export function useQuizRestrictions({
 
       setViolations(count);
       setWarningLevel(count);
-      setShowWarning(true);
 
       if (count >= maxViolations) {
         lockedRef.current = true;
         setIsLocked(true);
+        setShowWarning(false);
+      } else {
+        setShowWarning(true);
       }
 
       // Report to parent/server

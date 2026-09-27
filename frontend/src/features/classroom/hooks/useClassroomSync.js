@@ -14,6 +14,8 @@ export const useClassroomSync = (
     onWildcardApproved = null,   // student: wildcard approved + snapshot
     onWildcardRejected = null,   // student: wildcard rejected
     onRecoverStudents = null,    // teacher: recover active students map
+    onRecoverSession = null,     // teacher: recover session snapshot from server
+    onWildcardStatusUpdate = null, // wildcard status toggle
   } = {}
 ) => {
   const socketRef = useRef(null);
@@ -29,6 +31,8 @@ export const useClassroomSync = (
     onWildcardApproved,
     onWildcardRejected,
     onRecoverStudents,
+    onRecoverSession,
+    onWildcardStatusUpdate,
   });
 
   useEffect(() => {
@@ -41,6 +45,8 @@ export const useClassroomSync = (
       onWildcardApproved,
       onWildcardRejected,
       onRecoverStudents,
+      onRecoverSession,
+      onWildcardStatusUpdate,
     };
   });
 
@@ -121,7 +127,17 @@ export const useClassroomSync = (
       socket.on("teacher_recover_students", (data) => {
         if (callbacksRef.current.onRecoverStudents) callbacksRef.current.onRecoverStudents(data);
       });
+
+      socket.on("teacher_recover_session", (data) => {
+        if (callbacksRef.current.onRecoverSession) callbacksRef.current.onRecoverSession(data);
+      });
     }
+
+    // ── Global room listeners (both teacher and students) ───────────
+    socket.on("wildcard_status_update", ({ enabled }) => {
+      setProjectorState((prev) => prev ? { ...prev, wildcardEnabled: !!enabled } : { wildcardEnabled: !!enabled });
+      if (callbacksRef.current.onWildcardStatusUpdate) callbacksRef.current.onWildcardStatusUpdate(enabled);
+    });
 
     // ── Student listeners ──────────────────────────────────────
     if (role === "student") {

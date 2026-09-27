@@ -157,6 +157,8 @@ export const setupSocket = (io) => {
       callback({
         success: true,
         locked: integrity ? integrity.locked : false,
+        violationCount: integrity ? integrity.violationCount : 0,
+        wildcardEnabled: session.wildcardEnabled,
         rejected: session.rejectedWildcards.has(roll),
       });
     });
@@ -179,6 +181,14 @@ export const setupSocket = (io) => {
       const students = Object.values(session.activeStudentsMap);
       if (students.length > 0) {
         socket.emit("teacher_recover_students", { students });
+      }
+
+      // Resend snapshot to reconnecting teacher
+      if (session.quizSnapshot) {
+        socket.emit("teacher_recover_session", {
+          snapshot: session.quizSnapshot,
+          wildcardEnabled: session.wildcardEnabled,
+        });
       }
 
       // Resend violations for locked students
@@ -216,6 +226,13 @@ export const setupSocket = (io) => {
       if (!sessionCode) return;
       const session = ensureSession(sessionCode);
       session.wildcardEnabled = !!enabled;
+      if (session.latestState) {
+        session.latestState.wildcardEnabled = session.wildcardEnabled;
+      }
+      io.to(sessionCode).emit("wildcard_status_update", { enabled: session.wildcardEnabled });
+      if (session.latestState) {
+        io.to(sessionCode).emit("state_update", session.latestState);
+      }
       console.log(`Wildcard entry ${enabled ? "enabled" : "disabled"} for session ${sessionCode}`);
     });
 
@@ -287,11 +304,22 @@ export const setupSocket = (io) => {
         violationCount: 0,
         locked: false,
       };
+      session.rejectedWildcards.delete(roll);
 
       // Send approval + current quiz snapshot to the student room with their roll
       io.to(sessionCode).emit("student_wildcard_approved", {
         roll,
         snapshot: session.quizSnapshot,
+      });
+
+      io.to(sessionCode).emit("student_violation_update", {
+        roll,
+        violationCount: 0,
+        locked: false,
+        latestViolation: {
+          eventType: "wildcard_approved",
+          timestamp: new Date(),
+        },
       });
 
       console.log(`Wildcard approved for ${roll} in session ${sessionCode}`);
@@ -307,10 +335,11 @@ export const setupSocket = (io) => {
       const session = ensureSession(sessionCode);
 
       const reqIdx = session.wildcardRequests.findIndex((r) => r.roll === roll);
-      if (reqIdx === -1) return;
+      if (reqIdx !== -1) {
+        session.wildcardRequests.splice(reqIdx, 1);
+      }
 
       session.rejectedWildcards.add(roll);
-      const [req] = session.wildcardRequests.splice(reqIdx, 1);
 
       io.to(sessionCode).emit("student_wildcard_rejected", {
         roll,
@@ -355,6 +384,7 @@ export const setupSocket = (io) => {
 
       integrity.locked = false;
       integrity.violationCount = 0; // Reset violations on unlock
+      session.rejectedWildcards.delete(roll);
 
       io.to(sessionCode).emit("student_violation_update", {
         roll,
