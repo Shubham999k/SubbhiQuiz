@@ -21,28 +21,50 @@ import Loader from "../../../components/common/Loader";
 const QRScannerModal = lazy(() => import("../../../components/common/QRScannerModal"));
 
 
-const StatCard = ({ title, value, icon: Icon, themeColor }) => {
+const useCountUp = (end, duration = 1000) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    let animationFrame;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(easeOut * end));
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(step);
+      }
+    };
+    animationFrame = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [end, duration]);
+
+  return count;
+};
+
+const StatCard = ({ title, value, icon: Icon, themeColor, suffix = "", to = "#" }) => {
   const themes = {
     orange: {
-      bg: "bg-orange-50/50 dark:bg-[#1E140E] border-orange-200/50 dark:border-[#4A2D17]",
+      bg: "bg-orange-50/50 dark:bg-[#1E140E] border-2 border-orange-400 dark:border-orange-600/60 shadow-sm",
       iconBg: "bg-gradient-to-br from-orange-400 to-orange-500",
       textValue: "text-orange-600 dark:text-orange-400",
       wave: "from-orange-500/5 via-orange-500/5 to-transparent dark:from-orange-500/10 dark:via-orange-500/5",
     },
     blue: {
-      bg: "bg-blue-50/50 dark:bg-[#0E1522] border-blue-200/50 dark:border-[#182C4A]",
+      bg: "bg-blue-50/50 dark:bg-[#0E1522] border-2 border-blue-400 dark:border-blue-600/60 shadow-sm",
       iconBg: "bg-gradient-to-br from-blue-400 to-blue-500",
       textValue: "text-blue-600 dark:text-blue-400",
       wave: "from-blue-500/5 via-blue-500/5 to-transparent dark:from-blue-500/10 dark:via-blue-500/5",
     },
     purple: {
-      bg: "bg-purple-50/50 dark:bg-[#161022] border-purple-200/50 dark:border-[#2C184A]",
+      bg: "bg-purple-50/50 dark:bg-[#161022] border-2 border-purple-400 dark:border-purple-600/60 shadow-sm",
       iconBg: "bg-gradient-to-br from-purple-400 to-purple-500",
       textValue: "text-purple-600 dark:text-purple-400",
       wave: "from-purple-500/5 via-purple-500/5 to-transparent dark:from-purple-500/10 dark:via-purple-500/5",
     },
     green: {
-      bg: "bg-green-50/50 dark:bg-[#0B1812] border-green-200/50 dark:border-[#123824]",
+      bg: "bg-green-50/50 dark:bg-[#0B1812] border-2 border-green-400 dark:border-green-600/60 shadow-sm",
       iconBg: "bg-gradient-to-br from-green-400 to-green-500",
       textValue: "text-green-600 dark:text-green-400",
       wave: "from-green-500/5 via-green-500/5 to-transparent dark:from-green-500/10 dark:via-green-500/5",
@@ -50,32 +72,36 @@ const StatCard = ({ title, value, icon: Icon, themeColor }) => {
   };
 
   const theme = themes[themeColor] || themes.blue;
+  const numValue = typeof value === 'number' ? value : 0;
+  const displayCount = useCountUp(numValue, 1500);
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border ${theme.bg} p-2 sm:p-5 flex flex-col justify-between group min-h-[90px] sm:min-h-[120px]`}>
-      
-      {/* Bottom Wave Gradient */}
-      <div className={`absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t ${theme.wave} pointer-events-none rounded-b-2xl`}></div>
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col h-full w-full justify-between">
+    <Link to={to} className="block transition-transform hover:-translate-y-1 hover:shadow-lg">
+      <div className={`relative overflow-hidden rounded-2xl border-2 ${theme.bg} p-2 sm:p-5 flex flex-col justify-between group min-h-[90px] sm:min-h-[120px]`}>
         
-        {/* Top Section */}
-        <div className="flex justify-between items-start w-full">
-          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${theme.iconBg} shadow-lg mb-1 shrink-0`}>
-            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-md" />
+        {/* Bottom Wave Gradient */}
+        <div className={`absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t ${theme.wave} pointer-events-none rounded-b-2xl`}></div>
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col h-full w-full justify-between">
+          
+          {/* Top Section */}
+          <div className="flex justify-between items-start w-full">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${theme.iconBg} shadow-lg mb-1 shrink-0`}>
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-md" />
+            </div>
+            
+            {/* Value */}
+            <div className={`text-[28px] sm:text-4xl font-black ${theme.textValue} tracking-tight leading-none mt-1`}>{displayCount}{suffix}</div>
           </div>
           
-          {/* Value */}
-          <div className={`text-[28px] sm:text-4xl font-black ${theme.textValue} tracking-tight leading-none mt-1`}>{value}</div>
-        </div>
-        
-        {/* Bottom Section */}
-        <div className="flex flex-col mt-1 sm:mt-2">
-          <h3 className="text-gray-900 dark:text-white font-bold text-[11px] sm:text-sm lg:text-base leading-tight line-clamp-1">{title}</h3>
+          {/* Bottom Section */}
+          <div className="flex flex-col mt-1 sm:mt-2">
+            <h3 className="text-gray-900 dark:text-white font-bold text-[11px] sm:text-sm lg:text-base leading-tight line-clamp-1">{title}</h3>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -103,7 +129,7 @@ const Dashboard = () => {
   // Calculate stats
   const totalQuizzes = history.length;
 
-  const getAccuracy = (h) => (h.total > 0 ? (h.score / h.total) * 100 : 0);
+  const getAccuracy = (h) => h.accuracy || 0;
 
   const bestScore =
     history.length > 0 ? Math.max(...history.map(getAccuracy)) : 0;
@@ -117,7 +143,7 @@ const Dashboard = () => {
       : 0;
 
   const totalQuestionsSolved = history.reduce(
-    (acc, curr) => acc + (curr.total || 0),
+    (acc, curr) => acc + (curr.totalQuestions || 0),
     0,
   );
 
@@ -147,24 +173,30 @@ const Dashboard = () => {
               value={totalQuizzes}
               icon={BookOpen}
               themeColor="orange"
+              to="/history"
             />
             <StatCard
               title="Average Score"
-              value={`${averageScore}%`}
+              value={averageScore}
+              suffix="%"
               icon={Target}
               themeColor="blue"
+              to="/leaderboard"
             />
             <StatCard
               title="Best Score"
-              value={`${Math.round(bestScore)}%`}
+              value={Math.round(bestScore)}
+              suffix="%"
               icon={Trophy}
               themeColor="purple"
+              to="/leaderboard"
             />
             <StatCard
               title="Questions Solved"
               value={totalQuestionsSolved}
               icon={PlayCircle}
               themeColor="green"
+              to="/history"
             />
           </div>
 
