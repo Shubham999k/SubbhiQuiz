@@ -235,7 +235,7 @@ const Leaderboard = () => {
       <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300">
 
         {/* Table Toolbar */}
-        <div className="py-3 px-8 border-b border-base-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-base-200/30 relative z-50">
+        <div className="py-3 px-8 border-b border-base-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-base-200/30 relative z-30">
           <h3 className="text-xl font-bold text-base-content flex items-center gap-2">
             <Users className="text-primary" /> All Rankings
           </h3>

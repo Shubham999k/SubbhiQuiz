@@ -9,7 +9,7 @@ export const getLeaderboard = async (req, res) => {
   try {
     const filter = req.query.filter || "weekly"; // daily, weekly, monthly, all
     const category = req.query.category || "all";
-    let matchFilter = { userId: new mongoose.Types.ObjectId(req.user._id) };
+    let matchFilter = {};
     
     if (filter !== "all" && filter !== "all_time") {
       const date = new Date();
@@ -71,7 +71,7 @@ export const getLeaderboard = async (req, res) => {
 // @access  Private
 export const getPlayedCategories = async (req, res) => {
   try {
-    const categories = await QuizResult.distinct("category", { userId: new mongoose.Types.ObjectId(req.user._id) });
+    const categories = await QuizResult.distinct("category");
     res.json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });
