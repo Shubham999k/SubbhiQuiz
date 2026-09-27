@@ -368,6 +368,27 @@ const StudentActive = () => {
     </div>
   );
 
+  // ─── Result screen back guard (Top level) ──────────────
+  useEffect(() => {
+    if (!quizCompleted || !personalResult) return;
+    
+    if (!showLeaderboard) {
+      window.history.pushState({ result: true }, "");
+    }
+    
+    const handler = (e) => {
+      if (showLeaderboard) {
+        setShowLeaderboard(false);
+      } else {
+        setShowExitModal(true);
+        window.history.pushState({ result: true }, "");
+      }
+    };
+    
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [quizCompleted, personalResult, showLeaderboard]);
+
   // ─── Quiz Completed views ─────────────────────────────────────────
   if (quizCompleted) {
     if (showLeaderboard && sanitizedLeaderboard) {
@@ -390,7 +411,7 @@ const StudentActive = () => {
               </div>
             </div>
             <button
-              onClick={() => setShowLeaderboard(false)}
+              onClick={() => window.history.back()}
               className="flex items-center gap-1.5 bg-blue-600/70 text-white text-sm font-semibold px-3 py-2 rounded-xl hover:bg-blue-600 transition-colors"
             >
               <ArrowRight size={14} className="rotate-180" /> Back to Result
@@ -478,61 +499,50 @@ const StudentActive = () => {
     if (personalResult) {
       // Confetti ribbons
       const ribbons = [
-        {top:"8%",left:"5%",rotate:-30,color:"#f59e0b",delay:"0s",w:8,h:32},
-        {top:"12%",right:"8%",rotate:25,color:"#c084fc",delay:"0.3s",w:6,h:24},
-        {top:"20%",left:"15%",rotate:15,color:"#ec4899",delay:"0.6s",w:7,h:28},
-        {top:"5%",right:"20%",rotate:-20,color:"#f59e0b",delay:"0.1s",w:9,h:20},
-        {top:"30%",right:"5%",rotate:40,color:"#6366f1",delay:"0.4s",w:6,h:30},
-        {top:"40%",left:"3%",rotate:-15,color:"#f59e0b",delay:"0.7s",w:8,h:22},
-        {top:"15%",left:"40%",rotate:60,color:"#c084fc",delay:"0.2s",w:5,h:18},
-        {top:"25%",right:"35%",rotate:-45,color:"#ec4899",delay:"0.5s",w:7,h:26},
+        {top:"8%",left:"5%",rotate:-30,color:"#ffd700",delay:"0s",w:8,h:32},
+        {top:"12%",right:"8%",rotate:25,color:"#3b82f6",delay:"0.3s",w:6,h:24},
+        {top:"20%",left:"15%",rotate:15,color:"#ef4444",delay:"0.6s",w:7,h:28},
+        {top:"5%",right:"20%",rotate:-20,color:"#ffd700",delay:"0.1s",w:9,h:20},
+        {top:"30%",right:"5%",rotate:40,color:"#8b5cf6",delay:"0.4s",w:6,h:30},
+        {top:"40%",left:"3%",rotate:-15,color:"#ef4444",delay:"0.7s",w:8,h:22},
+        {top:"15%",left:"40%",rotate:60,color:"#3b82f6",delay:"0.2s",w:5,h:18},
+        {top:"25%",right:"35%",rotate:-45,color:"#ffd700",delay:"0.5s",w:7,h:26},
       ];
       const myRank = personalResult.rank;
-
-      // Back-guard for Result screen: intercept hardware/browser back → show exit modal
-      const ResultBackGuard = () => {
-        React.useEffect(() => {
-          window.history.pushState({ result: true }, "");
-          const handler = () => {
-            setShowExitModal(true);
-            window.history.pushState({ result: true }, "");
-          };
-          window.addEventListener("popstate", handler);
-          return () => window.removeEventListener("popstate", handler);
-        }, []);
-        return null;
-      };
 
       const handleExitQuiz = () => {
         localStorage.removeItem(`student_session_${sessionCode}`);
         navigate("/");
       };
 
-      return (
-        <div className="min-h-screen w-full flex flex-col overflow-hidden relative"
-          style={{background:"linear-gradient(160deg,#3730a3 0%,#4f46e5 40%,#7c3aed 100%)"}}
-        >
-          <ResultBackGuard />
+      const handleShowLeaderboard = () => {
+        window.history.pushState({ view: 'leaderboard' }, "");
+        setShowLeaderboard(true);
+      };
 
+      return (
+        <div className="min-h-[100dvh] w-full flex flex-col overflow-hidden relative"
+          style={{background:"#0a0127"}}
+        >
           {/* Exit Confirmation Modal */}
           {showExitModal && (
-            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-              <div className="bg-white rounded-3xl shadow-2xl max-w-xs w-full p-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+              <div className="bg-[#1a0b40] border border-purple-500/30 rounded-3xl shadow-[0_0_40px_rgba(139,92,246,0.3)] max-w-xs w-full p-6 text-center animate-in zoom-in-95 duration-200">
+                <div className="w-14 h-14 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">🏠</span>
                 </div>
-                <h3 className="text-gray-900 font-black text-xl mb-2">Exit Quiz?</h3>
-                <p className="text-gray-500 text-sm mb-6">Are you sure you want to leave and return to the home page?</p>
+                <h3 className="text-white font-black text-xl mb-2">Exit Quiz?</h3>
+                <p className="text-white/60 text-sm mb-6">Are you sure you want to leave and return to the home page?</p>
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => setShowExitModal(false)}
-                    className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold text-base hover:bg-gray-50 active:scale-95 transition-all"
+                    className="w-full py-3 rounded-2xl border-2 border-white/20 text-white font-bold text-base hover:bg-white/10 active:scale-95 transition-all"
                   >
                     Cancel — Stay Here
                   </button>
                   <button
                     onClick={handleExitQuiz}
-                    className="w-full py-3 rounded-2xl bg-red-500 text-white font-bold text-base hover:bg-red-600 active:scale-95 transition-all"
+                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold text-base hover:opacity-90 shadow-lg active:scale-95 transition-all"
                   >
                     Yes, Exit Quiz
                   </button>
@@ -541,7 +551,7 @@ const StudentActive = () => {
             </div>
           )}
 
-          {/* Animated confetti ribbons */}
+          {/* Animations */}
           <style>{`
             @keyframes floatRibbon {
               0%   { transform: translateY(0px) rotate(var(--rot)); opacity:1; }
@@ -549,20 +559,31 @@ const StudentActive = () => {
               100% { transform: translateY(0px) rotate(var(--rot)); opacity:1; }
             }
             @keyframes bounceTrophy {
-              0%,100% { transform: translateY(0) scale(1); }
-              50%     { transform: translateY(-14px) scale(1.04); }
+              0%,100% { transform: translateY(0) scale(1) rotate(0deg); }
+              25%     { transform: translateY(-5px) scale(1.02) rotate(-2deg); }
+              50%     { transform: translateY(-10px) scale(1.05) rotate(0deg); }
+              75%     { transform: translateY(-5px) scale(1.02) rotate(2deg); }
             }
             @keyframes glowPulse {
-              0%,100% { box-shadow: 0 0 30px 10px rgba(251,191,36,0.3); }
-              50%     { box-shadow: 0 0 60px 20px rgba(251,191,36,0.6); }
+              0%,100% { opacity: 0.5; transform: scale(1); }
+              50%     { opacity: 0.8; transform: scale(1.2); }
+            }
+            @keyframes spinSlow {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
             }
             .ribbon-float { animation: floatRibbon 3s ease-in-out infinite; }
-            .trophy-bounce { animation: bounceTrophy 2s ease-in-out infinite; }
-            .glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
+            .trophy-bounce { animation: bounceTrophy 3s ease-in-out infinite; }
+            .glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
+            .ring-spin { animation: spinSlow 10s linear infinite; }
           `}</style>
 
+          {/* Background Radial Glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150vw] h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-purple-900/10 to-transparent pointer-events-none" />
+
+          {/* Ribbons */}
           {ribbons.map((r, i) => (
-            <div key={i} className="ribbon-float pointer-events-none absolute rounded-sm opacity-90"
+            <div key={i} className="ribbon-float pointer-events-none absolute rounded-sm opacity-90 shadow-lg"
               style={{
                 top:r.top, left:r.left, right:r.right,
                 width:r.w, height:r.h,
@@ -576,100 +597,121 @@ const StudentActive = () => {
             />
           ))}
 
-          {/* Result Released badge */}
-          <div className="relative z-10 flex justify-center pt-6 px-4">
-            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5">
-              <span className="text-yellow-300 text-sm">👑</span>
-              <span className="text-white text-xs font-bold tracking-widest uppercase">Result Released</span>
+          {/* Header Content */}
+          <div className="relative z-10 flex flex-col items-center pt-8 px-4 w-full">
+            {/* Pill */}
+            <div className="bg-gradient-to-r from-purple-800 to-indigo-900 border border-purple-400 rounded-full px-5 py-1.5 flex items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.5)] mb-4">
+              <span className="text-yellow-400 text-sm">👑</span>
+              <span className="text-white text-xs font-black tracking-widest uppercase">Result Released</span>
+              <span className="text-yellow-400 text-sm">✨</span>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-white font-black text-3xl sm:text-4xl leading-tight mb-1">Congratulations,</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-400 text-3xl drop-shadow-md">›</span>
+              <h3 className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500 font-black text-3xl sm:text-4xl italic drop-shadow-md">
+                {studentInfo.name}!
+              </h3>
+              <span className="text-yellow-400 text-3xl drop-shadow-md">‹</span>
+              <span className="text-2xl ml-1 -rotate-12 drop-shadow-md">🎓</span>
             </div>
           </div>
 
-          {/* Name */}
-          <div className="relative z-10 text-center px-4 mt-3">
-            <h2 className="text-white font-black text-2xl leading-tight">Congratulations,</h2>
-            <div className="flex items-center justify-center gap-2 mt-1">
-              <span className="text-yellow-300 text-2xl">›</span>
-              <h3 className="text-yellow-300 font-black text-2xl italic">{studentInfo.name}!</h3>
-              <span className="text-yellow-300 text-2xl">‹</span>
-            </div>
-          </div>
+          {/* Trophy Area */}
+          <div className="relative z-10 flex justify-center items-center mt-10 mb-8 flex-1 min-h-[220px]">
+            {/* Pedestal Base */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-48 h-12 rounded-[100%] bg-purple-900/50 border border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.6)]" />
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-40 h-10 rounded-[100%] bg-purple-800 border-2 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.8)]" />
+            
+            {/* Rotating Rings */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-yellow-500/20 rounded-full ring-spin rotate-[60deg] scale-y-50" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-indigo-400/30 rounded-full ring-spin rotate-[-30deg] scale-y-50" style={{animationDirection: "reverse"}} />
 
-          {/* Trophy + rank badge */}
-          <div className="relative z-10 flex justify-center mt-4">
-            <div className="relative">
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-8 rounded-full glow-pulse"
-                style={{background:"rgba(251,191,36,0.2)"}} />
-              <div className="trophy-bounce text-9xl select-none" style={{filter:"drop-shadow(0 0 20px rgba(251,191,36,0.8))"}}>
-                🏆
-              </div>
-              <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-yellow-400 border-4 border-white shadow-xl flex flex-col items-center justify-center">
-                <span className="text-white font-black text-xs leading-none">#</span>
-                <span className="text-white font-black text-lg leading-none">{myRank}</span>
-              </div>
-            </div>
-          </div>
+            {/* Glowing Backdrop */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-yellow-500/20 rounded-full blur-2xl glow-pulse" />
 
-          {/* Score card */}
-          <div className="relative z-10 mx-4 mt-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="text-yellow-300">👑</span>
-                <span className="text-white font-bold text-sm tracking-wide">Your Score</span>
-              </div>
-              <div className="flex items-center justify-center gap-6">
-                <div className="text-white/40 text-4xl">❦</div>
-                <div className="text-white font-black text-6xl">{personalResult.score}</div>
-                <div className="text-white/40 text-4xl scale-x-[-1]">❦</div>
-              </div>
+            {/* Trophy Icon */}
+            <div className="trophy-bounce text-[120px] select-none leading-none relative z-10" style={{filter:"drop-shadow(0 10px 25px rgba(251,191,36,0.6))"}}>
+              🏆
             </div>
-          </div>
 
-          {/* Stats row */}
-          <div className="relative z-10 mx-4 mt-3 grid grid-cols-2 gap-3">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-indigo-400/40 flex items-center justify-center">
-                <span className="text-white text-sm">📋</span>
-              </div>
-              <div>
-                <div className="text-white/60 text-xs font-bold uppercase tracking-wider">Total</div>
-                <div className="text-white/50 text-xs">Questions</div>
-                <div className="text-indigo-300 font-black text-xl">{personalResult.totalQuestions}</div>
-              </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-green-400/40 flex items-center justify-center">
-                <Trophy size={18} className="text-white" />
-              </div>
-              <div>
-                <div className="text-white/60 text-xs font-bold uppercase tracking-wider">Completion</div>
-                <div className="text-green-300 font-black text-xl">100%</div>
+            {/* Rank Badge attached to Trophy */}
+            <div className="absolute bottom-10 right-[calc(50%-55px)] w-14 h-14 rounded-full bg-gradient-to-br from-yellow-300 to-amber-600 p-[3px] shadow-2xl z-20">
+              <div className="w-full h-full rounded-full bg-gradient-to-b from-yellow-100 to-yellow-400 flex flex-col items-center justify-center shadow-inner">
+                <span className="text-amber-900 font-black text-xl leading-none tracking-tighter">#{myRank}</span>
               </div>
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="relative z-10 mx-4 mt-4 space-y-3 pb-6">
+          {/* Bottom Card Area */}
+          <div className="relative z-10 px-4 w-full flex flex-col gap-3 pb-6">
+            {/* Score Box */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl p-4 flex flex-col items-center relative overflow-hidden">
+              {/* Internal glow */}
+              <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              
+              <div className="flex items-center gap-2 mb-1 text-white/90">
+                <span className="text-yellow-400 text-sm">👑</span>
+                <span className="font-bold text-sm tracking-widest uppercase">Your Score</span>
+              </div>
+              
+              <div className="flex items-center gap-6">
+                <span className="text-yellow-300/40 text-4xl">🌿</span>
+                <span className="text-white font-black text-6xl italic drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                  {personalResult.score}
+                </span>
+                <span className="text-yellow-300/40 text-4xl scale-x-[-1]">🌿</span>
+              </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-lg">
+                <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
+                  <span className="text-white text-lg">📋</span>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-[10px] font-black uppercase tracking-wider leading-none mb-1">Total<br/>Questions</div>
+                  <div className="text-purple-700 font-black text-xl leading-none">{personalResult.totalQuestions}</div>
+                </div>
+              </div>
+              
+              <div className="bg-[#dcfce7] rounded-2xl p-3 flex items-center gap-3 shadow-lg">
+                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                  <Trophy size={18} className="text-white" />
+                </div>
+                <div>
+                  <div className="text-gray-500 text-[10px] font-black uppercase tracking-wider leading-none mb-1">Completion</div>
+                  <div className="text-green-700 font-black text-xl leading-none">100%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons */}
             <button
-              onClick={() => setShowLeaderboard(true)}
-              className="w-full py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white font-bold text-base flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-white/20"
+              onClick={handleShowLeaderboard}
+              className="w-full py-4 rounded-2xl bg-white text-blue-900 font-black text-base flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-transform"
             >
-              <Trophy size={20} className="text-yellow-300" />
+              <Trophy size={20} className="text-blue-600" />
               View Leaderboard
-              <ArrowRight size={18} />
+              <ArrowRight size={18} className="text-blue-600" />
             </button>
+
             {summaryReleased && (
               <button
                 onClick={() => navigate(`/student/summary?session=${sessionCode}&roll=${studentInfo.roll}`)}
-                className="w-full py-4 rounded-2xl bg-yellow-400 text-yellow-900 font-bold text-base flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-yellow-300"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-yellow-300 to-amber-500 text-amber-950 font-black text-base flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-transform"
               >
                 <BookMarked size={20} />
                 View Answer Summary
                 <ArrowRight size={18} />
               </button>
             )}
+
             <button
               onClick={() => setShowExitModal(true)}
-              className="w-full py-3 rounded-2xl text-white/70 font-medium flex items-center justify-center gap-2 hover:text-white transition-colors"
+              className="w-full py-3 mt-1 flex items-center justify-center gap-2 text-white/60 font-bold hover:text-white transition-colors"
             >
               🏠 Close &amp; Return Home
             </button>

@@ -293,15 +293,16 @@ const Dashboard = () => {
 
             {/* Recent Attempts */}
             <div className="lg:col-span-2 bg-base-100 rounded-xl shadow-lg border border-base-300 p-2 sm:p-6">
-              <div className="flex items-center justify-between border-b border-base-300 mb-4 pb-4">
+              <div className="flex items-center justify-between border-b border-base-300 mb- pb-4">
                 <h2 className="text-lg font-bold text-base-content">
                   Recent Attempts
                 </h2>
                 <Link
                   to="/history"
-                  className="text-sm font-medium text-primary hover:text-primary"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:border-primary hover:bg-primary hover:text-white transition-all duration-200 group/btn"
                 >
                   View all
+                  <ArrowRight className="w-3 h-3 translate-x-0 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
                 </Link>
               </div>
 
@@ -341,7 +342,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-base-300">
-                      {history.slice(0, 7).map((attempt, index) => (
+                      {history.slice(0, 5).map((attempt, index) => (
                         <tr
                           key={attempt._id || index}
                           className="group hover:bg-base-200 cursor-pointer"
