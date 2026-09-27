@@ -24,6 +24,18 @@ const StudentSummary = () => {
   const [error, setError] = useState("");
   const [summaryData, setSummaryData] = useState(null); // { myAnswers, questions, studentInfo }
   const [studentInfo, setStudentInfo] = useState(null);
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  // Intercept browser/Android back button
+  useEffect(() => {
+    window.history.pushState({ summary: true }, "");
+    const handler = () => {
+      setShowExitModal(true);
+      window.history.pushState({ summary: true }, "");
+    };
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, []);
 
   // Load student info from localStorage
   useEffect(() => {
@@ -153,17 +165,42 @@ const StudentSummary = () => {
   const displayRoll = studentInfo?.roll || roll || "";
 
   return (
-    <div className="summary-protected min-h-screen bg-base-200 relative pb-12">
+    <div className="summary-protected min-h-screen relative pb-12"
+      style={{background:"#f3f4f6"}}>
+
+      {/* ── Exit Confirmation Modal ──────────────────────────────── */}
+      {showExitModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-xs w-full p-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h3 className="text-gray-900 font-black text-xl mb-2">Exit this page?</h3>
+            <p className="text-gray-500 text-sm mb-6">Are you sure you want to go back to the result screen?</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setShowExitModal(false)}
+                className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold text-base hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setShowExitModal(false); navigate(-1); }}
+                className="w-full py-3 rounded-2xl bg-red-500 text-white font-bold text-base hover:bg-red-600 active:scale-95 transition-all"
+              >
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Watermark ───────────────────────────────────────────── */}
       <div
         aria-hidden="true"
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          top: 0, left: 0, right: 0, bottom: 0,
           pointerEvents: "none",
           zIndex: 1,
           display: "flex",
@@ -183,141 +220,130 @@ const StudentSummary = () => {
       </div>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white p-5 sticky top-0 z-10 shadow-lg">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <div className="sticky top-0 z-10 shadow-lg"
+        style={{background:"linear-gradient(135deg,#3730a3 0%,#4f46e5 50%,#7c3aed 100%)"}}>
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-2 p-3 sm:p-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              onClick={() => setShowExitModal(true)}
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors shrink-0"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={20} className="text-white" />
             </button>
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                <BookOpen size={20} /> Answer Summary
+            <div className="min-w-0">
+              <h1 className="text-white font-bold text-base sm:text-lg flex items-center gap-2">
+                <BookOpen size={18} className="shrink-0" /> Answer Summary
               </h1>
-              <p className="text-indigo-200 text-sm mt-0.5">
-                {displayName} • {displayRoll} • {sessionCode}
+              <p className="text-indigo-200 text-xs truncate">
+                {displayName} • {displayRoll}
               </p>
             </div>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-xs text-indigo-300 uppercase tracking-wider">Score</p>
-            <p className="text-2xl font-black">{correctCount}/{questions.length}</p>
+          <div className="text-right shrink-0 bg-white/10 rounded-xl px-3 py-2">
+            <p className="text-indigo-300 text-xs uppercase tracking-wider font-bold">Score</p>
+            <p className="text-white font-black text-xl">{correctCount}/{questions.length}</p>
+          </div>
+        </div>
+
+        {/* Stats bar inside header */}
+        <div className="max-w-2xl mx-auto grid grid-cols-3 gap-2 px-3 sm:px-4 pb-3 sm:pb-4">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 sm:p-3 text-center border border-white/10">
+            <p className="text-green-300 text-xs font-bold uppercase tracking-wider">Correct</p>
+            <p className="text-white font-black text-2xl sm:text-3xl">{correctCount}</p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 sm:p-3 text-center border border-white/10">
+            <p className="text-red-300 text-xs font-bold uppercase tracking-wider">Wrong</p>
+            <p className="text-white font-black text-2xl sm:text-3xl">{incorrectCount}</p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 sm:p-3 text-center border border-white/10">
+            <p className="text-yellow-300 text-xs font-bold uppercase tracking-wider">Skipped</p>
+            <p className="text-white font-black text-2xl sm:text-3xl">{unansweredCount}</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto p-4 pt-6 relative z-2">
-        {/* ── Stats bar ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-success/10 border border-success/20 rounded-2xl p-4 text-center">
-            <p className="text-xs font-bold text-success uppercase tracking-wider mb-1">Correct</p>
-            <p className="text-3xl font-black text-success">{correctCount}</p>
-          </div>
-          <div className="bg-error/10 border border-error/20 rounded-2xl p-4 text-center">
-            <p className="text-xs font-bold text-error uppercase tracking-wider mb-1">Incorrect</p>
-            <p className="text-3xl font-black text-error">{incorrectCount}</p>
-          </div>
-          <div className="bg-base-100 border border-base-300 rounded-2xl p-4 text-center">
-            <p className="text-xs font-bold text-base-content/60 uppercase tracking-wider mb-1">Skipped</p>
-            <p className="text-3xl font-black text-base-content">{unansweredCount}</p>
-          </div>
-        </div>
+      {/* ── Question cards ─────────────────────────────────────────── */}
+      <div className="max-w-2xl mx-auto px-2 sm:px-4 pt-3 sm:pt-4 space-y-3 relative z-2">
+        {questions.map((q, idx) => {
+          const userAnswer = myAnswers[q.id];
+          const isCorrect = userAnswer === q.correctAnswer;
+          const isUnanswered = !userAnswer;
 
-        {/* ── Question cards ─────────────────────────────────────── */}
-        <div className="space-y-4">
-          {questions.map((q, idx) => {
-            const userAnswer = myAnswers[q.id];
-            const isCorrect = userAnswer === q.correctAnswer;
-            const isUnanswered = !userAnswer;
+          const borderColor = isCorrect ? "border-green-400" : isUnanswered ? "border-amber-300" : "border-red-400";
+          const statusBg = isCorrect ? "bg-green-50" : isUnanswered ? "bg-amber-50" : "bg-red-50";
+          const statusColor = isCorrect ? "text-green-700" : isUnanswered ? "text-amber-600" : "text-red-600";
+          const numBg = isCorrect ? "bg-green-500" : isUnanswered ? "bg-amber-400" : "bg-red-500";
+          const statusText = isCorrect ? "✓ Correct" : isUnanswered ? "— Skipped" : "✗ Wrong";
 
-            const headerBg = isCorrect
-              ? "bg-success/10 border-b border-success/20"
-              : isUnanswered
-                ? "bg-amber-50 border-b border-amber-100"
-                : "bg-error/10 border-b border-error/20";
-
-            const statusColor = isCorrect
-              ? "text-green-700"
-              : isUnanswered
-                ? "text-amber-600"
-                : "text-red-700";
-
-            const statusText = isCorrect ? "✓ Correct" : isUnanswered ? "— Unanswered" : "✗ Incorrect";
-
-            return (
-              <div key={q.id} className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden">
-                {/* Card header */}
-                <div className={`px-5 py-4 ${headerBg}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <span className={`flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold
-                        ${isCorrect ? "bg-success/20 text-green-700" : isUnanswered ? "bg-amber-200 text-amber-700" : "bg-red-200 text-red-700"}`}>
-                        {idx + 1}
-                      </span>
-                      <p className="text-base-content font-medium leading-snug">{q.question}</p>
-                    </div>
-                    <span className={`shrink-0 text-sm font-bold ${statusColor}`}>{statusText}</span>
-                  </div>
+          return (
+            <div key={q.id} className={`bg-white rounded-2xl shadow-sm border-l-4 ${borderColor} overflow-hidden`}>
+              {/* Card header */}
+              <div className={`px-3 sm:px-4 py-3 ${statusBg} flex items-start justify-between gap-2`}>
+                <div className="flex items-start gap-2 sm:gap-3 min-w-0">
+                  <span className={`flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-black ${numBg}`}>
+                    {idx + 1}
+                  </span>
+                  <p className="text-gray-800 font-semibold text-sm sm:text-base leading-snug">{q.question}</p>
                 </div>
-
-                {/* Answer details */}
-                <div className="p-5 space-y-3">
-                  {/* Student's answer */}
-                  {userAnswer ? (
-                    <div className={`flex items-center gap-3 p-3 rounded-xl border-2 ${isCorrect ? "border-success bg-success/5" : "border-error bg-error/5"}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isCorrect ? "bg-success text-white" : "bg-error text-white"}`}>
-                        {isCorrect ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-base-content/60 mb-0.5">Your Answer</p>
-                        <p className={`font-bold ${isCorrect ? "text-green-800" : "text-red-800"}`}>{userAnswer}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-amber-200 bg-amber-50">
-                      <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">?</div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-0.5">Your Answer</p>
-                        <p className="font-bold text-amber-700">Not answered</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Correct answer (only show if wrong or unanswered) */}
-                  {!isCorrect && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-success/40 bg-success/5">
-                      <div className="w-8 h-8 rounded-full bg-success flex items-center justify-center flex-shrink-0">
-                        <CheckCircle2 size={16} className="text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-green-600 mb-0.5">Correct Answer</p>
-                        <p className="font-bold text-green-800">{q.correctAnswer}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Explanation */}
-                  {q.explanation && (
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                      <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">Explanation</p>
-                      <p className="text-blue-900 text-sm leading-relaxed whitespace-pre-line">{q.explanation}</p>
-                    </div>
-                  )}
-                </div>
+                <span className={`shrink-0 text-xs sm:text-sm font-black ${statusColor} whitespace-nowrap`}>{statusText}</span>
               </div>
-            );
-          })}
-        </div>
 
-        {/* ── Footer note ───────────────────────────────────────── */}
-        <div className="mt-8 text-center text-xs text-base-content/30 font-medium">
-          SubbhiQuiz Answer Summary • {displayName} • {displayRoll}
-        </div>
+              {/* Answer details */}
+              <div className="px-3 sm:px-4 py-3 space-y-2">
+                {/* Student's answer */}
+                {userAnswer ? (
+                  <div className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border-2 ${isCorrect ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isCorrect ? "bg-green-500" : "bg-red-500"}`}>
+                      {isCorrect ? <CheckCircle2 size={14} className="text-white" /> : <XCircle size={14} className="text-white" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-0.5">Your Answer</p>
+                      <p className={`font-bold text-sm ${isCorrect ? "text-green-800" : "text-red-800"}`}>{userAnswer}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border-2 border-amber-200 bg-amber-50">
+                    <div className="w-7 h-7 rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0 text-white font-black text-sm">?</div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-0.5">Your Answer</p>
+                      <p className="font-bold text-sm text-amber-700">Not answered</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Correct answer (only show if wrong or unanswered) */}
+                {!isCorrect && (
+                  <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border-2 border-green-300 bg-green-50">
+                    <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 size={14} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-green-600 mb-0.5">Correct Answer</p>
+                      <p className="font-bold text-sm text-green-800">{q.correctAnswer}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Explanation */}
+                {q.explanation && (
+                  <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-2 sm:p-3">
+                    <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">💡 Explanation</p>
+                    <p className="text-indigo-900 text-xs sm:text-sm leading-relaxed whitespace-pre-line">{q.explanation}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Footer note ───────────────────────────────────────── */}
+      <div className="mt-6 text-center text-xs text-gray-400 font-medium pb-4">
+        SubbhiQuiz Answer Summary • {displayName} • {displayRoll}
       </div>
     </div>
   );
 };
 
 export default StudentSummary;
+

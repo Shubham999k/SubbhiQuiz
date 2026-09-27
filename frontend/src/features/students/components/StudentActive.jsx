@@ -39,6 +39,7 @@ const StudentActive = () => {
   const [hintOption, setHintOption] = useState(null); // the correct answer revealed by Jinni
 
   const [pleadStatus, setPleadStatus] = useState("idle"); // idle, pending, rejected
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // Summary state
   const [summaryReleased, setSummaryReleased] = useState(false);
@@ -267,119 +268,324 @@ const StudentActive = () => {
 
   const { questions, currentQuestionIndex, isAnswerRevealed, quizCompleted, quizStarted } = projectorState;
 
+  // ─── Avatar generator for a student name ──────────────────────────
+  const getAvatar = (name, size = 40) => {
+    const colors = ["#6366f1","#8b5cf6","#ec4899","#f59e0b","#10b981","#3b82f6","#ef4444","#14b8a6"];
+    const idx = name ? name.charCodeAt(0) % colors.length : 0;
+    const bg = colors[idx];
+    const initials = name ? name.split(" ").map(p => p[0]).join("").slice(0,2).toUpperCase() : "?";
+    return { bg, initials };
+  };
+
+  // ─── Exit confirmation modal component ───────────────────────────
+  const ExitConfirmModal = ({ onCancel, onExit }) => (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-xs w-full p-6 text-center">
+        <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl">⚠️</span>
+        </div>
+        <h3 className="text-gray-900 font-black text-xl mb-2">Exit this page?</h3>
+        <p className="text-gray-500 text-sm mb-6">Are you sure you want to go back? You'll return to the result screen.</p>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={onCancel}
+            className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold text-base hover:bg-gray-50 active:scale-95 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onExit}
+            className="w-full py-3 rounded-2xl bg-red-500 text-white font-bold text-base hover:bg-red-600 active:scale-95 transition-all"
+          >
+            Exit
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   // ─── Quiz Completed views ─────────────────────────────────────────
   if (quizCompleted) {
     if (showLeaderboard && sanitizedLeaderboard) {
+      const top3 = sanitizedLeaderboard.slice(0, 3);
+      const rest = sanitizedLeaderboard.slice(3);
+      const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
+      const podiumHeights = ["h-24","h-32","h-20"];
+      const podiumColors = ["bg-gray-400","bg-yellow-400","bg-amber-600"];
+      const crownColors = ["text-gray-300","text-yellow-400","text-amber-600"];
+
+      // Intercept browser/Android back button for leaderboard
+      // (rendered as a component using an inline effect via key)
+      const LeaderboardBackGuard = () => {
+        React.useEffect(() => {
+          window.history.pushState({ leaderboard: true }, "");
+          const handler = (e) => {
+            e.preventDefault();
+            setShowExitModal(true);
+            window.history.pushState({ leaderboard: true }, "");
+          };
+          window.addEventListener("popstate", handler);
+          return () => window.removeEventListener("popstate", handler);
+        }, []);
+        return null;
+      };
+
       return (
-        <div className="min-h-screen bg-base-200 flex flex-col">
-          <header className="bg-primary text-white p-4 shadow-md flex justify-between items-center shrink-0">
-            <h1 className="font-bold">Leaderboard</h1>
-            <button onClick={() => setShowLeaderboard(false)} className="bg-white/20 px-3 py-1 rounded text-sm hover:opacity-80">
-              Back to Result
+        <div className="min-h-screen flex flex-col" style={{background:"linear-gradient(160deg,#0d1b3e 0%,#1a2a5e 50%,#0d2240 100%)"}}>
+          <LeaderboardBackGuard />
+          {showExitModal && (
+            <ExitConfirmModal
+              onCancel={() => setShowExitModal(false)}
+              onExit={() => { setShowExitModal(false); setShowLeaderboard(false); }}
+            />
+          )}
+          {/* Header */}
+          <header className="flex justify-between items-center px-4 py-3 shrink-0">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-yellow-400" />
+              <div>
+                <div className="text-white font-bold text-lg leading-tight">Leaderboard</div>
+                <div className="text-blue-300 text-xs">Top Performers of This Quiz</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowExitModal(true)}
+              className="flex items-center gap-1.5 bg-blue-600/70 text-white text-sm font-semibold px-3 py-2 rounded-xl hover:bg-blue-600 transition-colors"
+            >
+              <ArrowRight size={14} className="rotate-180" /> Back to Result
             </button>
           </header>
-          <main className="flex-1 p-4 overflow-y-auto">
-            <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-base-200 text-base-content/70 uppercase text-xs tracking-wider border-b">
-                  <tr>
-                    <th className="p-4">Rank</th>
-                    <th className="p-4">Student</th>
-                    <th className="p-4 text-right">Score</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {sanitizedLeaderboard.map((student) => {
-                    const isMe = student.roll === studentInfo.roll;
-                    let rankIcon = null;
-                    if (student.rank === 1) rankIcon = <Trophy className="w-5 h-5 text-warning" />;
-                    else if (student.rank === 2) rankIcon = <Medal className="w-5 h-5 text-base-content/50" />;
-                    else if (student.rank === 3) rankIcon = <Award className="w-5 h-5 text-warning" />;
-                    else rankIcon = <span className="font-bold text-base-content/70 w-5 text-center">#{student.rank}</span>;
 
-                    return (
-                      <tr key={student.roll} className={isMe ? "bg-primary/10" : "hover:bg-base-200"}>
-                        <td className="p-4 flex items-center justify-center">{rankIcon}</td>
-                        <td className={`p-4 font-bold ${isMe ? "text-primary" : "text-base-content"}`}>
-                          {student.name} {isMe && "(You)"}
-                        </td>
-                        <td className="p-4 text-right font-bold text-primary">{student.score}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </main>
+          {/* Podium */}
+          <div className="flex items-end justify-center gap-3 px-4 pt-4 pb-2">
+            {podiumOrder.map((student, i) => {
+              if (!student) return null;
+              const isMe = student.roll === studentInfo.roll;
+              const av = getAvatar(student.name);
+              const rankBadge = [2,1,3][i];
+              return (
+                <div key={student.roll} className="flex flex-col items-center" style={{minWidth:"80px"}}>
+                  {/* Crown */}
+                  <div className={`text-2xl mb-1 ${crownColors[i]}`}>{rankBadge===1?"👑":rankBadge===2?"🥈":"🥉"}</div>
+                  {/* Avatar */}
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl border-4 ${isMe?"border-yellow-300":"border-white/30"} shadow-lg mb-1`}
+                    style={{background:av.bg}}>
+                    {av.initials}
+                  </div>
+                  <div className={`text-white text-xs font-bold text-center leading-tight mb-1 ${isMe?"text-yellow-300":""}`}>
+                    {student.name}{isMe?" (You)":""}
+                  </div>
+                  {/* Podium block */}
+                  <div className={`w-20 ${podiumHeights[i]} ${podiumColors[i]} rounded-t-xl flex flex-col items-center justify-start pt-2`}>
+                    <span className="text-white font-black text-lg">{rankBadge}</span>
+                    <div className="mt-1 bg-white/20 rounded-lg px-2 py-0.5">
+                      <span className="text-white font-bold text-sm">{student.score}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* List */}
+          <div className="flex-1 bg-white rounded-t-3xl overflow-y-auto">
+            <table className="w-full text-left">
+              <thead className="text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100">
+                <tr>
+                  <th className="px-4 py-3">Rank</th>
+                  <th className="px-4 py-3">Student</th>
+                  <th className="px-4 py-3 text-right">Score</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {sanitizedLeaderboard.map((student) => {
+                  const isMe = student.roll === studentInfo.roll;
+                  const av = getAvatar(student.name);
+                  let rankEl;
+                  if (student.rank === 1) rankEl = <div className="w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center text-white text-xs font-black">1</div>;
+                  else if (student.rank === 2) rankEl = <div className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-black">2</div>;
+                  else if (student.rank === 3) rankEl = <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-black">3</div>;
+                  else rankEl = <span className="text-gray-400 font-bold text-sm">{student.rank}</span>;
+
+                  return (
+                    <tr key={student.roll} className={isMe ? "bg-indigo-50" : "hover:bg-gray-50"}>
+                      <td className="px-4 py-3">{rankEl}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow"
+                            style={{background:av.bg}}>
+                            {av.initials}
+                          </div>
+                          <span className={`font-semibold text-sm ${isMe ? "text-indigo-700" : "text-gray-800"}`}>
+                            {student.name}{isMe ? " (You)" : ""}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="font-bold text-gray-800">{student.score}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       );
     }
 
     if (personalResult) {
-      const isTop3 = personalResult.rank <= 3;
+      // Confetti ribbons
+      const ribbons = [
+        {top:"8%",left:"5%",rotate:-30,color:"#f59e0b",delay:"0s",w:8,h:32},
+        {top:"12%",right:"8%",rotate:25,color:"#c084fc",delay:"0.3s",w:6,h:24},
+        {top:"20%",left:"15%",rotate:15,color:"#ec4899",delay:"0.6s",w:7,h:28},
+        {top:"5%",right:"20%",rotate:-20,color:"#f59e0b",delay:"0.1s",w:9,h:20},
+        {top:"30%",right:"5%",rotate:40,color:"#6366f1",delay:"0.4s",w:6,h:30},
+        {top:"40%",left:"3%",rotate:-15,color:"#f59e0b",delay:"0.7s",w:8,h:22},
+        {top:"15%",left:"40%",rotate:60,color:"#c084fc",delay:"0.2s",w:5,h:18},
+        {top:"25%",right:"35%",rotate:-45,color:"#ec4899",delay:"0.5s",w:7,h:26},
+      ];
+      const myRank = personalResult.rank;
+
       return (
-        <div className="min-h-screen bg-base-200 flex flex-col items-center justify-center p-4">
-          <div className={`w-full max-w-sm rounded-3xl p-8 shadow-2xl ${isTop3 ? "bg-gradient-to-br from-indigo-600 to-purple-700 text-white" : "bg-base-100 text-base-content"}`}>
-            <div className="text-center mb-8">
-              <p className={`text-sm uppercase tracking-widest font-bold mb-2 ${isTop3 ? "text-primary-content" : "text-base-content/50"}`}>Result Released</p>
-              <h2 className="text-2xl font-bold mb-6">Congratulations, {studentInfo.name}!</h2>
-              <div className="relative inline-block mb-6">
-                {personalResult.rank === 1 && <Trophy className="w-24 h-24 mx-auto text-warning animate-bounce" />}
-                {personalResult.rank === 2 && <Medal className="w-24 h-24 mx-auto text-gray-300" />}
-                {personalResult.rank === 3 && <Award className="w-24 h-24 mx-auto text-warning" />}
-                {personalResult.rank > 3 && (
-                  <div className="w-24 h-24 mx-auto bg-primary/20 rounded-full flex items-center justify-center border-4 border-primary/20">
-                    <span className="text-3xl font-black text-primary">#{personalResult.rank}</span>
-                  </div>
-                )}
-                {isTop3 && (
-                  <div className="absolute -bottom-4 -right-4 bg-warning text-warning-content font-black rounded-full w-12 h-12 flex items-center justify-center border-4 border-white shadow-lg text-xl">
-                    #{personalResult.rank}
-                  </div>
-                )}
+        <div className="min-h-screen w-full flex flex-col overflow-hidden relative"
+          style={{background:"linear-gradient(160deg,#3730a3 0%,#4f46e5 40%,#7c3aed 100%)"}}>
+
+          {/* Animated confetti ribbons */}
+          <style>{`
+            @keyframes floatRibbon {
+              0%   { transform: translateY(0px) rotate(var(--rot)); opacity:1; }
+              50%  { transform: translateY(18px) rotate(calc(var(--rot) + 10deg)); opacity:0.9; }
+              100% { transform: translateY(0px) rotate(var(--rot)); opacity:1; }
+            }
+            @keyframes bounceTrophy {
+              0%,100% { transform: translateY(0) scale(1); }
+              50%     { transform: translateY(-14px) scale(1.04); }
+            }
+            @keyframes glowPulse {
+              0%,100% { box-shadow: 0 0 30px 10px rgba(251,191,36,0.3); }
+              50%     { box-shadow: 0 0 60px 20px rgba(251,191,36,0.6); }
+            }
+            .ribbon-float { animation: floatRibbon 3s ease-in-out infinite; }
+            .trophy-bounce { animation: bounceTrophy 2s ease-in-out infinite; }
+            .glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
+          `}</style>
+
+          {ribbons.map((r, i) => (
+            <div key={i} className="ribbon-float pointer-events-none absolute rounded-sm opacity-90"
+              style={{
+                top:r.top, left:r.left, right:r.right,
+                width:r.w, height:r.h,
+                background:r.color,
+                '--rot':`${r.rotate}deg`,
+                transform:`rotate(${r.rotate}deg)`,
+                animationDelay:r.delay,
+                borderRadius:"3px",
+                zIndex:1
+              }}
+            />
+          ))}
+
+          {/* Result Released badge */}
+          <div className="relative z-10 flex justify-center pt-6 px-4">
+            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5">
+              <span className="text-yellow-300 text-sm">👑</span>
+              <span className="text-white text-xs font-bold tracking-widest uppercase">Result Released</span>
+            </div>
+          </div>
+
+          {/* Name */}
+          <div className="relative z-10 text-center px-4 mt-3">
+            <h2 className="text-white font-black text-2xl leading-tight">Congratulations,</h2>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <span className="text-yellow-300 text-2xl">›</span>
+              <h3 className="text-yellow-300 font-black text-2xl italic">{studentInfo.name}!</h3>
+              <span className="text-yellow-300 text-2xl">‹</span>
+            </div>
+          </div>
+
+          {/* Trophy + rank badge */}
+          <div className="relative z-10 flex justify-center mt-4">
+            <div className="relative">
+              {/* Glow platform */}
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-8 rounded-full glow-pulse"
+                style={{background:"rgba(251,191,36,0.2)"}} />
+              <div className="trophy-bounce text-9xl select-none" style={{filter:"drop-shadow(0 0 20px rgba(251,191,36,0.8))"}}>
+                🏆
               </div>
-              <p className={`text-lg mb-1 ${isTop3 ? "text-indigo-100" : "text-base-content/70"}`}>Your Score</p>
-              <p className="text-5xl font-black mb-8">{personalResult.score}</p>
-              <div className="grid grid-cols-2 gap-4 text-left">
-                <div className={`p-4 rounded-xl ${isTop3 ? "bg-base-100/10" : "bg-base-200"}`}>
-                  <p className={`text-xs uppercase font-bold ${isTop3 ? "text-primary-content" : "text-base-content/70"}`}>Total Questions</p>
-                  <p className="text-xl font-bold">{personalResult.totalQuestions}</p>
-                </div>
-                <div className={`p-4 rounded-xl ${isTop3 ? "bg-base-100/10" : "bg-base-200"}`}>
-                  <p className={`text-xs uppercase font-bold ${isTop3 ? "text-primary-content" : "text-base-content/70"}`}>Completion</p>
-                  <p className="text-xl font-bold">100%</p>
-                </div>
+              {/* Rank badge */}
+              <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-yellow-400 border-4 border-white shadow-xl flex flex-col items-center justify-center">
+                <span className="text-white font-black text-xs leading-none">#</span>
+                <span className="text-white font-black text-lg leading-none">{myRank}</span>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-3">
-              <button
-                onClick={() => setShowLeaderboard(true)}
-                className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${isTop3 ? "bg-base-100 text-primary hover:bg-base-200" : "bg-primary text-white hover:opacity-80"}`}
-              >
-                View Leaderboard <ArrowRight size={20} />
-              </button>
-
-              {/* NEW: View Answer Summary button (only when released) */}
-              {summaryReleased && (
-                <button
-                  onClick={() => navigate(`/student/summary?session=${sessionCode}&roll=${studentInfo.roll}`)}
-                  className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${isTop3 ? "bg-amber-400 text-amber-900 hover:bg-amber-300" : "bg-amber-100 text-amber-800 hover:bg-amber-200"}`}
-                >
-                  <BookMarked size={20} /> View Answer Summary
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  localStorage.removeItem(`student_session_${sessionCode}`);
-                  navigate("/");
-                }}
-                className={`w-full py-3 rounded-xl font-medium transition-colors ${isTop3 ? "text-primary-content hover:bg-base-100/10" : "text-base-content/70 hover:bg-base-200"}`}
-              >
-                Close & Return Home
-              </button>
+          {/* Score card */}
+          <div className="relative z-10 mx-4 mt-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <span className="text-yellow-300">👑</span>
+                <span className="text-white font-bold text-sm tracking-wide">Your Score</span>
+              </div>
+              <div className="flex items-center justify-center gap-6">
+                <div className="text-white/40 text-4xl">❦</div>
+                <div className="text-white font-black text-6xl">{personalResult.score}</div>
+                <div className="text-white/40 text-4xl scale-x-[-1]">❦</div>
+              </div>
             </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="relative z-10 mx-4 mt-3 grid grid-cols-2 gap-3">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-400/40 flex items-center justify-center">
+                <span className="text-white text-sm">📋</span>
+              </div>
+              <div>
+                <div className="text-white/60 text-xs font-bold uppercase tracking-wider">Total</div>
+                <div className="text-white/50 text-xs">Questions</div>
+                <div className="text-indigo-300 font-black text-xl">{personalResult.totalQuestions}</div>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-green-400/40 flex items-center justify-center">
+                <Trophy size={18} className="text-white" />
+              </div>
+              <div>
+                <div className="text-white/60 text-xs font-bold uppercase tracking-wider">Completion</div>
+                <div className="text-green-300 font-black text-xl">100%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="relative z-10 mx-4 mt-4 space-y-3 pb-6">
+            <button
+              onClick={() => setShowLeaderboard(true)}
+              className="w-full py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white font-bold text-base flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-white/20"
+            >
+              <Trophy size={20} className="text-yellow-300" />
+              View Leaderboard
+              <ArrowRight size={18} />
+            </button>
+            {summaryReleased && (
+              <button
+                onClick={() => navigate(`/student/summary?session=${sessionCode}&roll=${studentInfo.roll}`)}
+                className="w-full py-4 rounded-2xl bg-yellow-400 text-yellow-900 font-bold text-base flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-yellow-300"
+              >
+                <BookMarked size={20} />
+                View Answer Summary
+                <ArrowRight size={18} />
+              </button>
+            )}
+            <button
+              onClick={() => { localStorage.removeItem(`student_session_${sessionCode}`); navigate("/"); }}
+              className="w-full py-3 rounded-2xl text-white/70 font-medium flex items-center justify-center gap-2 hover:text-white transition-colors"
+            >
+              🏠 Close &amp; Return Home
+            </button>
           </div>
         </div>
       );
