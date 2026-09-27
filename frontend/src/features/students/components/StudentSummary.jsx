@@ -24,18 +24,6 @@ const StudentSummary = () => {
   const [error, setError] = useState("");
   const [summaryData, setSummaryData] = useState(null); // { myAnswers, questions, studentInfo }
   const [studentInfo, setStudentInfo] = useState(null);
-  const [showExitModal, setShowExitModal] = useState(false);
-
-  // Intercept browser/Android back button
-  useEffect(() => {
-    window.history.pushState({ summary: true }, "");
-    const handler = () => {
-      setShowExitModal(true);
-      window.history.pushState({ summary: true }, "");
-    };
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, []);
 
   // Load student info from localStorage
   useEffect(() => {
@@ -167,34 +155,6 @@ const StudentSummary = () => {
   return (
     <div className="summary-protected min-h-screen relative pb-12"
       style={{background:"#f3f4f6"}}>
-
-      {/* ── Exit Confirmation Modal ──────────────────────────────── */}
-      {showExitModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-xs w-full p-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">⚠️</span>
-            </div>
-            <h3 className="text-gray-900 font-black text-xl mb-2">Exit this page?</h3>
-            <p className="text-gray-500 text-sm mb-6">Are you sure you want to go back to the result screen?</p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => setShowExitModal(false)}
-                className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold text-base hover:bg-gray-50 active:scale-95 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => { setShowExitModal(false); navigate(-1); }}
-                className="w-full py-3 rounded-2xl bg-red-500 text-white font-bold text-base hover:bg-red-600 active:scale-95 transition-all"
-              >
-                Exit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Watermark ───────────────────────────────────────────── */}
       <div
         aria-hidden="true"
@@ -225,7 +185,7 @@ const StudentSummary = () => {
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-2 p-3 sm:p-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => setShowExitModal(true)}
+              onClick={() => navigate(-1)}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors shrink-0"
             >
               <ArrowLeft size={20} className="text-white" />

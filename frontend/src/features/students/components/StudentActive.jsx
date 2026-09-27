@@ -314,31 +314,8 @@ const StudentActive = () => {
       const podiumColors = ["bg-gray-400","bg-yellow-400","bg-amber-600"];
       const crownColors = ["text-gray-300","text-yellow-400","text-amber-600"];
 
-      // Intercept browser/Android back button for leaderboard
-      // (rendered as a component using an inline effect via key)
-      const LeaderboardBackGuard = () => {
-        React.useEffect(() => {
-          window.history.pushState({ leaderboard: true }, "");
-          const handler = (e) => {
-            e.preventDefault();
-            setShowExitModal(true);
-            window.history.pushState({ leaderboard: true }, "");
-          };
-          window.addEventListener("popstate", handler);
-          return () => window.removeEventListener("popstate", handler);
-        }, []);
-        return null;
-      };
-
       return (
         <div className="min-h-screen flex flex-col" style={{background:"linear-gradient(160deg,#0d1b3e 0%,#1a2a5e 50%,#0d2240 100%)"}}>
-          <LeaderboardBackGuard />
-          {showExitModal && (
-            <ExitConfirmModal
-              onCancel={() => setShowExitModal(false)}
-              onExit={() => { setShowExitModal(false); setShowLeaderboard(false); }}
-            />
-          )}
           {/* Header */}
           <header className="flex justify-between items-center px-4 py-3 shrink-0">
             <div className="flex items-center gap-2">
@@ -349,7 +326,7 @@ const StudentActive = () => {
               </div>
             </div>
             <button
-              onClick={() => setShowExitModal(true)}
+              onClick={() => setShowLeaderboard(false)}
               className="flex items-center gap-1.5 bg-blue-600/70 text-white text-sm font-semibold px-3 py-2 rounded-xl hover:bg-blue-600 transition-colors"
             >
               <ArrowRight size={14} className="rotate-180" /> Back to Result
@@ -448,9 +425,57 @@ const StudentActive = () => {
       ];
       const myRank = personalResult.rank;
 
+      // Back-guard for Result screen: intercept hardware/browser back → show exit modal
+      const ResultBackGuard = () => {
+        React.useEffect(() => {
+          window.history.pushState({ result: true }, "");
+          const handler = () => {
+            setShowExitModal(true);
+            window.history.pushState({ result: true }, "");
+          };
+          window.addEventListener("popstate", handler);
+          return () => window.removeEventListener("popstate", handler);
+        }, []);
+        return null;
+      };
+
+      const handleExitQuiz = () => {
+        localStorage.removeItem(`student_session_${sessionCode}`);
+        navigate("/");
+      };
+
       return (
         <div className="min-h-screen w-full flex flex-col overflow-hidden relative"
-          style={{background:"linear-gradient(160deg,#3730a3 0%,#4f46e5 40%,#7c3aed 100%)"}}>
+          style={{background:"linear-gradient(160deg,#3730a3 0%,#4f46e5 40%,#7c3aed 100%)"}}
+        >
+          <ResultBackGuard />
+
+          {/* Exit Confirmation Modal */}
+          {showExitModal && (
+            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-xs w-full p-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🏠</span>
+                </div>
+                <h3 className="text-gray-900 font-black text-xl mb-2">Exit Quiz?</h3>
+                <p className="text-gray-500 text-sm mb-6">Are you sure you want to leave and return to the home page?</p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setShowExitModal(false)}
+                    className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold text-base hover:bg-gray-50 active:scale-95 transition-all"
+                  >
+                    Cancel — Stay Here
+                  </button>
+                  <button
+                    onClick={handleExitQuiz}
+                    className="w-full py-3 rounded-2xl bg-red-500 text-white font-bold text-base hover:bg-red-600 active:scale-95 transition-all"
+                  >
+                    Yes, Exit Quiz
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Animated confetti ribbons */}
           <style>{`
@@ -508,13 +533,11 @@ const StudentActive = () => {
           {/* Trophy + rank badge */}
           <div className="relative z-10 flex justify-center mt-4">
             <div className="relative">
-              {/* Glow platform */}
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-8 rounded-full glow-pulse"
                 style={{background:"rgba(251,191,36,0.2)"}} />
               <div className="trophy-bounce text-9xl select-none" style={{filter:"drop-shadow(0 0 20px rgba(251,191,36,0.8))"}}>
                 🏆
               </div>
-              {/* Rank badge */}
               <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-yellow-400 border-4 border-white shadow-xl flex flex-col items-center justify-center">
                 <span className="text-white font-black text-xs leading-none">#</span>
                 <span className="text-white font-black text-lg leading-none">{myRank}</span>
@@ -581,7 +604,7 @@ const StudentActive = () => {
               </button>
             )}
             <button
-              onClick={() => { localStorage.removeItem(`student_session_${sessionCode}`); navigate("/"); }}
+              onClick={() => setShowExitModal(true)}
               className="w-full py-3 rounded-2xl text-white/70 font-medium flex items-center justify-center gap-2 hover:text-white transition-colors"
             >
               🏠 Close &amp; Return Home
