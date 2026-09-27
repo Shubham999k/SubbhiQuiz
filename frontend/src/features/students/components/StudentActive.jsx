@@ -933,7 +933,7 @@ const StudentActive = () => {
       <main className="flex-1 flex flex-col p-2 overflow-y-auto relative z-10">
         {/* Question card */}
         <div className="bg-base-100 rounded-md shadow-sm border border-base-300 p-3 mb-2">
-          <h2 className="text-lg font-bold text-base-content leading-snug">
+          <h2 className="text-lg font-bold text-base-content leading-snug whitespace-pre-wrap">
             {currentQuestion.question}
           </h2>
         </div>
@@ -982,6 +982,18 @@ const StudentActive = () => {
               </button>
             );
           })}
+
+          {/* Explanation moved below options */}
+          {isAnswerRevealed && currentQuestion.explanation && (
+            <div className="mt-2 animate-in fade-in zoom-in-95 duration-300">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm shadow-sm">
+                <h4 className="font-bold text-blue-800 mb-1.5 flex items-center gap-1.5">
+                  <BookOpen size={16} /> Explanation
+                </h4>
+                <p className="text-blue-900 whitespace-pre-wrap leading-relaxed">{currentQuestion.explanation}</p>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
@@ -1002,16 +1014,6 @@ const StudentActive = () => {
         {myAnswer && !isAnswerRevealed && (
           <div className="pl-16 pr-4 pt-2 pb-0 text-primary text-xs font-semibold animate-pulse flex items-center gap-1">
             <CheckCircle2 size={13} /> Answer submitted. Waiting for results...
-          </div>
-        )}
-
-        {/* Explanation — pl-16 keeps it right of Chirag */}
-        {isAnswerRevealed && currentQuestion.explanation && (
-          <div className="pl-16 pr-3 pt-2 pb-0">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-xs">
-              <h4 className="font-bold text-blue-800 mb-0.5">Explanation</h4>
-              <p className="text-blue-900 whitespace-pre-line leading-snug">{currentQuestion.explanation}</p>
-            </div>
           </div>
         )}
 
