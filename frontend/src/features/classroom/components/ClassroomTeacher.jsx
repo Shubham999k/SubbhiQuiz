@@ -363,8 +363,7 @@ const ClassroomTeacher = () => {
     setConfirmModal(null);
     if (!ok) return;
 
-    setResultsReleased(true);
-    releaseResults({
+    const resultPayload = {
       studentScores,
       joinedStudents,
       totalQuestions: questions.length,
@@ -376,7 +375,46 @@ const ClassroomTeacher = () => {
         explanation: q.explanation,
       })),
       cumulativeAnswers: cumulativeStudentAnswers,
-    });
+    };
+    
+    setResultsReleased(true);
+    releaseResults(resultPayload);
+
+    // Save to history & leaderboard
+    try {
+      let totalCorrect = 0;
+      let totalMax = 0;
+      const participants = joinedStudents.map(student => {
+        const pScore = studentScores[student.roll] || 0;
+        const pCorrect = studentCorrectCount[student.roll] || 0;
+        totalCorrect += pCorrect;
+        totalMax += questions.length;
+        return {
+          name: student.name,
+          roll: student.roll,
+          score: pScore,
+          correctCount: pCorrect,
+          rank: 1 // rank calculation is done in socket, but this satisfies schema
+        };
+      });
+
+      const avgScore = participants.length ? participants.reduce((a, b) => a + b.score, 0) / participants.length : 0;
+      const avgAccuracy = totalMax > 0 ? (totalCorrect / totalMax) * 100 : 0;
+
+      await api.submitQuizResult({
+        category: currentQuiz?.category || sessionCode,
+        difficulty: currentQuiz?.difficulty || "mixed",
+        score: avgScore,
+        totalQuestions: questions.length,
+        accuracy: avgAccuracy,
+        timeTaken: (currentQuiz?.timeLimit || 0) - timeRemaining,
+        questions: resultPayload.questions,
+        participants: participants,
+      });
+      toast.success("Quiz results saved to history!");
+    } catch (e) {
+      console.error("Failed to save classroom session", e);
+    }
   };
 
   const handleReleaseSummary = async () => {

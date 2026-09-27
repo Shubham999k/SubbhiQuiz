@@ -66,3 +66,15 @@ export const getHistoryById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Clear all quiz history
+// @route   DELETE /api/history
+// @access  Private
+export const clearHistory = async (req, res) => {
+  try {
+    await QuizResult.deleteMany({ userId: req.user._id });
+    res.json({ message: "History cleared successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

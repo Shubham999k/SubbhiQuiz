@@ -52,7 +52,7 @@ const StatCard = ({ title, value, icon: Icon, themeColor }) => {
   const theme = themes[themeColor] || themes.blue;
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border ${theme.bg} p-3 sm:p-5 flex flex-col justify-between group min-h-[90px] sm:min-h-[120px]`}>
+    <div className={`relative overflow-hidden rounded-2xl border ${theme.bg} p-2 sm:p-5 flex flex-col justify-between group min-h-[90px] sm:min-h-[120px]`}>
       
       {/* Bottom Wave Gradient */}
       <div className={`absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t ${theme.wave} pointer-events-none rounded-b-2xl`}></div>
@@ -139,9 +139,9 @@ const Dashboard = () => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-4">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col gap-2 sm:gap-4 pb-4 sm:pb-0">
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             <StatCard
               title="Quizzes Attempted"
               value={totalQuizzes}
@@ -168,7 +168,7 @@ const Dashboard = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
             {/* Quick Actions */}
             <div className="lg:col-span-1 bg-base-100 rounded-xl shadow-sm border border-base-300 p-2 sm:p-6">
               <h2 className="text-lg font-bold text-base-content mb-4 border-b border-base-300 pb-4">
@@ -243,7 +243,7 @@ const Dashboard = () => {
 
             {/* Recent Attempts */}
             <div className="lg:col-span-2 bg-base-100 rounded-xl shadow-sm border border-base-300 p-2 sm:p-6">
-              <div className="flex items-center justify-between mb-4 border-b border-base-300 pb-4">
+              <div className="flex items-center justify-between border-b border-base-300">
                 <h2 className="text-lg font-bold text-base-content">
                   Recent Attempts
                 </h2>

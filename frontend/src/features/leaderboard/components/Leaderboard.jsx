@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Trophy, Medal, Search, Loader2, Users, ChevronDown, Award, TrendingUp } from "lucide-react";
+import { Trophy, Medal, Search, Loader2, Users, ChevronDown, Award, TrendingUp, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuth } from "../../../app/providers/AuthContext";
 import { api } from "../../../services/api";
 import Dropdown from "../../../components/ui/Dropdown";
@@ -14,6 +15,22 @@ const Leaderboard = () => {
   const [viewLimit, setViewLimit] = useState(10); // 10, 50, 100, "all"
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState([]);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleClearLeaderboard = async () => {
+    try {
+      setIsClearing(true);
+      await api.clearHistory();
+      setData([]);
+      setShowClearConfirm(false);
+      toast.success("Leaderboard cleared successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to clear leaderboard");
+    } finally {
+      setIsClearing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -288,6 +305,15 @@ const Leaderboard = () => {
             </div>
 
 
+            {data.length > 0 && (
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className="px-4 py-2 bg-error/10 text-error rounded-lg hover:bg-error hover:text-white transition-all font-bold flex items-center gap-2 whitespace-nowrap"
+              >
+                <Trash2 size={16} />
+                Clear All
+              </button>
+            )}
 
           </div>
         </div>
@@ -385,6 +411,34 @@ const Leaderboard = () => {
           )}
         </div>
       </div>
+
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-base-100 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-base-300">
+            <h3 className="text-lg font-bold text-base-content mb-2">Clear Leaderboard?</h3>
+            <p className="text-base-content/70 mb-6 text-sm">
+              Are you sure you want to clear your entire leaderboard? This will delete all quiz history and cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 rounded-lg font-medium bg-base-200 text-base-content hover:bg-base-300"
+                disabled={isClearing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearLeaderboard}
+                className="px-4 py-2 rounded-lg font-medium bg-error text-white hover:bg-red-600 flex items-center gap-2"
+                disabled={isClearing}
+              >
+                {isClearing && <Loader2 className="w-4 h-4 animate-spin" />}
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

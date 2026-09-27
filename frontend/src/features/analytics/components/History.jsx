@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLoader } from "../../../hooks/useLoader";
 import { api } from "../../../services/api";
-import { BookOpen, Filter, Loader2, ArrowRight } from "lucide-react";
+import { BookOpen, Filter, Loader2, ArrowRight, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import Dropdown from "../../../components/ui/Dropdown";
 import Loader from "../../../components/common/Loader";
 
@@ -12,6 +13,8 @@ const History = () => {
   const [loading, setLoading] = useLoader(true);
   const [filter, setFilter] = useState("all_time");
   const [viewLimit, setViewLimit] = useState("all");
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -26,6 +29,20 @@ const History = () => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}m ${s}s`;
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      setIsClearing(true);
+      await api.clearHistory();
+      setHistory([]);
+      setShowClearConfirm(false);
+      toast.success("History cleared successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to clear history");
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const filteredHistory = useMemo(() => {
@@ -90,6 +107,15 @@ const History = () => {
               className="w-full"
             />
           </div>
+          {history.length > 0 && (
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="px-4 py-2 bg-error/10 text-error rounded-lg hover:bg-error hover:text-white transition-all font-bold flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              Clear All
+            </button>
+          )}
         </div>
       </div>
 
@@ -200,6 +226,34 @@ const History = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-base-100 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-base-300">
+            <h3 className="text-lg font-bold text-base-content mb-2">Clear History?</h3>
+            <p className="text-base-content/70 mb-6 text-sm">
+              Are you sure you want to clear your entire quiz history? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 rounded-lg font-medium bg-base-200 text-base-content hover:bg-base-300"
+                disabled={isClearing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearHistory}
+                className="px-4 py-2 rounded-lg font-medium bg-error text-white hover:bg-red-600 flex items-center gap-2"
+                disabled={isClearing}
+              >
+                {isClearing && <Loader2 className="w-4 h-4 animate-spin" />}
+                Clear
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -256,6 +256,18 @@ export const api = {
     return await response.json();
   },
 
+  clearHistory: async () => {
+    const response = await fetch(`${API_URL}/history`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to clear history");
+    }
+    return response.json();
+  },
+
   getLeaderboard: async (filter = "weekly", category = "all") => {
     const response = await fetch(`${API_URL}/leaderboard?filter=${filter}&category=${encodeURIComponent(category)}&_t=${Date.now()}`, {
       headers: getHeaders(),
