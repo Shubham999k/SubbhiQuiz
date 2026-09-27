@@ -323,9 +323,9 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-base-300">
-                      {history.slice(0, 4).map((attempt) => (
+                      {history.slice(0, 4).map((attempt, index) => (
                         <tr
-                          key={attempt.id}
+                          key={attempt._id || index}
                           className="group hover:bg-base-200 cursor-pointer"
                         >
                           <td className="sticky left-0 z-10 bg-base-100 group-hover:bg-base-200 px-3 py-4 whitespace-nowrap">

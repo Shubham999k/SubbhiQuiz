@@ -158,6 +158,10 @@ const ClassroomTeacher = () => {
   });
   const [activeDropdown, setActiveDropdown] = useState(null);
 
+  const [autoNext, setAutoNext] = useState(() => {
+    return savedSession?.autoNext ?? false;
+  });
+
   // ── Save session state to localStorage so background / tab switch keeps everything ──
   useEffect(() => {
     if (!sessionCode) return;
@@ -180,6 +184,7 @@ const ClassroomTeacher = () => {
       cumulativeStudentAnswers,
       joinedStudents,
       questions,
+      autoNext,
       currentQuiz: activeQuizMeta,
       lastSavedTime: Date.now(),
     };
@@ -198,7 +203,8 @@ const ClassroomTeacher = () => {
     sessionCode, quizId, quizStarted, currentQuestionIndex, timeRemaining,
     isTimerPaused, isAnswerRevealed, quizCompleted, resultsReleased, qrShownOnce,
     wildcardEnabled, studentViolations, studentScores, studentCorrectCount,
-    studentAnswers, cumulativeStudentAnswers, joinedStudents, questions, activeQuizMeta
+    studentAnswers, cumulativeStudentAnswers, joinedStudents, questions, activeQuizMeta,
+    autoNext
   ]);
 
   // ── NEW: Summary release state ───────────────────────────────────
@@ -211,7 +217,6 @@ const ClassroomTeacher = () => {
   const [viewAllSearchQuery, setViewAllSearchQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [joinMode, setJoinMode] = useState("Auto Allow");
-  const [autoNext, setAutoNext] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(true);
   const [fullscreenEnabled, setFullscreenEnabled] = useState(false);
 
