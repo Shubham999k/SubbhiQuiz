@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   Maximize2,
   BookMarked,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useClassroomSync } from "../../../features/classroom/hooks/useClassroomSync";
@@ -118,6 +120,9 @@ const StudentActive = () => {
     if (!socket || !studentInfo) return;
     const roll = studentInfo.roll;
 
+    // Announce presence on reconnect/refresh so the teacher's dashboard recovers the student
+    broadcastEvent("STUDENT_JOIN", studentInfo);
+
     socket.emit("check_lifelines", { sessionCode, roll }, (res) => {
       if (res && typeof res.remaining === "number") {
         setLifelinesRemaining(res.remaining);
@@ -142,7 +147,7 @@ const StudentActive = () => {
         setSummaryReleased(true);
       }
     });
-  }, [socket, sessionCode, studentInfo, checkStudentStatus]);
+  }, [socket, sessionCode, studentInfo, checkStudentStatus, broadcastEvent]);
 
   // ─── Leaderboard / personal result ──────────────────────────────
   useEffect(() => {
@@ -268,13 +273,18 @@ const StudentActive = () => {
 
   const { questions, currentQuestionIndex, isAnswerRevealed, quizCompleted, quizStarted } = projectorState;
 
-  // ─── Avatar generator for a student name ──────────────────────────
   const getAvatar = (name, size = 40) => {
     const colors = ["#6366f1","#8b5cf6","#ec4899","#f59e0b","#10b981","#3b82f6","#ef4444","#14b8a6"];
     const idx = name ? name.charCodeAt(0) % colors.length : 0;
     const bg = colors[idx];
     const initials = name ? name.split(" ").map(p => p[0]).join("").slice(0,2).toUpperCase() : "?";
     return { bg, initials };
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
   };
 
   // ─── Exit confirmation modal component ───────────────────────────
@@ -778,6 +788,28 @@ const StudentActive = () => {
         </div>
       )}
 
+      {/* ── Wildcard Entry Popup for Locked Students ────────────────── */}
+      {isLocked && projectorState?.wildcardEnabled && pleadStatus === "idle" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-base-100 rounded-3xl shadow-2xl max-w-sm w-full border border-purple-200/50 p-8 text-center animate-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-bounce">
+              🧞‍♂️
+            </div>
+            <h3 className="text-2xl font-bold text-base-content mb-3">Wildcard Entry Available!</h3>
+            <p className="text-base-content/60 text-sm mb-6">
+              Your teacher has opened wildcard entries. You can plead to re-enter the quiz.
+            </p>
+            <button
+              onClick={handlePleadForWildcard}
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Sparkles size={18} />
+              Plead for Wildcard Entry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Fullscreen Warning ─────────────────────────────────────── */}
       {showFullscreenWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -795,10 +827,15 @@ const StudentActive = () => {
         </div>
       )}
 
-      {/* ── Header ────────────────────────────────────────────────── */}
       <header className="bg-primary text-white p-4 shadow-md flex justify-between items-center shrink-0 relative z-10">
         <div className="font-bold truncate max-w-[150px]">{studentInfo.name}</div>
-        <div className="font-bold text-primary-content">Q {currentQuestionIndex + 1} / {questions.length}</div>
+        <div className="flex items-center gap-4">
+          <div className="font-bold text-primary-content">Q {currentQuestionIndex + 1} / {questions.length}</div>
+          <div className="bg-white/20 px-3 py-1 rounded text-sm shrink-0 flex items-center gap-1.5 font-mono font-bold shadow-inner border border-white/10">
+            <Clock size={14} />
+            {formatTime(projectorState?.timeRemaining || 0)}
+          </div>
+        </div>
         <div className="bg-white/20 px-3 py-1 rounded text-sm shrink-0">
           Roll: {studentInfo.roll}
         </div>

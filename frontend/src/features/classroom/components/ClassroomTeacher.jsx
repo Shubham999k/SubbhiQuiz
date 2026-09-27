@@ -188,6 +188,7 @@ const ClassroomTeacher = () => {
     approveWildcard,
     rejectWildcard,
     lockStudent,
+    unlockStudent,
     releaseSummary,
   } = useClassroomSync(sessionCode, "teacher", handleReceiveEvent, {
     onWildcardRequest: handleWildcardRequest,
@@ -733,7 +734,11 @@ const ClassroomTeacher = () => {
                           <td className="py-4 font-bold text-base-content">{student.name}</td>
                           <td className="py-4 text-base-content/60 font-mono text-sm">{student.roll} {student.batch && `• ${student.batch}`}</td>
                           <td className="py-4 text-center">
-                            {isUnfocused ? (
+                            {vData?.locked ? (
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-error text-white text-sm font-bold shadow-sm">
+                                <Lock size={14} /> Locked
+                              </div>
+                            ) : isUnfocused ? (
                               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-error/10 text-error text-sm font-bold border border-error/20">
                                 <div className="w-2 h-2 rounded-full bg-error animate-pulse"></div> Unfocused
                               </div>
@@ -1277,7 +1282,11 @@ const ClassroomTeacher = () => {
                           <td className="py-3 font-bold text-base-content text-sm">{student.name}</td>
                           <td className="py-3 text-base-content/60 font-mono text-xs">{student.roll} {student.batch && `• ${student.batch}`}</td>
                           <td className="py-3 text-center">
-                            {isUnfocused ? (
+                            {vData?.locked ? (
+                              <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-error text-white text-xs font-bold shadow-sm">
+                                <Lock size={10} /> Locked
+                              </div>
+                            ) : isUnfocused ? (
                               <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-error/10 text-error text-xs font-bold border border-error/20">
                                 <div className="w-1.5 h-1.5 rounded-full bg-error"></div> Unfocused
                               </div>
@@ -1313,7 +1322,8 @@ const ClassroomTeacher = () => {
                                     <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-base-100 rounded-xl shadow-lg border border-base-200 overflow-hidden flex flex-col">
                                       {(!vData?.locked) && (
                                         <button 
-                                          onClick={() => {
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             handleLockStudent(student.roll);
                                             setActiveDropdown(null);
                                           }}
@@ -1324,7 +1334,8 @@ const ClassroomTeacher = () => {
                                       )}
                                       {(vData?.locked) && (
                                         <button 
-                                          onClick={() => {
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             handleUnlockStudent(student.roll);
                                             setActiveDropdown(null);
                                           }}
