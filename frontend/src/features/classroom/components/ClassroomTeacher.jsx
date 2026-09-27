@@ -192,10 +192,11 @@ const ClassroomTeacher = () => {
   } = useClassroomSync(sessionCode, "teacher", handleReceiveEvent, {
     onWildcardRequest: handleWildcardRequest,
     onViolationUpdate: handleViolationUpdate,
-    onRecoverStudents: (students) => {
+    onRecoverStudents: (data) => {
+      const studentsList = Array.isArray(data) ? data : (data?.students || []);
       setJoinedStudents((prev) => {
         const map = new Map(prev.map(s => [String(s.roll), s]));
-        students.forEach(s => map.set(String(s.roll), s));
+        studentsList.forEach(s => map.set(String(s.roll), s));
         return Array.from(map.values());
       });
     },
