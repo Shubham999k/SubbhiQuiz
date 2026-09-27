@@ -208,27 +208,38 @@ const StudentActive = () => {
   }, [unlockStudent, lockStudentLocally]);
 
   // ─── Countdown Audio ───────────────────────────────────────────────
-  const playBeep = useCallback((frequency, type = 'sine', duration = 0.2) => {
+  const speakCountdown = useCallback((text) => {
     try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      const audioCtx = new AudioContext();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+      if (!window.speechSynthesis) return;
       
-      oscillator.type = type;
-      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+      // Cancel any ongoing speech to ensure the current number is spoken immediately
+      window.speechSynthesis.cancel();
       
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      const utterance = new SpeechSynthesisUtterance(text);
       
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
+      const voices = window.speechSynthesis.getVoices();
+      // Try to find a female voice
+      const femaleVoice = voices.find(v => 
+        v.name.includes('Female') || 
+        v.name.includes('Samantha') || 
+        v.name.includes('Victoria') || 
+        v.name.includes('Zira') ||
+        v.name.includes('Karen') ||
+        v.name.includes('Moira') ||
+        v.name.includes('Google UK English Female')
+      );
       
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + duration);
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      }
+      
+      utterance.rate = 1.3; // Slightly faster for urgency
+      utterance.pitch = 1.3; // Higher pitch for a more female-like tone as fallback
+      utterance.volume = 1;
+      
+      window.speechSynthesis.speak(utterance);
     } catch (e) {
-      console.log('Audio error:', e);
+      console.log('Speech error:', e);
     }
   }, []);
 
@@ -237,13 +248,14 @@ const StudentActive = () => {
     const time = projectorState?.timeRemaining;
     if (time !== undefined && time !== prevTimeRef.current && projectorState?.quizStarted && !projectorState?.quizCompleted) {
       if (time <= 5 && time > 0) {
-        playBeep(800, 'sine', 0.15); // short high beep
+        const words = { 5: "five", 4: "four", 3: "three", 2: "two", 1: "one" };
+        speakCountdown(words[time] || time.toString());
       } else if (time === 0 && prevTimeRef.current > 0) {
-        playBeep(400, 'square', 0.6); // long low beep
+        speakCountdown("zero");
       }
       prevTimeRef.current = time;
     }
-  }, [projectorState?.timeRemaining, projectorState?.quizStarted, projectorState?.quizCompleted, playBeep]);
+  }, [projectorState?.timeRemaining, projectorState?.quizStarted, projectorState?.quizCompleted, speakCountdown]);
 
   // ─── Plead for Wildcard Entry ────────────────────────────────────
   const handlePleadForWildcard = () => {
@@ -851,7 +863,7 @@ const StudentActive = () => {
 
                   {pleadStatus === "pending" && (
                     <div className="p-3 bg-purple-100/80 dark:bg-purple-900/50 rounded-xl text-purple-700 dark:text-purple-300 text-xs font-bold flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                       Request sent! Waiting for teacher approval...
                     </div>
                   )}
@@ -902,7 +914,14 @@ const StudentActive = () => {
       )}
 
       <header className="bg-primary text-white p-2 sm:p-4 shadow-md flex justify-between items-center shrink-0 relative z-10 gap-1 sm:gap-4">
-        <div className="font-bold truncate max-w-[60px] sm:max-w-[150px] text-sm sm:text-base">{studentInfo.name}</div>
+        <div className="relative inline-flex pr-3 items-center shrink-0">
+          <div className="font-bold truncate max-w-[55px] sm:max-w-[140px] text-sm sm:text-base">{studentInfo.name}</div>
+          {violations > 0 && (
+            <div className="absolute -top-1.5 right-0 bg-red-600 text-white text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow border border-red-400">
+              {violations}
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
           <div className="font-bold text-primary-content text-xs sm:text-base whitespace-nowrap">Q {currentQuestionIndex + 1}/{questions.length}</div>
           <div className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shrink-0 flex items-center gap-1 sm:gap-1.5 font-mono font-bold shadow-inner border transition-colors ${
@@ -920,14 +939,6 @@ const StudentActive = () => {
           Roll: {studentInfo.roll}
         </div>
       </header>
-
-      {/* ── Violation indicator (subtle, top right) ───────────────── */}
-      {violations > 0 && (
-        <div className={`fixed top-16 right-3 z-20 text-xs px-2 py-1 rounded-full font-bold shadow-md
-          ${violations >= 3 ? "bg-error text-white" : "bg-warning text-warning-content"}`}>
-          ⚠️ {violations}
-        </div>
-      )}
 
       {/* ── Main content ──────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col p-2 overflow-y-auto relative z-10">
