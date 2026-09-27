@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
@@ -206,6 +206,44 @@ const StudentActive = () => {
     window.unlockStudentFn = unlockStudent;
     window.lockStudentLocallyFn = lockStudentLocally;
   }, [unlockStudent, lockStudentLocally]);
+
+  // ─── Countdown Audio ───────────────────────────────────────────────
+  const playBeep = useCallback((frequency, type = 'sine', duration = 0.2) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const audioCtx = new AudioContext();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+      
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + duration);
+    } catch (e) {
+      console.log('Audio error:', e);
+    }
+  }, []);
+
+  const prevTimeRef = useRef(projectorState?.timeRemaining);
+  useEffect(() => {
+    const time = projectorState?.timeRemaining;
+    if (time !== undefined && time !== prevTimeRef.current && projectorState?.quizStarted && !projectorState?.quizCompleted) {
+      if (time <= 5 && time > 0) {
+        playBeep(800, 'sine', 0.15); // short high beep
+      } else if (time === 0 && prevTimeRef.current > 0) {
+        playBeep(400, 'square', 0.6); // long low beep
+      }
+      prevTimeRef.current = time;
+    }
+  }, [projectorState?.timeRemaining, projectorState?.quizStarted, projectorState?.quizCompleted, playBeep]);
 
   // ─── Plead for Wildcard Entry ────────────────────────────────────
   const handlePleadForWildcard = () => {
@@ -775,7 +813,7 @@ const StudentActive = () => {
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-black text-white tracking-wide">You are Locked</h2>
-              <p className="text-white/80 text-xs font-semibold mt-1">
+              <p className="text-white/80 text-xs font-semibold mt-1 truncate px-2">
                 Student: {studentInfo?.name} • Roll: {studentInfo?.roll}
               </p>
             </div>
@@ -863,16 +901,22 @@ const StudentActive = () => {
         </div>
       )}
 
-      <header className="bg-primary text-white p-4 shadow-md flex justify-between items-center shrink-0 relative z-10">
-        <div className="font-bold truncate max-w-[150px]">{studentInfo.name}</div>
-        <div className="flex items-center gap-4">
-          <div className="font-bold text-primary-content">Q {currentQuestionIndex + 1} / {questions.length}</div>
-          <div className="bg-white/20 px-3 py-1 rounded text-sm shrink-0 flex items-center gap-1.5 font-mono font-bold shadow-inner border border-white/10">
-            <Clock size={14} />
+      <header className="bg-primary text-white p-2 sm:p-4 shadow-md flex justify-between items-center shrink-0 relative z-10 gap-1 sm:gap-4">
+        <div className="font-bold truncate max-w-[60px] sm:max-w-[150px] text-sm sm:text-base">{studentInfo.name}</div>
+        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <div className="font-bold text-primary-content text-xs sm:text-base whitespace-nowrap">Q {currentQuestionIndex + 1}/{questions.length}</div>
+          <div className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shrink-0 flex items-center gap-1 sm:gap-1.5 font-mono font-bold shadow-inner border transition-colors ${
+            projectorState?.timeRemaining <= 5 && projectorState?.timeRemaining > 0
+              ? "bg-red-500 animate-pulse border-red-400 text-white shadow-red-900/50"
+              : projectorState?.timeRemaining <= 10 && projectorState?.timeRemaining > 0
+                ? "bg-orange-500 animate-pulse border-orange-400 text-white shadow-orange-900/50"
+                : "bg-white/20 border-white/10"
+          }`}>
+            <Clock size={12} className="sm:w-3.5 sm:h-3.5" />
             {formatTime(projectorState?.timeRemaining || 0)}
           </div>
         </div>
-        <div className="bg-white/20 px-3 py-1 rounded text-sm shrink-0">
+        <div className="bg-white/20 px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shrink-0 truncate max-w-[90px] sm:max-w-none">
           Roll: {studentInfo.roll}
         </div>
       </header>
