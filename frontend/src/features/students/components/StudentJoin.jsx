@@ -294,7 +294,7 @@ const StudentJoin = () => {
               <p className="text-[10px] font-medium text-base-content/60 uppercase tracking-widest mt-0.5">Learn • Compete • Grow</p>
             </div>
           </div>
-          <ThemeSelector />
+          <ThemeSelector forceTheme="perplexity" />
         </header>
 
         {/* ── Marquee ─────────────────────────────────────────────────── */}

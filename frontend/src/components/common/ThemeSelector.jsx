@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Palette } from "lucide-react";
 
-const ThemeSelector = ({ className = "" }) => {
+const ThemeSelector = ({ className = "", defaultTheme = "perplexity", forceTheme }) => {
   const [mode, setMode] = useState(localStorage.getItem("mode") || "light");
-  const [palette, setPalette] = useState(localStorage.getItem("theme_palette") || "mintlify");
+  const [palette, setPalette] = useState(forceTheme || localStorage.getItem("theme_palette") || defaultTheme);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 

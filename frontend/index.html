@@ -5,6 +5,20 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quizzz-Zone</title>
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem("mode") || "light";
+          var palette = localStorage.getItem("theme_palette") || "perplexity";
+          document.documentElement.setAttribute("data-theme", palette);
+          if (mode === "dark") {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="bg-white dark:bg-[#121212] transition-colors">
     <div id="root"></div>
