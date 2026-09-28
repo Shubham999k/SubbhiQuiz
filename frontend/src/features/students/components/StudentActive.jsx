@@ -313,6 +313,27 @@ const StudentActive = () => {
     });
   };
 
+  // ─── Result screen back guard (Top level) ──────────────
+  useEffect(() => {
+    if (!projectorState?.quizCompleted || !personalResult) return;
+    
+    if (!showLeaderboard) {
+      window.history.pushState({ result: true }, "");
+    }
+    
+    const handler = (e) => {
+      if (showLeaderboard) {
+        setShowLeaderboard(false);
+      } else {
+        setShowExitModal(true);
+        window.history.pushState({ result: true }, "");
+      }
+    };
+    
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [projectorState?.quizCompleted, personalResult, showLeaderboard]);
+
   // ─── Loading state ───────────────────────────────────────────────
   if (!studentInfo || !projectorState) {
     return (
@@ -368,26 +389,6 @@ const StudentActive = () => {
     </div>
   );
 
-  // ─── Result screen back guard (Top level) ──────────────
-  useEffect(() => {
-    if (!quizCompleted || !personalResult) return;
-    
-    if (!showLeaderboard) {
-      window.history.pushState({ result: true }, "");
-    }
-    
-    const handler = (e) => {
-      if (showLeaderboard) {
-        setShowLeaderboard(false);
-      } else {
-        setShowExitModal(true);
-        window.history.pushState({ result: true }, "");
-      }
-    };
-    
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, [quizCompleted, personalResult, showLeaderboard]);
 
   // ─── Quiz Completed views ─────────────────────────────────────────
   if (quizCompleted) {
