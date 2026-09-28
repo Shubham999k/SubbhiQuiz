@@ -47,6 +47,26 @@ const StudentActive = () => {
   // Summary state
   const [summaryReleased, setSummaryReleased] = useState(false);
 
+  // ─── Unlock Speech Synthesis on first interaction ──────────────────
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (window.speechSynthesis) {
+        const utterance = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(utterance);
+      }
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+    };
+
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+
+    return () => {
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
+
   // ─── useClassroomSync with new callbacks ────────────────────────
   const onSummaryReleasedCb = useCallback(() => {
     setSummaryReleased(true);

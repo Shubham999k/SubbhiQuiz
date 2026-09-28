@@ -3,7 +3,7 @@ import { Palette } from "lucide-react";
 
 const ThemeSelector = ({ className = "" }) => {
   const [mode, setMode] = useState(localStorage.getItem("mode") || "light");
-  const [palette, setPalette] = useState(localStorage.getItem("theme_palette") || "claude");
+  const [palette, setPalette] = useState(localStorage.getItem("theme_palette") || "mintlify");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
