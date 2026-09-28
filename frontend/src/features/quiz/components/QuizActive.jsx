@@ -105,9 +105,53 @@ const QuizActive = () => {
   // Visual warning for timer
   const isWarningTime = timeRemaining <= 300; // 5 mins
   const isDangerTime = timeRemaining <= 60; // 1 min
+  const isCriticalTime = timeRemaining <= 10 && timeRemaining >= 0; // last 10 secs
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 h-full flex flex-col">
+    <div className="relative">
+      {/* Critical-time red background overlay with waves */}
+      {isCriticalTime && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+            backgroundColor: `rgba(220, 38, 38, ${0.08 + (10 - timeRemaining) * 0.015})`,
+            transition: "background-color 0.5s ease",
+          }}
+        >
+          {/* Ripple waves */}
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                border: "3px solid rgba(220, 38, 38, 0.6)",
+                animation: `quiz-critical-wave 1.8s ease-out infinite`,
+                animationDelay: `${i * 0.45}s`,
+                opacity: 0,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Inline keyframes for the wave animation */}
+      <style>{`
+        @keyframes quiz-critical-wave {
+          0%   { transform: translate(-50%, -50%) scale(1);  opacity: 0.7; }
+          100% { transform: translate(-50%, -50%) scale(18); opacity: 0; }
+        }
+      `}</style>
+
+      <div className="max-w-4xl mx-auto px-4 py-8 h-full flex flex-col" style={{ position: "relative", zIndex: 1 }}>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between bg-base-100 p-4 rounded-xl shadow-sm border border-base-300 mb-6 gap-4">
         <div>
@@ -360,6 +404,7 @@ const QuizActive = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
