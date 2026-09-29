@@ -169,7 +169,7 @@ const Leaderboard = () => {
         </div>
 
         {/* Rank 2 (Silver) */}
-        <div className="flex flex-row sm:flex-col items-center sm:flex-1 w-full sm:max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-100 order-2 sm:order-1 bg-base-200/50 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0">
+        <div className="flex flex-row sm:flex-col items-center sm:flex-1 min-w-0 w-full sm:max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-100 order-2 sm:order-1 bg-base-200/50 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0">
           <div className="relative sm:mb-4 group-hover:-translate-y-2 transition-transform duration-500 shrink-0">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 p-1 shadow-lg">
               <div className="w-full h-full rounded-full bg-base-100 flex items-center justify-center font-bold text-2xl text-slate-500 overflow-hidden">
@@ -181,7 +181,7 @@ const Leaderboard = () => {
               <span className="font-black text-slate-700 sm:hidden">2</span>
             </div>
           </div>
-          <div className="text-left sm:text-center sm:mb-3 flex-1 min-w-0">
+          <div className="text-left sm:text-center sm:mb-3 flex-1 min-w-0 w-full px-1">
             <p className="font-extrabold text-base-content truncate w-full sm:px-2 text-base sm:text-lg">
               {podiumData[1].name}
             </p>
@@ -195,7 +195,7 @@ const Leaderboard = () => {
         </div>
 
         {/* Rank 1 (Gold) */}
-        <div className="flex flex-row sm:flex-col items-center sm:flex-1 w-full sm:max-w-[160px] z-20 sm:-mt-8 animate-in slide-in-from-bottom-12 duration-700 order-1 sm:order-2 bg-warning/10 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0 border border-warning/20 sm:border-none">
+        <div className="flex flex-row sm:flex-col items-center sm:flex-1 min-w-0 w-full sm:max-w-[160px] z-20 sm:-mt-8 animate-in slide-in-from-bottom-12 duration-700 order-1 sm:order-2 bg-warning/10 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0 border border-warning/20 sm:border-none">
           <div className="relative sm:mb-4 group-hover:-translate-y-4 transition-transform duration-500 shrink-0">
             <div className="absolute -inset-4 bg-warning/20 rounded-full blur-xl animate-pulse hidden sm:block"></div>
             <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 p-1 sm:p-1.5 shadow-xl sm:shadow-2xl relative">
@@ -208,7 +208,7 @@ const Leaderboard = () => {
               <span className="font-black text-white text-sm sm:hidden">1</span>
             </div>
           </div>
-          <div className="text-left sm:text-center sm:mb-4 flex-1 min-w-0">
+          <div className="text-left sm:text-center sm:mb-4 flex-1 min-w-0 w-full px-1">
             <p className="font-black text-base-content truncate w-full sm:px-2 text-base sm:text-xl">
               {podiumData[0].name}
             </p>
@@ -222,7 +222,7 @@ const Leaderboard = () => {
         </div>
 
         {/* Rank 3 (Bronze) */}
-        <div className="flex flex-row sm:flex-col items-center sm:flex-1 w-full sm:max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-200 order-3 sm:order-3 bg-base-200/50 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0">
+        <div className="flex flex-row sm:flex-col items-center sm:flex-1 min-w-0 w-full sm:max-w-[140px] z-10 animate-in slide-in-from-bottom-8 duration-700 delay-200 order-3 sm:order-3 bg-base-200/50 sm:bg-transparent rounded-2xl sm:rounded-none p-3 sm:p-0 gap-4 sm:gap-0">
           <div className="relative sm:mb-4 group-hover:-translate-y-2 transition-transform duration-500 shrink-0">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-300 to-red-400 p-1 shadow-lg">
               <div className="w-full h-full rounded-full bg-base-100 flex items-center justify-center font-bold text-2xl text-orange-500 overflow-hidden">
@@ -234,7 +234,7 @@ const Leaderboard = () => {
               <span className="font-black text-white sm:hidden">3</span>
             </div>
           </div>
-          <div className="text-left sm:text-center sm:mb-3 flex-1 min-w-0">
+          <div className="text-left sm:text-center sm:mb-3 flex-1 min-w-0 w-full px-1">
             <p className="font-extrabold text-base-content truncate w-full sm:px-2 text-base sm:text-lg">
               {podiumData[2].name}
             </p>
