@@ -992,11 +992,11 @@ const StudentActive = () => {
           <div className="font-bold text-primary-content text-xs sm:text-base whitespace-nowrap">Q {currentQuestionIndex + 1}/{questions.length}</div>
           <div className="relative">
             {projectorState?.timeRemaining <= 10 && projectorState?.timeRemaining >= 0 && (
-              <div className="absolute inset-0 bg-green-400 rounded-md animate-ping opacity-75 z-0" />
+              <div className="absolute inset-0 bg-red-400 rounded-md animate-ping opacity-75 z-0" />
             )}
             <div className={`relative z-10 px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm shrink-0 flex items-center gap-1 sm:gap-1.5 font-mono font-bold shadow-inner border transition-colors ${
               projectorState?.timeRemaining <= 10 && projectorState?.timeRemaining >= 0
-                ? "bg-green-500 animate-[pulse_0.5s_ease-in-out_infinite] border-green-400 text-white shadow-green-900/50"
+                ? "bg-red-500 animate-[pulse_0.5s_ease-in-out_infinite] border-red-400 text-white shadow-red-900/50"
                 : "bg-green-600 border-green-500 text-white shadow-green-900/50"
             }`}>
               <Clock size={12} className="sm:w-3.5 sm:h-3.5" />
