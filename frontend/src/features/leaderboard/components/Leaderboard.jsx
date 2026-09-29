@@ -18,6 +18,7 @@ const Leaderboard = () => {
   const [deleteModalData, setDeleteModalData] = useState(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isClearing, setIsClearing] = useState(false);
+  const [tabCounts, setTabCounts] = useState({ daily: 0, weekly: 0, monthly: 0, all_time: 0 });
 
   const handleClearLeaderboard = async () => {
     try {
@@ -106,6 +107,29 @@ const Leaderboard = () => {
     fetchLeaderboard();
   }, [filter, selectedCategory, user]);
 
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (!user) return;
+      try {
+        const [d, w, m, a] = await Promise.all([
+          api.getLeaderboard("daily", selectedCategory),
+          api.getLeaderboard("weekly", selectedCategory),
+          api.getLeaderboard("monthly", selectedCategory),
+          api.getLeaderboard("all_time", selectedCategory),
+        ]);
+        setTabCounts({
+          daily: d.length,
+          weekly: w.length,
+          monthly: m.length,
+          all_time: a.length
+        });
+      } catch (error) {
+        console.error("Failed to fetch tab counts", error);
+      }
+    };
+    fetchCounts();
+  }, [selectedCategory, user, data]);
+
   // Prepare base display data
   const baseData = useMemo(() => {
     const raw = Array.isArray(data) ? data.map((entry) => ({
@@ -166,12 +190,15 @@ const Leaderboard = () => {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 ${filter === f
+                className={`px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 flex items-center gap-2 ${filter === f
                   ? "bg-base-100 text-primary shadow-md scale-105"
                   : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
                   }`}
               >
                 {f.replace("_", " ")}
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${filter === f ? 'bg-primary/20 text-primary' : 'bg-base-300 text-base-content/60'}`}>
+                  {tabCounts[f] || 0}
+                </span>
               </button>
             ))}
           </div>

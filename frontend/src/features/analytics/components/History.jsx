@@ -113,6 +113,20 @@ const History = () => {
     return filtered;
   }, [history, filter, viewLimit]);
 
+  const getTabCount = (tabName) => {
+    const now = new Date();
+    return history.filter((attempt) => {
+      const attemptDate = new Date(attempt.createdAt || attempt.date);
+      const diffTime = Math.abs(now - attemptDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (tabName === "daily") return diffDays <= 1;
+      if (tabName === "weekly") return diffDays <= 7;
+      if (tabName === "monthly") return diffDays <= 30;
+      return true;
+    }).length;
+  };
+
   if (loading) {
     return <Loader message="Loading History..." />;
   }
@@ -126,12 +140,15 @@ const History = () => {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 sm:px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 whitespace-nowrap ${filter === f
+              className={`px-4 sm:px-5 py-2 text-sm font-bold rounded-lg capitalize transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${filter === f
                 ? "bg-base-100 text-primary shadow-md scale-105"
                 : "text-base-content/60 hover:text-base-content hover:bg-base-300/50"
                 }`}
             >
               {f.replace("_", " ")}
+              <span className={`text-[10px] px-2 py-0.5 rounded-full ${filter === f ? 'bg-primary/20 text-primary' : 'bg-base-300 text-base-content/60'}`}>
+                {getTabCount(f)}
+              </span>
             </button>
           ))}
         </div>
@@ -187,7 +204,7 @@ const History = () => {
         </div>
       ) : (
         <div className="bg-base-100 shadow-sm rounded-xl border border-base-300 overflow-hidden">
-          <div className="overflow-auto relative h-[70vh] scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-base-100">
+          <div className="overflow-auto relative h-[76vh] scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-base-100">
             <table className="min-w-full text-left border-collapse">
               <thead className="bg-base-200 sticky top-0 z-30 shadow-md">
                 <tr>
