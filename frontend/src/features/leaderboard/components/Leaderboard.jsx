@@ -126,18 +126,16 @@ const Leaderboard = () => {
   // Podium takes the top 3
   const podiumData = baseData.slice(0, 3);
 
-  // Table takes the rest, filtered by search and limited by viewLimit
+  // Table takes all valid students, filtered by search and limited by viewLimit
   const tableData = useMemo(() => {
-    let rest = baseData.slice(3);
+    let rest = baseData.filter(s => s.name !== "-");
 
     if (searchQuery.trim()) {
       rest = rest.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
     }
 
     if (viewLimit !== "all") {
-      // If viewLimit is 10, the table should show 7 items (since 3 are in podium).
-      const tableLimit = viewLimit - 3;
-      rest = rest.slice(0, tableLimit > 0 ? tableLimit : 0);
+      rest = rest.slice(0, viewLimit > 0 ? viewLimit : 0);
     }
 
     return rest;
@@ -392,7 +390,7 @@ const Leaderboard = () => {
                 </tr>
               ) : (
                 tableData.map((student, idx) => {
-                  const actualRank = idx + 4; // Podium takes 1, 2, 3
+                  const actualRank = baseData.findIndex(s => s.id === student.id) + 1;
                   return (
                     <tr
                       key={student.id}
@@ -493,6 +491,11 @@ const Leaderboard = () => {
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && deleteConfirmText.toLowerCase() === "delete" && !isClearing) {
+                    handleConfirmDelete();
+                  }
+                }}
                 placeholder="Delete"
                 className="w-full px-3 py-2 border border-base-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-error focus:border-error bg-base-200"
                 autoFocus

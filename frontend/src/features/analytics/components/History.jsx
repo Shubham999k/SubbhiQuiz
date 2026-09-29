@@ -308,6 +308,11 @@ const History = () => {
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && deleteConfirmText.toLowerCase() === "delete" && !isClearing) {
+                    handleConfirmDelete();
+                  }
+                }}
                 placeholder="Delete"
                 className="w-full px-3 py-2 border border-base-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-error focus:border-error bg-base-200"
                 autoFocus
