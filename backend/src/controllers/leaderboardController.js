@@ -77,3 +77,28 @@ export const getPlayedCategories = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Delete a specific student from the leaderboard (all quiz results)
+// @route   DELETE /api/leaderboard/student/:studentName
+// @access  Private
+export const deleteStudentFromLeaderboard = async (req, res) => {
+  try {
+    const { studentName } = req.params;
+    
+    // Remove the participant with the matching name (case-insensitive if needed, but here we'll use regex for case-insensitive exact match)
+    await QuizResult.updateMany(
+      { userId: req.user._id },
+      { 
+        $pull: { 
+          participants: { 
+            name: new RegExp(`^${studentName}$`, 'i') 
+          } 
+        } 
+      }
+    );
+    
+    res.json({ message: "Student removed from leaderboard successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

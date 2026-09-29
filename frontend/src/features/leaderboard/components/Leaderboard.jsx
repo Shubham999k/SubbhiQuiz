@@ -15,21 +15,55 @@ const Leaderboard = () => {
   const [viewLimit, setViewLimit] = useState(10); // 10, 50, 100, "all"
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState([]);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [deleteModalData, setDeleteModalData] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isClearing, setIsClearing] = useState(false);
 
   const handleClearLeaderboard = async () => {
     try {
       setIsClearing(true);
-      await api.clearHistory();
-      setData([]);
-      setShowClearConfirm(false);
-      toast.success("Leaderboard cleared successfully!");
+      await api.clearHistory(filter);
+      const leaderboardData = await api.getLeaderboard(filter, selectedCategory);
+      setData(leaderboardData);
+      setDeleteModalData(null);
+      setDeleteConfirmText("");
+      toast.success(`Leaderboard for ${filter.replace("_", " ")} cleared successfully!`);
     } catch (error) {
       toast.error(error.message || "Failed to clear leaderboard");
     } finally {
       setIsClearing(false);
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmText.toLowerCase() !== "delete") return;
+    if (deleteModalData?.type === "clear") {
+      await handleClearLeaderboard();
+    } else if (deleteModalData?.type === "student") {
+      await performDeleteStudent(deleteModalData.name);
+    }
+  };
+
+  const performDeleteStudent = async (studentName) => {
+    try {
+      setIsClearing(true);
+      await api.deleteStudentFromLeaderboard(studentName);
+      setData(prev => prev.filter(s => s.name !== studentName));
+      setDeleteModalData(null);
+      setDeleteConfirmText("");
+      toast.success("Student removed successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to remove student");
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const handleDeleteStudent = (e, studentName) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDeleteModalData({ type: "student", name: studentName });
+    setDeleteConfirmText("");
   };
 
   useEffect(() => {
@@ -307,11 +341,14 @@ const Leaderboard = () => {
 
             {data.length > 0 && (
               <button
-                onClick={() => setShowClearConfirm(true)}
+                onClick={() => {
+                  setDeleteModalData({ type: "clear" });
+                  setDeleteConfirmText("");
+                }}
                 className="px-4 py-2 bg-error/10 text-error rounded-lg hover:bg-error hover:text-white transition-all font-bold flex items-center gap-2 whitespace-nowrap"
               >
                 <Trash2 size={16} />
-                Clear All
+                Clear {filter.replace("_", " ")}
               </button>
             )}
 
@@ -332,6 +369,7 @@ const Leaderboard = () => {
                 <th className="p-2 font-semibold whitespace-nowrap">Student</th>
                 <th className="p-2 font-semibold text-center whitespace-nowrap hidden md:table-cell">Quizzes</th>
                 <th className="p-2 font-semibold text-right whitespace-nowrap">Accuracy</th>
+                <th className="p-2 font-semibold text-right whitespace-nowrap w-16">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-base-200 relative">
@@ -394,6 +432,17 @@ const Leaderboard = () => {
                           {student.average}%
                         </span>
                       </td>
+
+                      {/* Actions */}
+                      <td className="p-2 text-right">
+                        <button
+                          onClick={(e) => handleDeleteStudent(e, student.name)}
+                          className="p-1.5 rounded-lg text-error/70 hover:bg-error/10 hover:text-error transition-colors inline-flex"
+                          title="Remove Student"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
@@ -412,28 +461,51 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      {showClearConfirm && (
+      {deleteModalData && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-base-100 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-base-300">
-            <h3 className="text-lg font-bold text-base-content mb-2">Clear Leaderboard?</h3>
-            <p className="text-base-content/70 mb-6 text-sm">
-              Are you sure you want to clear your entire leaderboard? This will delete all quiz history and cannot be undone.
+            <h3 className="text-lg font-bold text-base-content mb-2">
+              {deleteModalData.type === "clear" ? `Clear ${filter.replace("_", " ")}?` : "Remove Student?"}
+            </h3>
+            <p className="text-base-content/70 mb-4 text-sm">
+              {deleteModalData.type === "clear"
+                ? `Are you sure you want to clear your ${filter.replace("_", " ")} leaderboard? This will delete quiz history for this period.`
+                : `Are you sure you want to remove ${deleteModalData.name} from the leaderboard?`}{" "}
+              This action cannot be undone.
             </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-base-content/70 mb-2">
+                Type <span className="font-bold text-error">Delete</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Delete"
+                className="w-full px-3 py-2 border border-base-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-error focus:border-error bg-base-200"
+                autoFocus
+              />
+            </div>
+
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setShowClearConfirm(false)}
+                onClick={() => {
+                  setDeleteModalData(null);
+                  setDeleteConfirmText("");
+                }}
                 className="px-4 py-2 rounded-lg font-medium bg-base-200 text-base-content hover:bg-base-300"
                 disabled={isClearing}
               >
                 Cancel
               </button>
               <button
-                onClick={handleClearLeaderboard}
-                className="px-4 py-2 rounded-lg font-medium bg-error text-white hover:bg-red-600 flex items-center gap-2"
-                disabled={isClearing}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-lg font-medium bg-error text-white hover:bg-red-600 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isClearing || deleteConfirmText.toLowerCase() !== "delete"}
               >
                 {isClearing && <Loader2 className="w-4 h-4 animate-spin" />}
-                Clear
+                Delete
               </button>
             </div>
           </div>

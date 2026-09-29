@@ -67,13 +67,44 @@ export const getHistoryById = async (req, res) => {
   }
 };
 
-// @desc    Clear all quiz history
+// @desc    Clear all quiz history or by filter
 // @route   DELETE /api/history
 // @access  Private
 export const clearHistory = async (req, res) => {
   try {
-    await QuizResult.deleteMany({ userId: req.user._id });
+    const filter = req.query.filter || "all_time";
+    let matchFilter = { userId: req.user._id };
+    
+    if (filter !== "all" && filter !== "all_time") {
+      const date = new Date();
+      if (filter === "daily") date.setDate(date.getDate() - 1);
+      else if (filter === "weekly") date.setDate(date.getDate() - 7);
+      else if (filter === "monthly") date.setMonth(date.getMonth() - 1);
+      matchFilter.date = { $gte: date };
+    }
+
+    await QuizResult.deleteMany(matchFilter);
     res.json({ message: "History cleared successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete a single quiz history item
+// @route   DELETE /api/history/:id
+// @access  Private
+export const deleteHistoryItem = async (req, res) => {
+  try {
+    const result = await QuizResult.findOneAndDelete({ 
+      _id: req.params.id,
+      userId: req.user._id 
+    });
+    
+    if (!result) {
+      return res.status(404).json({ message: "History not found" });
+    }
+    
+    res.json({ message: "History item deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

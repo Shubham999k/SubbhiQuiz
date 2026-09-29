@@ -256,14 +256,38 @@ export const api = {
     return await response.json();
   },
 
-  clearHistory: async () => {
-    const response = await fetch(`${API_URL}/history`, {
+  clearHistory: async (filter = "all_time") => {
+    const response = await fetch(`${API_URL}/history?filter=${filter}`, {
       method: "DELETE",
       headers: getHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to clear history");
+    }
+    return response.json();
+  },
+
+  deleteHistoryItem: async (id) => {
+    const response = await fetch(`${API_URL}/history/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to delete history item");
+    }
+    return response.json();
+  },
+
+  deleteStudentFromLeaderboard: async (studentName) => {
+    const response = await fetch(`${API_URL}/leaderboard/student/${encodeURIComponent(studentName)}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to delete student from leaderboard");
     }
     return response.json();
   },

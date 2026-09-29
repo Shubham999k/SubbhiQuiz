@@ -13,7 +13,8 @@ const History = () => {
   const [loading, setLoading] = useLoader(true);
   const [filter, setFilter] = useState("all_time");
   const [viewLimit, setViewLimit] = useState("all");
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [deleteModalData, setDeleteModalData] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
@@ -34,15 +35,48 @@ const History = () => {
   const handleClearHistory = async () => {
     try {
       setIsClearing(true);
-      await api.clearHistory();
-      setHistory([]);
-      setShowClearConfirm(false);
-      toast.success("History cleared successfully!");
+      await api.clearHistory(filter);
+      const data = await api.getQuizHistory();
+      setHistory(data);
+      setDeleteModalData(null);
+      setDeleteConfirmText("");
+      toast.success(`${filter.replace("_", " ")} history cleared successfully!`);
     } catch (error) {
       toast.error(error.message || "Failed to clear history");
     } finally {
       setIsClearing(false);
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmText.toLowerCase() !== "delete") return;
+    if (deleteModalData?.type === "clear") {
+      await handleClearHistory();
+    } else if (deleteModalData?.type === "attempt") {
+      await performDeleteAttempt(deleteModalData.id);
+    }
+  };
+
+  const performDeleteAttempt = async (id) => {
+    try {
+      setIsClearing(true);
+      await api.deleteHistoryItem(id);
+      setHistory(prev => prev.filter(a => (a._id || a.id) !== id));
+      setDeleteModalData(null);
+      setDeleteConfirmText("");
+      toast.success("Attempt deleted successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to delete attempt");
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const handleDeleteAttempt = (e, id) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setDeleteModalData({ type: "attempt", id });
+    setDeleteConfirmText("");
   };
 
   const filteredHistory = useMemo(() => {
@@ -109,11 +143,14 @@ const History = () => {
           </div>
           {history.length > 0 && (
             <button
-              onClick={() => setShowClearConfirm(true)}
-              className="px-4 py-2 bg-error/10 text-error rounded-lg hover:bg-error hover:text-white transition-all font-bold flex items-center gap-2"
+              onClick={() => {
+                setDeleteModalData({ type: "clear" });
+                setDeleteConfirmText("");
+              }}
+              className="px-4 py-2 bg-error/10 text-error rounded-lg hover:bg-error hover:text-white transition-all font-bold flex items-center gap-2 whitespace-nowrap"
             >
               <Trash2 size={16} />
-              Clear All
+              Clear {filter.replace("_", " ")}
             </button>
           )}
         </div>
@@ -214,13 +251,22 @@ const History = () => {
                       {formatTime(attempt.timeTaken)}
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        to={`/quiz/${attempt._id || attempt.id}/review`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:border-primary hover:bg-primary hover:text-white transition-all duration-200 group/btn"
-                      >
-                        Review
-                        <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          to={`/quiz/${attempt._id || attempt.id}/review`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:border-primary hover:bg-primary hover:text-white transition-all duration-200 group/btn"
+                        >
+                          Review
+                          <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                        </Link>
+                        <button
+                          onClick={(e) => handleDeleteAttempt(e, attempt._id || attempt.id)}
+                          className="p-1.5 rounded-lg text-error/70 hover:bg-error/10 hover:text-error transition-colors"
+                          title="Delete Attempt"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -230,28 +276,51 @@ const History = () => {
         </div>
       )}
 
-      {showClearConfirm && (
+      {deleteModalData && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-base-100 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-base-300">
-            <h3 className="text-lg font-bold text-base-content mb-2">Clear History?</h3>
-            <p className="text-base-content/70 mb-6 text-sm">
-              Are you sure you want to clear your entire quiz history? This action cannot be undone.
+            <h3 className="text-lg font-bold text-base-content mb-2">
+              {deleteModalData.type === "clear" ? `Clear ${filter.replace("_", " ")} History?` : "Delete Attempt?"}
+            </h3>
+            <p className="text-base-content/70 mb-4 text-sm">
+              {deleteModalData.type === "clear"
+                ? `Are you sure you want to clear your ${filter.replace("_", " ")} quiz history?`
+                : "Are you sure you want to delete this specific attempt?"}{" "}
+              This action cannot be undone.
             </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-base-content/70 mb-2">
+                Type <span className="font-bold text-error">Delete</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Delete"
+                className="w-full px-3 py-2 border border-base-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-error focus:border-error bg-base-200"
+                autoFocus
+              />
+            </div>
+
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setShowClearConfirm(false)}
+                onClick={() => {
+                  setDeleteModalData(null);
+                  setDeleteConfirmText("");
+                }}
                 className="px-4 py-2 rounded-lg font-medium bg-base-200 text-base-content hover:bg-base-300"
                 disabled={isClearing}
               >
                 Cancel
               </button>
               <button
-                onClick={handleClearHistory}
-                className="px-4 py-2 rounded-lg font-medium bg-error text-white hover:bg-red-600 flex items-center gap-2"
-                disabled={isClearing}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-lg font-medium bg-error text-white hover:bg-red-600 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isClearing || deleteConfirmText.toLowerCase() !== "delete"}
               >
                 {isClearing && <Loader2 className="w-4 h-4 animate-spin" />}
-                Clear
+                Delete
               </button>
             </div>
           </div>
