@@ -143,7 +143,7 @@ const ActivityLog = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+        <div className="flex items-center flex-wrap gap-2 w-full md:w-auto pb-2 md:pb-0">
           <button
             onClick={handleExportCSV}
             className="flex-none px-3 py-1.5 bg-success/10 text-success font-bold rounded-lg hover:bg-success hover:text-white transition-colors flex items-center justify-center gap-1.5 text-sm"
@@ -245,7 +245,7 @@ const ActivityLog = () => {
                       </p>
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity relative z-20">
+                      <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity relative z-20">
                         <div className="tooltip tooltip-left lg:tooltip-top" data-tip="View Details">
                           <button 
                             onClick={() => setViewLogData(log)}
