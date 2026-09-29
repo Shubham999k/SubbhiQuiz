@@ -23,7 +23,7 @@ const QuizActive = lazy(() => import("../../features/quiz/components/QuizActive"
 const QuizResult = lazy(() => import("../../features/quiz/components/QuizResult"));
 const QuizReview = lazy(() => import("../../features/quiz/components/QuizReview"));
 const History = lazy(() => import("../../features/analytics/components/History"));
-const Analytics = lazy(() => import("../../features/analytics/components/Analytics"));
+const ActivityLog = lazy(() => import("../../features/analytics/components/ActivityLog"));
 const Leaderboard = lazy(() => import("../../features/leaderboard/components/Leaderboard"));
 const Profile = lazy(() => import("../../features/profile/components/Profile"));
 const ClassroomTeacher = lazy(() => import("../../features/classroom/components/ClassroomTeacher"));
@@ -75,7 +75,7 @@ const AnimatedRoutes = () => {
           <Route path="/categories" element={<AnimatedPage><Categories /></AnimatedPage>} />
           <Route path="/quiz/setup" element={<AnimatedPage><QuizSetup /></AnimatedPage>} />
           <Route path="/history" element={<AnimatedPage><History /></AnimatedPage>} />
-          <Route path="/analytics" element={<AnimatedPage><Analytics /></AnimatedPage>} />
+          <Route path="/activity" element={<AnimatedPage><ActivityLog /></AnimatedPage>} />
           <Route path="/leaderboard" element={<AnimatedPage><Leaderboard /></AnimatedPage>} />
           <Route path="/profile" element={<AnimatedPage><Profile /></AnimatedPage>} />
           <Route path="/classroom/teacher/:quizId" element={<AnimatedPage><ClassroomTeacher /></AnimatedPage>} />

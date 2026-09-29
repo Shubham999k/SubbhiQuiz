@@ -33,12 +33,14 @@ import authRoutes from "./routes/authRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import historyRoutes from "./routes/historyRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
+import activityRoutes from "./routes/activityRoutes.js";
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/activity", activityRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "API is running" });

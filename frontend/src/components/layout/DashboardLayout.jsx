@@ -25,7 +25,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Categories", href: "/categories", icon: List },
   { name: "History", href: "/history", icon: History },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Activity Log", href: "/activity", icon: BarChart3 },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
   { name: "Profile", href: "/profile", icon: User },
 ];
@@ -120,7 +120,7 @@ const DashboardLayout = () => {
       else if (path === 'quiz') name = 'Categories';
       else if (path === 'setup') name = 'Create';
       else if (path === 'history') name = 'History';
-      else if (path === 'analytics') name = 'Analytics';
+      else if (path === 'activity') name = 'Activity Log';
       else if (path === 'leaderboard') name = 'Leaderboard';
       else if (path === 'profile') name = 'Profile';
       else if (path === 'classroom') name = 'Classroom';

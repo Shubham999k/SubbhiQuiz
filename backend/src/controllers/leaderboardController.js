@@ -1,6 +1,7 @@
 import QuizResult from "../models/QuizResult.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
+import { logActivity } from "../utils/logger.js";
 
 // @desc    Get leaderboard
 // @route   GET /api/leaderboard
@@ -85,6 +86,20 @@ export const deleteStudentFromLeaderboard = async (req, res) => {
   try {
     const { studentName } = req.params;
     
+    // Backup data before deletion for restore feature
+    const affectedResults = await QuizResult.find({ 
+      userId: req.user._id,
+      "participants.name": new RegExp(`^${studentName}$`, 'i')
+    }).lean();
+    
+    const backupData = affectedResults.map(res => {
+      const participant = res.participants.find(p => p.name.toLowerCase() === studentName.toLowerCase());
+      return {
+        quizResultId: res._id,
+        participant: participant
+      };
+    });
+
     // Remove the participant with the matching name (case-insensitive if needed, but here we'll use regex for case-insensitive exact match)
     await QuizResult.updateMany(
       { userId: req.user._id },
@@ -95,6 +110,14 @@ export const deleteStudentFromLeaderboard = async (req, res) => {
           } 
         } 
       }
+    );
+    
+    await logActivity(
+      req.user._id, 
+      `Deleted student: ${studentName}`, 
+      "STUDENT_DELETED", 
+      `Removed student ${studentName} from all leaderboards`,
+      { collection: "StudentFromResults", data: backupData }
     );
     
     res.json({ message: "Student removed from leaderboard successfully" });

@@ -1,4 +1,5 @@
 import QuizResult from "../models/QuizResult.js";
+import { logActivity } from "../utils/logger.js";
 
 // @desc    Get user quiz history
 // @route   GET /api/history
@@ -40,6 +41,8 @@ export const submitResult = async (req, res) => {
       questions,
       participants,
     });
+
+    await logActivity(req.user._id, `Conducted quiz: ${category}`, "QUIZ_TAKEN", `Score: ${score.toFixed(1)}%, Accuracy: ${accuracy.toFixed(1)}%, Participants: ${participants ? participants.length : 0}`);
 
     res.status(201).json(result);
   } catch (error) {
@@ -95,7 +98,7 @@ export const clearHistory = async (req, res) => {
 // @access  Private
 export const deleteHistoryItem = async (req, res) => {
   try {
-    const result = await QuizResult.findOneAndDelete({ 
+    const result = await QuizResult.findOne({ 
       _id: req.params.id,
       userId: req.user._id 
     });
@@ -103,6 +106,17 @@ export const deleteHistoryItem = async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: "History not found" });
     }
+    
+    const backupData = result.toObject();
+    await result.deleteOne();
+
+    await logActivity(
+      req.user._id, 
+      `Deleted quiz history: ${result.category}`, 
+      "HISTORY_DELETED",
+      `Score: ${result.score}%`,
+      { collection: "QuizResult", data: backupData }
+    );
     
     res.json({ message: "History item deleted successfully" });
   } catch (error) {

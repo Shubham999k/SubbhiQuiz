@@ -316,4 +316,61 @@ export const api = {
     if (!response.ok) throw new Error("Failed to fetch played categories");
     return await response.json();
   },
+
+  // ================= ACTIVITY LOGS =================
+  getActivityLogs: async () => {
+    const response = await fetch(`${API_URL}/activity`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch activity logs");
+    return await response.json();
+  },
+  
+  deleteActivityLog: async (id) => {
+    const response = await fetch(`${API_URL}/activity/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to delete activity log");
+    return await response.json();
+  },
+
+  deleteOldActivityLogs: async () => {
+    const response = await fetch(`${API_URL}/activity/old`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to delete old activity logs");
+    return await response.json();
+  },
+
+  deleteWeekOldActivityLogs: async () => {
+    const response = await fetch(`${API_URL}/activity/old-week`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to delete activity logs older than 1 week");
+    return await response.json();
+  },
+
+  clearAllActivityLogs: async () => {
+    const response = await fetch(`${API_URL}/activity`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to clear activity logs");
+    return await response.json();
+  },
+
+  restoreActivityLog: async (id) => {
+    const response = await fetch(`${API_URL}/activity/restore/${id}`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to restore activity log");
+    }
+    return await response.json();
+  },
 };

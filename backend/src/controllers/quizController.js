@@ -1,6 +1,7 @@
 import Category from "../models/Category.js";
 import Question from "../models/Question.js";
 import CustomQuiz from "../models/CustomQuiz.js";
+import { logActivity } from "../utils/logger.js";
 
 // @desc    Get all categories
 // @route   GET /api/quiz/categories
@@ -77,6 +78,7 @@ export const saveCustomQuiz = async (req, res) => {
       if (timeLimit !== undefined) existingQuiz.timeLimit = timeLimit;
       if (timerType !== undefined) existingQuiz.timerType = timerType;
       const updatedQuiz = await existingQuiz.save();
+      await logActivity(req.user._id, `Updated quiz: ${title}`, "QUIZ_ADDED", `Updated quiz with ${questions.length} questions`);
       return res.status(200).json(updatedQuiz);
     }
 
@@ -98,6 +100,8 @@ export const saveCustomQuiz = async (req, res) => {
       timeLimit,
       timerType,
     });
+
+    await logActivity(req.user._id, `Created quiz: ${title}`, "QUIZ_ADDED", `Created quiz with ${questions.length} questions`);
 
     res.status(201).json(result);
   } catch (error) {
@@ -129,7 +133,18 @@ export const deleteCustomQuiz = async (req, res) => {
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found or unauthorized" });
     }
+    
+    // Backup data before deletion for restore feature
+    const backupData = quiz.toObject();
+    
     await quiz.deleteOne();
+    await logActivity(
+      req.user._id, 
+      `Deleted quiz: ${quiz.title}`, 
+      "QUIZ_DELETED",
+      `Deleted quiz with ${quiz.questions?.length || 0} questions`,
+      { collection: "CustomQuiz", data: backupData }
+    );
     res.json({ message: "Quiz removed successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
