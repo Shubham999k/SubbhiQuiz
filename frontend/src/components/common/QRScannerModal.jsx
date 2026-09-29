@@ -6,6 +6,18 @@ const QRScannerModal = ({ isOpen, onClose, onScan }) => {
   useEffect(() => {
     if (!isOpen) return;
 
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
     // We must ensure the element exists before initializing the scanner
     const scanner = new Html5QrcodeScanner(
       "qr-reader",

@@ -47,6 +47,16 @@ const StudentActive = () => {
   // Summary state
   const [summaryReleased, setSummaryReleased] = useState(false);
 
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        if (showExitModal) setShowExitModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showExitModal]);
+
   // ─── Unlock Speech Synthesis on first interaction ──────────────────
   useEffect(() => {
     const unlockAudio = () => {

@@ -2,6 +2,18 @@ import React from "react";
 import { X } from "lucide-react";
 
 const AlertModal = ({ isOpen, onClose, title, message, type = "info", onConfirm }) => {
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (

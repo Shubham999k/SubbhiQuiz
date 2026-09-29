@@ -26,6 +26,17 @@ const History = () => {
     fetchHistory();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && deleteModalData) {
+        setDeleteModalData(null);
+        setDeleteConfirmText("");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [deleteModalData]);
+
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;

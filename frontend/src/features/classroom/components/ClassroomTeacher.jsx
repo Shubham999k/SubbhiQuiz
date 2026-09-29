@@ -220,6 +220,20 @@ const ClassroomTeacher = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(true);
   const [fullscreenEnabled, setFullscreenEnabled] = useState(false);
 
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        if (showWildcardPanel) setShowWildcardPanel(false);
+        if (showPendingPanel) setShowPendingPanel(false);
+        if (showViewAllModal) setShowViewAllModal(false);
+        if (showQR) setShowQR(false);
+        if (confirmModal) setConfirmModal(null);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showWildcardPanel, showPendingPanel, showViewAllModal, showQR, confirmModal]);
+
   // Show confirm modal helper
   const showConfirm = (opts) =>
     new Promise((resolve) => {

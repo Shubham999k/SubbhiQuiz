@@ -80,6 +80,17 @@ const Leaderboard = () => {
   }, [user]);
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && deleteModalData) {
+        setDeleteModalData(null);
+        setDeleteConfirmText("");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [deleteModalData]);
+
+  useEffect(() => {
     const fetchLeaderboard = async () => {
       if (!user) return;
       setLoading(true);
