@@ -164,9 +164,18 @@ export const studentJoinQuiz = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
     
-    // We can optionally verify that the session is active
-    // const session = getActiveSession(sessionCode);
-    // if (!session) return res.status(404).json({ message: "Session not active" });
+    const session = getActiveSession(sessionCode);
+    // If session is active, check if roll number is already used by someone else
+    if (session && session.activeStudentsMap && session.activeStudentsMap[roll]) {
+      const existingName = session.activeStudentsMap[roll].name;
+      // Allow if the name is same (in case same student is trying to rejoin/refresh)
+      // Block if the name is different
+      if (existingName.toLowerCase().trim() !== name.toLowerCase().trim()) {
+        return res.status(400).json({ 
+          message: `Roll number ${roll} is already in use by another student (${existingName}). Please use your correct roll number.` 
+        });
+      }
+    }
 
     // Generate JWT for the student
     const token = jwt.sign({ roll, name, sessionCode, role: "student" }, process.env.JWT_SECRET || "secret", { expiresIn: "12h" });
