@@ -168,7 +168,8 @@ const JsonQuestionImporter = ({ onImport }) => {
       <div className="w-full lg:w-1/2 flex flex-col space-y-4">
         <h3 className="font-bold text-lg text-base-content">Question Preview</h3>
         
-        <div className="bg-base-200 rounded-xl p-4 border border-base-300 flex-1 flex flex-col h-[500px]">
+        <div className="relative h-[500px] lg:h-auto lg:flex-1">
+          <div className="absolute inset-0 bg-base-200 rounded-xl p-4 border border-base-300 flex flex-col">
           {previewQuestions.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-base-content/50 text-sm">
               Validate your JSON to see the preview here.
@@ -229,6 +230,7 @@ const JsonQuestionImporter = ({ onImport }) => {
               </div>
             </>
           )}
+          </div>
         </div>
 
         <button
