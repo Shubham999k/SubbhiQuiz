@@ -15,10 +15,10 @@ const Loader = ({ message = "Loading", fullScreen = false }) => {
   }, [isDefaultLoading]);
 
   return (
-    <div className={`flex flex-col items-center justify-center w-full animate-in fade-in duration-700 overflow-hidden ${fullScreen ? "fixed inset-0 z-[9999] bg-base-100/90 backdrop-blur-sm" : "flex-1 h-full min-h-[60vh]"}`}>
+    <div className={`flex flex-col items-center justify-center w-full animate-in fade-in duration-700 overflow-hidden ${fullScreen ? "fixed inset-0 z-[9999] bg-base-100/90 backdrop-blur-sm" : "flex-1 h-full min-h-[80vh]"}`}>
       
       {/* Container for the orbital system */}
-      <div className="relative w-12 h-12 flex items-center justify-center mb-24 mt-8 scale-90 sm:scale-100">
+      <div className="relative w-12 h-12 flex items-center justify-center mt-32 mb-32 scale-90 sm:scale-100">
         
         {/* Glowing backdrop for the whole system */}
         <div className="absolute inset-[-80px] bg-primary/5 rounded-full blur-[60px] animate-pulse pointer-events-none"></div>
@@ -81,7 +81,7 @@ const Loader = ({ message = "Loading", fullScreen = false }) => {
         
       </div>
 
-      <div className="text-center z-10 mt-16 sm:mt-20">
+      <div className="text-center z-10 mt-4 sm:mt-8">
         <h2 className="text-2xl font-bold tracking-tight text-base-content mb-2 flex items-center justify-center gap-1 drop-shadow-lg">
           Quizzz-<span className="text-primary drop-shadow-[0_0_8px_hsl(var(--p)/0.5)]">Zone</span>
         </h2>

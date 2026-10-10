@@ -59,13 +59,20 @@ const Profile = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+  const isEditingRef = useRef(isEditing);
+  useEffect(() => {
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
+
   // Live sync profile data across devices when tab regains focus
   useEffect(() => {
     const fetchLatestProfile = async () => {
       try {
         const latestUser = await api.getProfile();
         updateUser(latestUser);
-        setName(latestUser.name);
+        if (!isEditingRef.current) {
+          setName(latestUser.name);
+        }
       } catch (e) {
         console.error("Failed to sync profile:", e);
       }
@@ -76,7 +83,8 @@ const Profile = () => {
 
     window.addEventListener("focus", fetchLatestProfile);
     return () => window.removeEventListener("focus", fetchLatestProfile);
-  }, [updateUser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Close modals on Escape key
   useEffect(() => {
@@ -271,6 +279,32 @@ const Profile = () => {
 
             <div className="p-6 md:p-8 flex-1">
               <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
+                <div>
+                  <div className="mb-2 pl-1">
+                    <label className="block text-sm font-semibold text-base-content">
+                      Full Name
+                    </label>
+                    <p className="text-xs text-base-content/60 mt-0.5">Your display name on the platform.</p>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <input
+                      type="text"
+                      disabled={!isEditing}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={`pl-12 block w-full rounded-xl border-2 sm:text-sm py-3 transition-colors ${
+                        isEditing 
+                          ? "border-primary/50 bg-base-100 focus:border-primary focus:ring-0 text-base-content" 
+                          : "border-transparent bg-base-200 text-base-content/50 cursor-not-allowed"
+                      }`}
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <div className="mb-2 pl-1">
                     <label className="block text-sm font-semibold text-base-content">

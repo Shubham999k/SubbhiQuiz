@@ -382,7 +382,7 @@ const DashboardLayout = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto bg-base-200">
-          <div className="py-4 px-4 min-h-full pb-8">
+          <div className="py-4 px-4 min-h-full pb-4">
             <React.Suspense fallback={<Loader />}>
               <Outlet />
             </React.Suspense>
