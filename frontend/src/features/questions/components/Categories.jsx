@@ -4,6 +4,7 @@ import { api } from "../../../services/api";
 import { useQuiz } from "../../../app/providers/QuizContext";
 import { AnimatePresence } from "framer-motion";
 import { AnimatedPage } from "../../../components/common/AnimatedPage";
+import AutoScrollText from "../../../components/common/AutoScrollText";
 import {
   FileCode2,
   Coffee,
@@ -93,22 +94,7 @@ const dummyCategories = [
   },
 ];
 
-const DelayedMarquee = ({ children, className }) => {
-  const [speed, setSpeed] = useState(0);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSpeed(3);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-  
-  return (
-    <marquee className={className} scrollamount={speed} onMouseOver={(e) => e.target.stop()} onMouseOut={(e) => e.target.start()}>
-      {children}
-    </marquee>
-  );
-};
+const DelayedMarquee = AutoScrollText;
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -120,7 +106,7 @@ const Categories = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || location.state?.tab || "categories";
-  
+
   const setActiveTab = (tab) => {
     setSearchParams({ tab });
   };
@@ -129,7 +115,7 @@ const Categories = () => {
   const [quizToStart, setQuizToStart] = useState(null);
   const [isStarting, setIsStarting] = useState(false);
   const [isStartingClassroom, setIsStartingClassroom] = useState(false);
-  
+
   // Delete modal state
   const [quizToDelete, setQuizToDelete] = useState(null);
   const [deleteInput, setDeleteInput] = useState("");
@@ -142,13 +128,13 @@ const Categories = () => {
           api.getCategories().catch(() => null),
           api.getSavedCustomQuizzes().catch(() => [])
         ]);
-        
+
         if (catsData && catsData.length > 0) {
           setCategories(catsData);
         } else {
           setCategories(dummyCategories);
         }
-        
+
         if (savedData && savedData.length > 0) {
           setSavedQuizzes(savedData);
         } else {
@@ -177,9 +163,9 @@ const Categories = () => {
       if (quiz.timerType !== "per_question") {
         timeLimitSeconds = timeLimitSeconds * 60;
       }
-      
+
       setupCustomQuiz(quiz.questions, timeLimitSeconds, quiz.timerType || "overall", quiz.title || "Custom Quiz");
-      
+
       if (mode === "classroom") {
         const sessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
         navigate(`/classroom/teacher/custom?session=${sessionId}`);
@@ -250,7 +236,7 @@ const Categories = () => {
             Saved
           </button>
         </div>
-        
+
         <Link
           to="/quiz/setup?mode=custom"
           className="flex items-center text-sm font-medium text-white bg-primary hover:opacity-80 px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
@@ -263,117 +249,111 @@ const Categories = () => {
       <AnimatePresence mode="wait">
         <AnimatedPage key={activeTab}>
           {activeTab === "categories" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {categories.map((category) => {
-            const Icon = iconMap[category.icon] || FileCode2;
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {categories.map((category) => {
+                const Icon = iconMap[category.icon] || FileCode2;
 
-            return (
-              <div
-                key={category.id}
-                className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex flex-col hover:shadow-md transition-shadow group"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-bold text-base-content">
-                      {category.title || category.name || "Quizzes"}
-                    </h3>
-                    <p className="text-xs font-medium text-primary">
-                      {category.quizCount || 10} Quizzes
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-base-content/70 flex-grow mb-6">
-                  {category.description}
-                </p>
-                <Link
-                  to={`/quiz/setup?category=${category.id}`}
-                  className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                >
-                  Start Practice
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="min-h-[50vh]">
-          {savedQuizzes.length === 0 ? (
-            <div className="text-center py-12 text-base-content/70">
-              <Save className="w-16 h-16 mx-auto mb-4 text-base-content/30" />
-              <h3 className="text-lg font-bold text-base-content mb-2">No Saved Quizzes</h3>
-              <p className="max-w-sm mx-auto">You haven't built any custom quizzes yet. Head over to the Custom Quiz Builder to create and save your first quiz!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {savedQuizzes.map((quiz) => {
-                const Icon = iconMap[quiz.icon] || Save;
                 return (
                   <div
-                    key={quiz._id}
-                    className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex flex-col hover:shadow-md transition-shadow group relative"
+                    key={category.id}
+                    className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex flex-col hover:shadow-md transition-shadow group"
                   >
-                    <div className="absolute top-0 right-0 p-3 pl-8 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-base-100 via-base-100 to-transparent z-10 rounded-tr-xl">
-                      <button
-                        onClick={() => navigate('/quiz/setup', { state: { customQuiz: quiz } })}
-                        className="p-1.5 bg-base-100 text-primary hover:bg-primary hover:text-white rounded-md shadow-sm transition-colors"
-                        title="Edit Quiz"
-                      >
-                        <Edit3 size={14} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setQuizToDelete(quiz);
-                          setDeleteInput("");
-                        }}
-                        className="p-1.5 bg-base-100 text-error hover:bg-error hover:text-white rounded-md shadow-sm transition-colors"
-                        title="Delete Quiz"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-
                     <div className="flex items-center mb-4">
                       <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                         <Icon className="w-6 h-6" />
                       </div>
-                      <div className="ml-4 overflow-hidden flex-1">
-                        {quiz.title && quiz.title.length > 15 ? (
-                          <DelayedMarquee className="text-lg font-bold text-base-content leading-tight block w-full">
-                            {quiz.title}
-                          </DelayedMarquee>
-                        ) : (
-                          <h3 className="text-lg font-bold text-base-content line-clamp-1" title={quiz.title}>
-                            {quiz.title}
-                          </h3>
-                        )}
+                      <div className="ml-4 overflow-hidden flex-1 min-w-0">
+                        <AutoScrollText className="text-lg font-bold text-base-content leading-tight">
+                          {category.title || category.name || "Quizzes"}
+                        </AutoScrollText>
                         <p className="text-xs font-medium text-primary">
-                          {quiz.questions?.length || 0} Questions
+                          {category.quizCount || 10} Quizzes
                         </p>
                       </div>
                     </div>
-                    <div className="flex-grow flex flex-col mb-6">
-                      <p className="text-sm text-base-content/70 line-clamp-2">
-                        {quiz.description || "Custom quiz created by you."}
-                      </p>
-                      <p className="text-xs text-base-content/50 mt-auto pt-4 font-medium">
-                        Created: {new Date(quiz.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setQuizToStart(quiz)}
+                    <p className="text-sm text-base-content/70 flex-grow mb-6">
+                      {category.description}
+                    </p>
+                    <Link
+                      to={`/quiz/setup?category=${category.id}`}
                       className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
                     >
                       Start Practice
-                    </button>
+                    </Link>
                   </div>
                 );
               })}
             </div>
-          )}
-        </div>
+          ) : (
+            <div className="min-h-[50vh]">
+              {savedQuizzes.length === 0 ? (
+                <div className="text-center py-12 text-base-content/70">
+                  <Save className="w-16 h-16 mx-auto mb-4 text-base-content/30" />
+                  <h3 className="text-lg font-bold text-base-content mb-2">No Saved Quizzes</h3>
+                  <p className="max-w-sm mx-auto">You haven't built any custom quizzes yet. Head over to the Custom Quiz Builder to create and save your first quiz!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {savedQuizzes.map((quiz) => {
+                    const Icon = iconMap[quiz.icon] || Save;
+                    return (
+                      <div
+                        key={quiz._id}
+                        className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 flex flex-col hover:shadow-md transition-shadow group relative"
+                      >
+                        <div className="absolute top-0 right-0 p-3 pl-8 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-base-100 via-base-100 to-transparent z-10 rounded-tr-xl">
+                          <button
+                            onClick={() => navigate('/quiz/setup', { state: { customQuiz: quiz } })}
+                            className="p-1.5 bg-base-100 text-primary hover:bg-primary hover:text-white rounded-md shadow-sm transition-colors"
+                            title="Edit Quiz"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setQuizToDelete(quiz);
+                              setDeleteInput("");
+                            }}
+                            className="p-1.5 bg-base-100 text-error hover:bg-error hover:text-white rounded-md shadow-sm transition-colors"
+                            title="Delete Quiz"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center mb-4">
+                          <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <Icon className="w-6 h-6" />
+                          </div>
+                          <div className="ml-4 overflow-hidden flex-1 min-w-0">
+                            <AutoScrollText className="text-lg font-bold text-base-content leading-tight">
+                              {quiz.title}
+                            </AutoScrollText>
+                            <p className="text-xs font-medium text-primary">
+                              {quiz.questions?.length || 0} Questions
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex-grow flex flex-col mb-6">
+                          <p className="text-sm text-base-content/70 line-clamp-2">
+                            {quiz.description || "Custom quiz created by you."}
+                          </p>
+                          <p className="text-xs text-base-content/50 mt-auto pt-4 font-medium">
+                            Created: {new Date(quiz.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setQuizToStart(quiz)}
+                          className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                        >
+                          Start Practice
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
         </AnimatedPage>
       </AnimatePresence>
@@ -396,24 +376,24 @@ const Categories = () => {
                     </p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setQuizToStart(null)}
                   className="text-base-content/50 hover:text-base-content bg-base-200 hover:bg-base-300 rounded-full p-1.5 transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
-              
+
               <div className="bg-base-200 rounded-xl p-4 mb-6 border border-base-300 flex justify-between items-center">
-                 <div className="text-center flex-1">
-                    <p className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1">Questions</p>
-                    <p className="font-bold text-base-content text-lg">{quizToStart.questions?.length || 0}</p>
-                 </div>
-                 <div className="w-px h-8 bg-base-300"></div>
-                 <div className="text-center flex-1">
-                    <p className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1">Timer</p>
-                    <p className="font-bold text-base-content text-lg capitalize">{quizToStart.timerType?.replace('_', ' ') || 'Overall'}</p>
-                 </div>
+                <div className="text-center flex-1">
+                  <p className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1">Questions</p>
+                  <p className="font-bold text-base-content text-lg">{quizToStart.questions?.length || 0}</p>
+                </div>
+                <div className="w-px h-8 bg-base-300"></div>
+                <div className="text-center flex-1">
+                  <p className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1">Timer</p>
+                  <p className="font-bold text-base-content text-lg capitalize">{quizToStart.timerType?.replace('_', ' ') || 'Overall'}</p>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -429,7 +409,7 @@ const Categories = () => {
                   )}
                   <span className="font-bold text-sm">Quiz Now</span>
                 </button>
-                
+
                 <button
                   onClick={() => handleStartQuiz(quizToStart, "classroom")}
                   disabled={isStarting || isStartingClassroom}
@@ -457,14 +437,14 @@ const Categories = () => {
                 <h3 className="text-xl font-bold text-base-content flex items-center text-error">
                   <Trash2 className="mr-2" size={24} /> Delete Quiz
                 </h3>
-                <button 
+                <button
                   onClick={() => setQuizToDelete(null)}
                   className="text-base-content/50 hover:text-base-content bg-base-200 hover:bg-base-300 rounded-full p-1 transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
-              
+
               <p className="text-base-content/70 mb-4">
                 Are you sure you want to delete <span className="font-bold text-base-content">"{quizToDelete.title}"</span>? This action cannot be undone.
               </p>

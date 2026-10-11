@@ -1,11 +1,13 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
 @plugin "flyonui";
+
 @plugin "flyonui" {
   themes: all;
 }
 
 @layer base {
+
   /* Enforce Light Backgrounds regardless of Theme when not in dark mode */
   html:not(.dark) {
     --color-base-100: #ffffff !important;
@@ -13,7 +15,7 @@
     --color-base-300: #e5e7eb !important;
     --color-base-content: #111827 !important;
   }
-  
+
   /* Enforce Dark Backgrounds regardless of Theme when in dark mode */
   html.dark {
     --color-base-100: #121212 !important;
@@ -21,7 +23,7 @@
     --color-base-300: #2a2a2a !important;
     --color-base-content: #f3f4f6 !important;
   }
-  
+
   body {
     @apply bg-base-100 text-base-content;
     overflow-x: hidden;
@@ -34,28 +36,55 @@
     white-space: nowrap;
     animation: marquee 10s linear infinite;
   }
-  
+
   .animate-marquee:hover {
     animation-play-state: paused;
   }
-  
+
+  .animate-title-marquee {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: title-marquee-scroll var(--marquee-duration, 8s) linear infinite;
+    will-change: transform;
+  }
+
+  .animate-title-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes title-marquee-scroll {
+    0%, 15% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(0px - var(--marquee-shift, 0px)));
+    }
+  }
+
   @keyframes marquee {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-100%); }
+    0% {
+      transform: translateX(0%);
+    }
+
+    100% {
+      transform: translateX(-100%);
+    }
   }
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   @media (max-width: 1024px) {
     ::-webkit-scrollbar {
       display: none;
     }
+
     * {
       -ms-overflow-style: none;
       scrollbar-width: none;
